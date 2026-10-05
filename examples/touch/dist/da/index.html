@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#fbfaf8">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121210">
+<title>Lune Touch</title>
+<link rel="alternate" hreflang="en" href="/en/">
+<link rel="stylesheet" href="/lune-ui.css">
+</head>
+<body>
+
+<!-- TILSTAND — før .app -->
+<input class="state" type="radio" name="mode" id="m-dash" checked aria-label="Dashboard">
+<input class="state" type="radio" name="mode" id="m-conf" aria-label="Konfiguration">
+<input class="state" type="radio" name="scope" id="s-house" checked data-kind="house" aria-label="Hus" data-title="Hus" data-sub="4 manifolds · 2 zoner kalder · 1 fejl"><input class="state" type="radio" name="scope" id="s-m1" data-kind="manifold" data-m="1" aria-label="M1 Stueetage" data-title="M1 Stueetage" data-sub="6 zoner · 2 kalder · Kalder på varme"><input class="state" type="radio" name="scope" id="s-m1z1" data-kind="zone" data-m="1" aria-label="Zone 1·1" data-title="M1 Z1 Entré" data-sub="Inaktiv · mål 21,0°C"><input class="state" type="radio" name="scope" id="s-m1z2" data-kind="zone" data-m="1" aria-label="Zone 1·2" data-title="M1 Z2 Køkken" data-sub="Inaktiv · mål 21,0°C"><input class="state" type="radio" name="scope" id="s-m1z3" data-kind="zone" data-m="1" aria-label="Zone 1·3" data-title="M1 Z3 Spise" data-sub="Kalder på varme · mål 21,5°C"><input class="state" type="radio" name="scope" id="s-m1z4" data-kind="zone" data-m="1" aria-label="Zone 1·4" data-title="M1 Z4 Stue" data-sub="Inaktiv · mål 21,5°C"><input class="state" type="radio" name="scope" id="s-m1z5" data-kind="zone" data-m="1" aria-label="Zone 1·5" data-title="M1 Z5 Spisekrog" data-sub="Kalder på varme · mål 21,5°C"><input class="state" type="radio" name="scope" id="s-m1z6" data-kind="zone" data-m="1" aria-label="Zone 1·6" data-title="M1 Z6 Kontor" data-sub="Inaktiv · mål 21,0°C"><input class="state" type="radio" name="scope" id="s-m2" data-kind="manifold" data-m="2" aria-label="M2 1. sal" data-title="M2 1. sal" data-sub="5 zoner · 0 kalder · Fejl"><input class="state" type="radio" name="scope" id="s-m2z1" data-kind="zone" data-m="2" aria-label="Zone 2·1" data-title="M2 Z1 Soveværelse" data-sub="Inaktiv · mål 20,0°C"><input class="state" type="radio" name="scope" id="s-m2z2" data-kind="zone" data-m="2" aria-label="Zone 2·2" data-title="M2 Z2 Bad" data-sub="Inaktiv · mål 22,0°C"><input class="state" type="radio" name="scope" id="s-m2z3" data-kind="zone" data-m="2" aria-label="Zone 2·3" data-title="M2 Z3 Gang" data-sub="Fejl · mål 20,0°C"><input class="state" type="radio" name="scope" id="s-m2z4" data-kind="zone" data-m="2" aria-label="Zone 2·4" data-title="M2 Z4 Værelse" data-sub="Inaktiv · mål 21,0°C"><input class="state" type="radio" name="scope" id="s-m2z5" data-kind="zone" data-m="2" aria-label="Zone 2·5" data-title="M2 Z5 Kontor" data-sub="Inaktiv · mål 21,0°C"><input class="state" type="radio" name="scope" id="s-m3" data-kind="manifold" data-m="3" aria-label="M3 Anneks" data-title="M3 Anneks" data-sub="3 zoner · 0 kalder · Inaktiv"><input class="state" type="radio" name="scope" id="s-m3z1" data-kind="zone" data-m="3" aria-label="Zone 3·1" data-title="M3 Z1 Stue" data-sub="Inaktiv · mål 20,5°C"><input class="state" type="radio" name="scope" id="s-m3z2" data-kind="zone" data-m="3" aria-label="Zone 3·2" data-title="M3 Z2 Soveværelse" data-sub="Inaktiv · mål 19,5°C"><input class="state" type="radio" name="scope" id="s-m3z3" data-kind="zone" data-m="3" aria-label="Zone 3·3" data-title="M3 Z3 Bad" data-sub="Inaktiv · mål 22,0°C"><input class="state" type="radio" name="scope" id="s-m4" data-kind="manifold" data-m="4" aria-label="M4 Garage" data-title="M4 Garage" data-sub="2 zoner · 0 kalder · Inaktiv"><input class="state" type="radio" name="scope" id="s-m4z1" data-kind="zone" data-m="4" aria-label="Zone 4·1" data-title="M4 Z1 Værksted" data-sub="Inaktiv · mål 18,0°C"><input class="state" type="radio" name="scope" id="s-m4z2" data-kind="zone" data-m="4" aria-label="Zone 4·2" data-title="M4 Z2 Bil" data-sub="Ikke i brug · mål 12,0°C">
+<input class="state" type="checkbox" id="theme" aria-label="Skift lyst/mørkt tema">
+
+<div class="app">
+  <div class="top">
+    <div class="wrap">
+      <header class="header">
+        <details class="device">
+          <summary><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="var(--fg)"/><path d="M10 22V12M14 22V10M18 22V13M22 22V11" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/></svg><span class="name"><b>Lune Touch</b><small>Huskoordinator</small></span><span class="caret" aria-hidden="true"></span></summary>
+          <div class="device-menu">
+            <section class="device-about" aria-labelledby="device-about-h">
+              <h3 id="device-about-h">Om enhed</h3>
+              <dl class="kv">
+                <div><dt>Navn</dt><dd>Lune Touch</dd></div>
+                <div><dt>Placering</dt><dd>Huskoordinator</dd></div>
+                <div><dt>IP</dt><dd>192.168.1.186</dd></div>
+                <div><dt>MAC</dt><dd>—</dd></div>
+                <div><dt>Firmware</dt><dd>1.0.0</dd></div>
+                <div><dt>Driftstid</dt><dd>3 <small>dage</small> 4 <small>timer</small> 12 <small>min</small></dd></div>
+              </dl>
+              <button type="button" class="btn" data-action="copy-diag">Kopiér diagnostik</button>
+            </section>
+            <nav aria-label="Enheder">
+              <a href="#" aria-current="page"><i></i>Lune Touch<small>192.168.1.186 · denne enhed</small></a>
+            </nav>
+          </div>
+        </details>
+        <nav class="mode" aria-label="Tilstand">
+          <label for="m-dash"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14a8 8 0 0 1 16 0"/><path d="M12 14l4-4"/><circle cx="12" cy="14" r="1.2"/></svg>Dashboard</label>
+          <label for="m-conf"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>Konfiguration</label>
+        </nav>
+        <div class="tools">
+          <nav class="lang" aria-label="Sprog"><a href="/en/" hreflang="en" lang="en" title="English">EN</a><a href="/da/" hreflang="da" lang="da" title="Dansk" aria-current="true">DA</a></nav>
+          <label class="icon-btn theme-btn" for="theme" title="Skift lyst/mørkt tema">
+            <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg>
+            <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
+            <span class="sr-only">Skift lyst/mørkt tema</span>
+          </label>
+        </div>
+      </header>
+      <nav class="strip strip--tiers" aria-label="Vælg hus, manifold eller zone">
+          <label class="tile tile-sys" for="s-house" title="Hus">
+            <span class="tile-id">Hus</span>
+            <span class="temps">
+              <span class="temp flow">
+                <span class="temp-lab" title="Frem">Frem</span>
+                <span class="tile-val">21,2°</span>
+              </span>
+              <span class="temp ret">
+                <span class="temp-lab" title="Retur">Ret</span>
+                <span class="tile-val">8,4°</span>
+              </span>
+            </span>
+          </label>
+          <label class="tile tile-manifold" for="s-m1" aria-label="M1 Stueetage, 2 af 6 zoner kalder, ingen fejl" data-state="calling">
+            <span class="tile-id">M1</span>
+            <span class="tile-name">Stueetage</span>
+            <span class="tile-val">33,1° / 29,9°</span>
+            <span class="mini" aria-hidden="true"><i data-level="1" data-state="idle"></i><i data-level="1" data-state="idle"></i><i data-level="3" data-state="calling"></i><i data-level="2" data-state="idle"></i><i data-level="3" data-state="calling"></i><i data-level="1" data-state="idle"></i></span>
+          </label>
+          <label class="tile tile-manifold" for="s-m2" aria-label="M2 1. sal, 0 af 5 zoner kalder, 1 fejl" data-state="fault">
+            <span class="tile-id">M2</span>
+            <span class="tile-name">1. sal</span>
+            <span class="tile-val">31,2° / 28,4°</span>
+            <span class="mini" aria-hidden="true"><i data-level="1" data-state="idle"></i><i data-level="1" data-state="idle"></i><i data-level="0" data-state="fault"></i><i data-level="1" data-state="idle"></i><i data-level="1" data-state="idle"></i></span>
+          </label>
+          <label class="tile tile-manifold" for="s-m3" aria-label="M3 Anneks, 0 af 3 zoner kalder, ingen fejl">
+            <span class="tile-id">M3</span>
+            <span class="tile-name">Anneks</span>
+            <span class="tile-val">30,5° / 27,8°</span>
+            <span class="mini" aria-hidden="true"><i data-level="1" data-state="idle"></i><i data-level="1" data-state="idle"></i><i data-level="1" data-state="idle"></i></span>
+          </label>
+          <label class="tile tile-manifold" for="s-m4" aria-label="M4 Garage, 0 af 2 zoner kalder, ingen fejl">
+            <span class="tile-id">M4</span>
+            <span class="tile-name">Garage</span>
+            <span class="tile-val">28,0° / 26,2°</span>
+            <span class="mini" aria-hidden="true"><i data-level="1" data-state="idle"></i><i data-level="0" data-state="off"></i></span>
+          </label>
+        </nav>
+<nav class="substrip" data-m="1" style="--sub-n:6" aria-label="Zoner på Stueetage">
+
+          <label class="tile" for="s-m1z1" data-state="idle" data-level="1" aria-label="M1 Z1 Entré, Inaktiv, 20,9°C">
+            <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="tile-id">Z1</span>
+            <span class="tile-name">Entré</span>
+            <span class="tile-val">20,9°</span>
+          </label>
+          <label class="tile" for="s-m1z2" data-state="idle" data-level="1" aria-label="M1 Z2 Køkken, Inaktiv, 21,2°C">
+            <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="tile-id">Z2</span>
+            <span class="tile-name">Køkken</span>
+            <span class="tile-val">21,2°</span>
+          </label>
+          <label class="tile" for="s-m1z3" data-state="calling" data-level="3" aria-label="M1 Z3 Spise, Kalder på varme, 21,4°C">
+            <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="tile-id">Z3</span>
+            <span class="tile-name">Spise</span>
+            <span class="tile-val">21,4°</span>
+          </label>
+          <label class="tile" for="s-m1z4" data-state="idle" data-level="2" data-group="primary" aria-label="M1 Z4 Stue, Inaktiv, 21,1°C">
+            <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="tile-id">Z4</span>
+            <span class="tile-name">Stue</span>
+            <span class="tile-val">21,1°</span>
+          </label>
+          <label class="tile" for="s-m1z5" data-state="calling" data-level="3" data-group="member" aria-label="M1 Z5 Spisekrog, Kalder på varme, 21,0°C">
+            <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="tile-id">Z5</span>
+            <span class="tile-name">Spisekrog</span>
+            <span class="tile-val">21,0°</span>
+          </label>
+          <label class="tile" for="s-m1z6" data-state="idle" data-level="1" aria-label="M1 Z6 Kontor, Inaktiv, 20,6°C">
+            <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="tile-id">Z6</span>
+            <span class="tile-name">Kontor</span>
+            <span class="tile-val">20,6°</span>
+          </label>
+        </nav><nav class="substrip" data-m="2" style="--sub-n:5" aria-label="Zoner på 1. sal">
+
+          <label class="tile" for="s-m2z1" data-state="idle" data-level="1" aria-label="M2 Z1 Soveværelse, Inaktiv, 19,8°C">
+            <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="tile-id">Z1</span>
+            <span class="tile-name">Soveværelse</span>
+            <span class="tile-val">19,8°</span>
+          </label>
+          <label class="tile" for="s-m2z2" data-state="idle" data-level="1" aria-label="M2 Z2 Bad, Inaktiv, 22,1°C">
+            <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="tile-id">Z2</span>
+            <span class="tile-name">Bad</span>
+            <span class="tile-val">22,1°</span>
+          </label>
+          <label class="tile" for="s-m2z3" data-state="fault" data-level="0" aria-label="M2 Z3 Gang, Fejl, 20,2°C">
+            <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="tile-id">Z3</span>
+            <span class="tile-name">Gang</span>
+            <span class="tile-val">Fejl</span>
+          </label>
+          <label class="tile" for="s-m2z4" data-state="idle" data-level="1" aria-label="M2 Z4 Værelse, Inaktiv, 20,5°C">
+            <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="tile-id">Z4</span>
+            <span class="tile-name">Værelse</span>
+            <span class="tile-val">20,5°</span>
+          </label>
+          <label class="tile" for="s-m2z5" data-state="idle" data-level="1" aria-label="M2 Z5 Kontor, Inaktiv, 20,7°C">
+            <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="tile-id">Z5</span>
+            <span class="tile-name">Kontor</span>
+            <span class="tile-val">20,7°</span>
+          </label>
+        </nav><nav class="substrip" data-m="3" style="--sub-n:3" aria-label="Zoner på Anneks">
+
+          <label class="tile" for="s-m3z1" data-state="idle" data-level="1" aria-label="M3 Z1 Stue, Inaktiv, 20,4°C">
+            <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="tile-id">Z1</span>
+            <span class="tile-name">Stue</span>
+            <span class="tile-val">20,4°</span>
+          </label>
+          <label class="tile" for="s-m3z2" data-state="idle" data-level="1" aria-label="M3 Z2 Soveværelse, Inaktiv, 19,6°C">
+            <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="tile-id">Z2</span>
+            <span class="tile-name">Soveværelse</span>
+            <span class="tile-val">19,6°</span>
+          </label>
+          <label class="tile" for="s-m3z3" data-state="idle" data-level="1" aria-label="M3 Z3 Bad, Inaktiv, 22,0°C">
+            <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="tile-id">Z3</span>
+            <span class="tile-name">Bad</span>
+            <span class="tile-val">22,0°</span>
+          </label>
+        </nav><nav class="substrip" data-m="4" style="--sub-n:2" aria-label="Zoner på Garage">
+
+          <label class="tile" for="s-m4z1" data-state="idle" data-level="1" aria-label="M4 Z1 Værksted, Inaktiv, 16,8°C">
+            <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="tile-id">Z1</span>
+            <span class="tile-name">Værksted</span>
+            <span class="tile-val">16,8°</span>
+          </label>
+          <label class="tile" for="s-m4z2" data-state="off" data-level="0" aria-label="M4 Z2 Bil, Ikke i brug, 8,0°C">
+            <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="tile-id">Z2</span>
+            <span class="tile-name">Bil</span>
+            <span class="tile-val">Fra</span>
+          </label>
+        </nav>
+    </div>
+  </div>
+  <main class="content wrap">
+      <section class="view" id="v-dash-house" aria-labelledby="h-dash-house">
+        <header class="view-head"><h2 id="h-dash-house" data-bind="scope.title">Hus</h2><p data-bind="scope.sub">4 manifolds · 2 zoner kalder · 1 fejl</p></header>
+
+        <div class="panel alert" hidden>
+          <div class="panel-head"><h3>Varmekilde utilgængelig</h3></div>
+          <p class="note">Seneste skrivning mislykkedes. Hustemperaturen opdateres ikke før forbindelsen virker igen.</p>
+          <div class="panel-foot" style="justify-content:flex-start"><label class="btn" for="m-conf">Åbn varmekildeindstillinger</label></div>
+        </div>
+
+        <section class="panel c4">
+          <header class="panel-head"><h3>Husklima</h3></header>
+          <dl class="metrics">
+            <div class="metric"><dt>Hustemperatur</dt><dd data-bind="house.temp">21,2 <small>°C</small></dd></div>
+            <div class="metric"><dt>Ude</dt><dd data-bind="house.outdoor">8,4 <small>°C</small></dd></div>
+            <div class="metric"><dt>Komfortmål</dt><dd data-bind="house.target">21,0 <small>°C</small></dd></div>
+          </dl>
+        </section>
+
+        <section class="panel c5" data-hs-type="asgard">
+          <header class="panel-head"><h3>Varmekilde</h3><span class="badge ok">Forbundet</span></header>
+          <dl class="metrics">
+            <div class="metric"><dt>Seneste skrivning</dt><dd data-bind="heat.lastPush">2 min siden <small></small></dd></div>
+            <div class="metric"><dt>Sætpunkt</dt><dd data-bind="heat.setpoint">21,0 <small>°C</small></dd></div>
+          </dl>
+          <div class="hs-type-asgard sub">
+            <dl class="metrics">
+              <div class="metric"><dt>Frem</dt><dd data-bind="heat.supply">38,2 <small>°C</small></dd></div>
+              <div class="metric"><dt>Retur</dt><dd data-bind="heat.return">32,1 <small>°C</small></dd></div>
+            </dl>
+            <h4>Plan vs virkelighed</h4>
+            <div class="bars" style="--bars-n:12"><div class="bars-plot"><div class="col"><i class="plan" style="--plan:35"></i><i class="act" style="--act:27"></i></div><div class="col"><i class="plan" style="--plan:44"></i><i class="act" style="--act:37"></i></div><div class="col"><i class="plan" style="--plan:53"></i><i class="act" style="--act:47"></i></div><div class="col"><i class="plan" style="--plan:62"></i><i class="act" style="--act:57"></i></div><div class="col"><i class="plan" style="--plan:71"></i><i class="act" style="--act:67"></i></div><div class="col"><i class="plan" style="--plan:80"></i><i class="act" style="--act:72"></i></div><div class="col"><i class="plan" style="--plan:89"></i><i class="act" style="--act:82"></i></div><div class="col"><i class="plan" style="--plan:43"></i><i class="act" style="--act:37"></i></div><div class="col"><i class="plan" style="--plan:52"></i><i class="act" style="--act:47"></i></div><div class="col"><i class="plan" style="--plan:61"></i><i class="act" style="--act:57"></i></div><div class="col"><i class="plan" style="--plan:70"></i><i class="act" style="--act:62"></i></div><div class="col"><i class="plan" style="--plan:79"></i><i class="act" style="--act:72"></i></div></div><div class="bars-legend"><span><i class="lp"></i>Plan</span><span><i class="la"></i>Faktisk</span></div></div>
+          </div>
+          <div class="hs-type-http sub">
+            <dl class="kv"><div><dt>HTTP-status</dt><dd class="c-ok" data-bind="heat.httpStatus">200 OK</dd></div></dl>
+          </div>
+        </section>
+      </section>
+      <section class="view" id="v-dash-manifold" aria-labelledby="h-dash-manifold">
+        <header class="view-head"><h2 id="h-dash-manifold" data-bind="scope.title">M1 Stueetage</h2><p data-bind="scope.sub">6 zoner · 2 kalder · Kalder på varme</p></header>
+        <section class="panel c5">
+          <header class="panel-head"><h3>Manifold</h3></header>
+          <dl class="metrics">
+            <div class="metric"><dt>Frem °C</dt><dd>33,1 <small>°C</small></dd></div>
+            <div class="metric"><dt>Retur °C</dt><dd>29,9 <small>°C</small></dd></div>
+          </dl>
+          <p class="note">Note: Manifold-indstillinger ligger på hvert V6-board. Brug den parrede controller til ventil og balancing.</p>
+        </section>
+      </section>
+      <section class="view" id="v-dash-zone" aria-labelledby="h-dash-zone">
+        <header class="view-head"><h2 id="h-dash-zone" data-bind="scope.title">M1 Z3 Spise</h2><p data-bind="scope.sub">Kalder på varme · mål 21,5°C</p></header>
+        <section class="panel c5">
+          <header class="panel-head"><h3>Zone</h3><span class="badge hot">Kalder på varme</span></header>
+          <dl class="metrics">
+            <div class="metric"><dt>Hustemperatur</dt><dd>21,4 <small>°C</small></dd></div>
+            <div class="metric"><dt>Komfortmål</dt><dd>21,5 <small>°C</small></dd></div>
+          </dl>
+          <p class="note">Zonedetaljer udfyldes af koordinatoren ved kørsel. Denne referenceside viser layout og navigation.</p>
+        </section>
+      </section>
+      <section class="view" id="v-conf-house" aria-labelledby="h-conf-house">
+        <header class="view-head"><h2 id="h-conf-house" data-bind="scope.title">Hus</h2><p data-bind="scope.sub">4 manifolds · 2 zoner kalder · 1 fejl</p></header>
+        <header class="section-head"><span>Forbindelse</span></header>
+        <form class="panel c6 gated" data-save="heat_source">
+          <header class="panel-head"><h3>Varmekilde</h3><button class="help-btn" type="button" popovertarget="help-hs" style="anchor-name:--a-help-hs" aria-label="Hjælp: Varmekilde">?</button></header>
+          <div id="help-hs" popover class="help-pop" style="position-anchor:--a-help-hs"><p>Direkte forbindelse til varmekilden. Touch sender vægtet hustemperatur med et interval. Forkert vært eller skabeloner blokerer levering.</p></div>
+          <label class="switch"><span class="switch-text"><b>Aktivér varmekilde</b></span><input type="checkbox" role="switch" name="enabled" checked></label>
+          <div class="gated-body">
+            <input class="state" type="radio" name="hs_type" id="hs-http" value="http">
+            <input class="state" type="radio" name="hs_type" id="hs-asgard" value="asgard" checked>
+            <div class="seg" role="radiogroup" aria-label="Adaptertype">
+              <label for="hs-http"><span>Generic HTTP</span></label>
+              <label for="hs-asgard"><span>Asgard</span></label>
+            </div>
+            <fieldset class="hs-fields typed-fields" data-type="http">
+              <button class="help-btn" type="button" popovertarget="help-hs-http" style="anchor-name:--a-help-hs-http" aria-label="Hjælp: Generic HTTP">?</button>
+              <div id="help-hs-http" popover class="help-pop" style="position-anchor:--a-help-hs-http"><p>Generic HTTP bruger skabeloner til skriv- og læse-URL med {value}, {host}, {port} og {entity}. Metode er POST (fast i firmware). Timeout er 2500 ms (fast).</p></div><!-- TODO: POST method is fixed in firmware; no UI field. -->
+              <!-- TODO: HTTP timeout 2500 ms is fixed in firmware; not configurable here. -->
+              <div class="field row"><label for="http_host">Vært</label><input class="input" id="http_host" name="host" value="heat-bridge.local"></div>
+              <div class="field row"><label for="http_port">Port</label><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk port">−</button><span class="value"><input type="number" inputmode="decimal" id="http_port" name="http_port" value="80" min="1" max="65535" step="1"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Hæv port">+</button></div></div>
+              <div class="field row"><label for="http_push_interval_s">Sendeinterval</label><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk sendeinterval">−</button><span class="value"><input type="number" inputmode="decimal" id="http_push_interval_s" name="http_push_interval_s" value="60" min="5" max="3600" step="5"><span class="unit">s</span></span><button type="button" data-step="1" aria-label="Hæv sendeinterval">+</button></div></div>
+              <div class="field row"><label for="http_weighted_temperature_variable">Vægtet temperaturvariabel</label><input class="input" id="http_weighted_temperature_variable" name="weighted_temperature_variable" value="temperature_feedback_z1"></div>
+              <div class="field row"><label for="write_url_template">Skriv-URL-skabelon</label><input class="input" id="write_url_template" name="write_url_template" required placeholder="http://{{host}}/{{entity}}/set?value={{value}}"></div>
+              <div class="field row"><label for="read_url_template">Læse-URL-skabelon</label><input class="input" id="read_url_template" name="read_url_template" required placeholder="http://{{host}}/{{entity}}"></div>
+            </fieldset>
+            <fieldset class="hs-fields typed-fields" data-type="asgard">
+              <button class="help-btn" type="button" popovertarget="help-hs-asgard" style="anchor-name:--a-help-hs-asgard" aria-label="Hjælp: Asgard">?</button>
+              <div id="help-hs-asgard" popover class="help-pop" style="position-anchor:--a-help-hs-asgard"><p>Asgard bruger ESPHome number- og climate-enheder på den konfigurerede vært. Test læsning og test skrivning verificerer forbindelsen før gem.</p></div>
+              <div class="field row"><label for="asgard_host">Vært</label><input class="input" id="asgard_host" name="host" value="asgard.local"></div>
+              <div class="field row"><label for="asgard_port">Port</label><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk port">−</button><span class="value"><input type="number" inputmode="decimal" id="asgard_port" name="asgard_port" value="80" min="1" max="65535" step="1"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Hæv port">+</button></div></div>
+              <div class="field row"><label for="asgard_push_interval_s">Sendeinterval</label><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk sendeinterval">−</button><span class="value"><input type="number" inputmode="decimal" id="asgard_push_interval_s" name="asgard_push_interval_s" value="60" min="5" max="3600" step="5"><span class="unit">s</span></span><button type="button" data-step="1" aria-label="Hæv sendeinterval">+</button></div></div>
+              <div class="field row"><label for="asgard_weighted_temperature_variable">Vægtet temperaturvariabel</label><input class="input" id="asgard_weighted_temperature_variable" name="weighted_temperature_variable" value="temperature_feedback_z1"></div>
+              <div class="field row"><label for="climate_entity">Climate-enhed</label><input class="input" id="climate_entity" name="climate_entity" value="virtual_thermostat"></div>
+              <label class="switch"><span class="switch-text"><b>Synkroniser komfortmål</b></span><input type="checkbox" role="switch" name="target_sync_enabled" checked></label>
+              <label class="switch"><span class="switch-text"><b>Odin-plan</b></span><input type="checkbox" role="switch" name="odin_plan_enabled" checked></label>
+            </fieldset>
+          </div>
+          <footer class="panel-foot">
+            <button class="btn" type="button" data-action="hs-test-read">Test læsning</button>
+            <button class="btn" type="button" data-action="hs-test-push">Test skrivning</button>
+            <button class="btn primary" type="submit">Gem varmekilde</button>
+          </footer>
+        </form>
+
+        <header class="section-head"><span>Service</span></header>
+
+        <form class="panel c6" data-save="firmware">
+          <header class="panel-head"><h3>Firmware</h3><button class="help-btn" type="button" popovertarget="help-firmware" style="anchor-name:--a-help-firmware" aria-label="Hjælp: Firmware">?</button></header>
+          <div id="help-firmware" popover class="help-pop" style="position-anchor:--a-help-firmware"><p>Søg efter opdateringer, installer fra netværket, eller upload en .bin. Enheden genstarter, når flash er færdig.</p></div>
+          <dl class="kv">
+            <div><dt>Installeret</dt><dd data-bind="fw.installed">1.0.0</dd></div>
+            <div><dt>Seneste udgivelse</dt><dd data-bind="fw.latest">—</dd></div>
+          </dl>
+          <div class="actions">
+            <button class="btn" type="submit" name="action" value="check">Søg efter opdatering</button>
+            <button class="btn" type="submit" name="action" value="install" disabled>Installer seneste</button>
+          </div>
+          <div class="field"><label for="ota_file">Manuel .bin-upload</label><label class="input file" for="ota_file"><input class="sr-only" id="ota_file" name="ota_file" type="file" accept=".bin,.ota.bin"><span class="file-pick">Vælg fil</span><span class="file-name" data-empty="Ingen fil valgt">Ingen fil valgt</span></label></div>
+          <footer class="panel-foot"><button class="btn primary" type="submit" name="action" value="upload" disabled>Upload firmware</button></footer>
+        </form>
+
+        <form class="panel c6" data-save="backup">
+          <header class="panel-head"><h3>Sikkerhedskopi</h3><button class="help-btn" type="button" popovertarget="help-backup" style="anchor-name:--a-help-backup" aria-label="Hjælp: Sikkerhedskopi">?</button></header>
+          <div id="help-backup" popover class="help-pop" style="position-anchor:--a-help-backup"><p>Eksportér eller importér indstillinger som JSON. Hemmeligheder medtages aldrig. Import overskriver koordinator-indstillinger på denne enhed.</p></div>
+          <p class="note">Eksportér indstillinger som JSON. Hemmeligheder medtages aldrig.</p>
+          <div class="field"><label for="backup_file">Importfil</label><label class="input file" for="backup_file"><input class="sr-only" id="backup_file" name="backup_file" type="file" accept="application/json,.json"><span class="file-pick">Vælg fil</span><span class="file-name" data-empty="Ingen fil valgt">Ingen fil valgt</span></label></div>
+          <footer class="panel-foot">
+            <button class="btn" type="submit" name="action" value="export">Eksportér kopi</button>
+            <button class="btn primary" type="submit" name="action" value="import" disabled>Importér kopi</button>
+          </footer>
+        </form>
+      </section>
+      <section class="view" id="v-conf-manifold" aria-labelledby="h-conf-manifold">
+        <header class="view-head"><h2 id="h-conf-manifold" data-bind="scope.title">M1 Stueetage</h2><p data-bind="scope.sub">6 zoner · 2 kalder · Kalder på varme</p></header>
+        <form class="panel c5" data-save="manifold">
+          <header class="panel-head"><h3>Manifold</h3></header>
+          <div class="field row"><label for="manifold_name">Navn</label><input class="input" id="manifold_name" name="name" value="Stueetage"></div>
+          <p class="note">Manifold-indstillinger ligger på hvert V6-board. Brug den parrede controller til ventil og balancing.</p>
+          <footer class="panel-foot"><button class="btn primary" type="submit">Gem navn</button></footer>
+        </form>
+      </section>
+      <section class="view" id="v-conf-zone" aria-labelledby="h-conf-zone">
+        <header class="view-head"><h2 id="h-conf-zone" data-bind="scope.title">M1 Z3 Spise</h2><p data-bind="scope.sub">Kalder på varme · mål 21,5°C</p></header>
+        <form class="panel c5" data-save="zone">
+          <header class="panel-head"><h3>Zone</h3></header>
+          <div class="field row"><label for="zone_name">Navn</label><input class="input" id="zone_name" name="name" value="Spise"></div>
+          <label class="switch"><span class="switch-text"><b>Zone aktiv</b></span><input type="checkbox" role="switch" name="zone_enabled" checked></label>
+          <p class="note">Zone-motor og sensorer konfigureres på den V6-manifold, der ejer kredsløbet.</p>
+          <footer class="panel-foot"><button class="btn primary" type="submit">Gem zone</button></footer>
+        </form>
+      </section>
+  </main>
+</div>
+
+<script type="application/json" id="i18n">{"rt.savedOk":"Gemt","rt.saveFailed":"Gemning mislykkedes","state.calling":"Kalder på varme","state.idle":"Inaktiv","state.fault":"Fejl","state.off":"Ikke i brug","_dec":",","_lang":"da"}</script>
+<script src="/ui.js" defer></script>
+<script>
+(function(){
+document.addEventListener('click',function(e){
+  var b=e.target.closest&&e.target.closest('[data-step]');
+  if(b&&!b.disabled){var i=b.parentNode.querySelector('input');b.dataset.step>0?i.stepUp():i.stepDown();i.dispatchEvent(new Event('change',{bubbles:true}));}
+  var d=document.querySelector('.device[open]');if(d&&!d.contains(e.target))d.open=false;
+});
+document.addEventListener('submit',function(e){e.preventDefault();document.dispatchEvent(new CustomEvent('lune:save',{detail:{key:e.target.dataset.save,data:new FormData(e.target,e.submitter)}}));});
+})();
+</script>
+</body>
+</html>
