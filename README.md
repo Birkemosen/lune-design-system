@@ -62,6 +62,7 @@ Checkout som søskende-repo (`../lune-design-system`) eller sync ind.
 
 - **Lune V6** (`Birkemosen/lune`): `lds.yaml` → dette repo; `make design-tokens` / dashboard-build → `lune-v6/web/ui/`
 - **Lune Touch** (`Birkemosen/lune-coordinator`): hold `web/design-system/` synkron; byg med `make touch-ui`
+- **Lune Touch vægskærm (LVGL)**: `lds.yaml` (schema 2) → `make design-tokens` kører `tools/lds_display.py --install` og skriver `lune_theme.h`, `tokens.generated.yaml`, `lune_design_tokens.h`, brand-PNG'er og `logo.svg` fra `display` i `tokens/tokens.json` og `tokens/brand.json`. `make design-verify` = samme med `--check`. Erstatter det gamle `Birkemosen/lds`.
 
 ## Licens
 
