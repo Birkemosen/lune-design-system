@@ -236,6 +236,15 @@
   }
   .header > :last-child { justify-self: end; }
   .header .mode { background: var(--raised); }
+  /* Ved scroll (navbaren sidder fast øverst) bliver pillen kun så bred som indholdet.
+     Kræver scroll-state-queries; uden dem forbliver den bred. */
+  @media (min-width: 768px) {
+    .navbar-wrap { container-type: scroll-state; }
+    .header { interpolate-size: allow-keywords; transition: width var(--dur) var(--ease); }
+    @container scroll-state(stuck: top) {
+      .header { width: fit-content; margin-inline: auto; grid-template-columns: auto auto auto; gap: var(--space-5); }
+    }
+  }
   .top { position: static; }
 
   /* Mobil: ingen backdrop-filter på navbaren — et filter på en forfader
@@ -1666,7 +1675,7 @@
   
   }
   .muted { color: var(--muted); } .accent { color: var(--accent-ink); }
-  .c-info { color: var(--info); } .c-ok { color: var(--ok); } .c-warn { color: var(--warn); } .c-bad { color: var(--danger); } .c-violet { color: var(--violet); }
+  .c-heat { color: var(--accent-ink); } .c-info { color: var(--info); } .c-ok { color: var(--ok); } .c-warn { color: var(--warn); } .c-bad { color: var(--danger); } .c-violet { color: var(--violet); }
   :not(.badge):not(.msg).ok { color: var(--ok); } :not(.badge):not(.msg).bad { color: var(--danger); }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   [hidden] { display: none !important; }
