@@ -14,6 +14,8 @@ og udfolder kompakt-blokken (@compact:begin … @compact:end) to gange: under
 density.media (mus på bred skærm, medmindre data-density="comfortable") og
 for .app[data-density="compact"]. Blokken skrives med CSS-nesting relativt
 til .app; token-værdierne kommer fra density.compact i tokens.json.
+Projektspecifikke blokke (/* @only touch */ … /* @end */, flere id'er med komma)
+fjernes, når projektets config.id ikke står i listen.
 Alt andet i kildefilen er håndskrevet og fælles for begge projekter.
 """
 import json, gzip, sys, pathlib, argparse, re, math
@@ -343,6 +345,20 @@ def state_css(cfg):
 
     return "\n".join(L)
 
+ONLY_RE = re.compile(r"[ \t]*/\* @only ([a-z0-9_,]+) \*/\n(.*?)[ \t]*/\* @end \*/\n", re.S)
+
+def only_css(src, project_id):
+    """Behold /* @only id[,id] */ … /* @end */-blokke for project_id; fjern resten.
+    project_id=None beholder alle (referencesiden). Blokke kan ikke indlejres."""
+    def sub(m):
+        if "/* @only" in m.group(2):
+            sys.exit("@only-blokke kan ikke indlejres")
+        return m.group(2) if project_id is None or project_id in m.group(1).split(",") else ""
+    out = ONLY_RE.sub(sub, src)
+    if "/* @only" in out or "/* @end */" in out:
+        sys.exit("@only uden matchende /* @end */ i css/lune-ui.src.css")
+    return out
+
 def compact_css(src):
     """Expand the hand-written compact block twice (media + forced attribute)."""
     a_tag, b_tag = "/* @compact:begin */", "/* @compact:end */"
@@ -377,6 +393,14 @@ def contrast_report():
             rows.append((fg, bg, th, r, need, r >= need))
     return rows
 
+def build_css(cfg, project_id="cfg"):
+    """Færdig CSS for et projekt. project_id=None beholder alle @only-blokke."""
+    pid = cfg["id"] if project_id == "cfg" else project_id
+    src = only_css((ROOT/"css/lune-ui.src.css").read_text(encoding="utf-8"), pid)
+    css = compact_css(fill(fill(src, "tokens", tokens_css()), "state", state_css(cfg)))
+    return css.replace("Kildefil. Den færdige CSS pr. projekt bygges med tools/lds_build.py.",
+                       f"Bygget til {cfg['project']} af tools/lds_build.py — redigér css/lune-ui.src.css, ikke denne fil.")
+
 # ------------------------------------------------------------------ main ----
 def main():
     ap = argparse.ArgumentParser()
@@ -397,11 +421,7 @@ def main():
     cfg_path = pathlib.Path(a.config)
     cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
     validate_cfg(cfg, str(cfg_path))
-
-    src = (ROOT/"css/lune-ui.src.css").read_text(encoding="utf-8")
-    css = compact_css(fill(fill(src, "tokens", tokens_css()), "state", state_css(cfg)))
-    css = css.replace("Kildefil. Den færdige CSS pr. projekt bygges med tools/lds_build.py.",
-                      f"Bygget til {cfg['project']} af tools/lds_build.py — redigér css/lune-ui.src.css, ikke denne fil.")
+    css = build_css(cfg)
     out = pathlib.Path(a.out)/cfg["id"]; out.mkdir(parents=True, exist_ok=True)
     (out/"lune-ui.css").write_text(css, encoding="utf-8")
     gz = gzip.compress(css.encode(), 9, mtime=0); (out/"lune-ui.css.gz").write_bytes(gz)

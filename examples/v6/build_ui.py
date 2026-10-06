@@ -21,6 +21,7 @@ Sprogskift kræver ingen JavaScript: vælgeren er almindelige links til
 standardsprog (se lune_ui_pick() i web_ui.h).
 """
 import argparse, gzip, json, math, os, random, sys, pathlib
+LDS_DEFS = (pathlib.Path(__file__).resolve().parent.parent.parent/"css"/"lds-svg-defs.html").read_text(encoding="utf-8")  # lds-svg-defs
 
 ROOT = pathlib.Path(__file__).parent
 
@@ -53,7 +54,7 @@ Z = [
  (6,"Soveværelse",17.8,19.0,"fault",0,22.1,None,"n","ble",14.0,200,"ALUPEX 16mm"),
 ]
 PIPES=["PEX 12mm","PEX 14mm","PEX 16mm","PEX 17mm","PEX 18mm","PEX 20mm","ALUPEX 16mm","ALUPEX 20mm","Unknown"]
-def level(z): return 0 if z[4] in ("fault","off") else max(1, math.ceil(z[5]/20))
+def level(z): return 0 if z[4] in ("fault","off") else max(1, math.ceil(z[5]/10))   # 10 segmenter á 10 %
 def tid(z): return "Z4–5" if z[7]=="primary" else f"Z{z[0]}"
 def rid(z): return "Z5" if z[7]=="member" else tid(z)
 
@@ -69,6 +70,44 @@ def history(z):
     d=t-tmp[-1]
     for j in range(8): tmp[-8+j]+=d*(j+1)/8
     return tgt,tmp
+
+
+def zone_series(z):
+    """Eksempeldata til zonegrafen: 48 halvtimer bagud (fra kl. 14 i går) + 12 halvtimer frem (til kl. 20).
+    Returnerer (temp, mål, ventil%, preload-flag) for fortiden og (prognose, lav, høj, planlagt mål) for fremtiden."""
+    random.seed(z[0]*13)
+    i,n,t,tg,st=z[:5]
+    temp=[];sp=[];valve=[];pre=[]; cur=tg-0.4
+    for k in range(48):
+        h=(14+k/2)%24; night=(h>=22 or h<6)
+        p = (i in (1,5)) and (12 <= k < 34)             # preload i går kl. 20 → i dag kl. 07
+        g = tg - (1.5 if (night and i in (2,6)) else 0.5 if night else 0) + (0.4 if p else 0)
+        sp.append(g); pre.append(p)
+        cur += (g-cur)*0.16 + random.uniform(-.07,.07)
+        if st=="fault" and k>=38: cur -= 0.22
+        temp.append(cur)
+        v = 0 if (st=="fault" and k>=36) else max(0, min(100, (g-cur)*140 + 25 + random.uniform(-6,6)))
+        valve.append(v)
+    d=t-temp[-1]
+    for j in range(8): temp[-8+j]+=d*(j+1)/8
+    fut,lo,hi = project(temp, [tg]*12)
+    psp=[tg]*12
+    return temp,sp,valve,pre,fut,lo,hi,psp
+
+def project(temp, sp_plan, n=8, phi=0.85):
+    """Dæmpet lineær fremskrivning (DESIGN.md 5.9): mindste kvadrater over de seneste n halvtimer,
+    hældningen dæmpes med phi pr. halvtime, klippes til [mål−3,0 ; mål+1,5], bånd ±(σ·√k + 0,05)."""
+    ys=temp[-n:]; xs=list(range(n)); mx=sum(xs)/n; my=sum(ys)/n
+    b=sum((x-mx)*(y-my) for x,y in zip(xs,ys))/sum((x-mx)**2 for x in xs)
+    a=my-b*mx; res=[y-(a+b*x) for x,y in zip(xs,ys)]
+    sigma=max((sum(r*r for r in res)/(n-2))**0.5, 0.05)
+    fut=[];lo=[];hi=[]; acc=0.0; now=temp[-1]
+    for k in range(1,13):
+        acc+=phi**k; v=now+b*acc
+        v=min(max(v, sp_plan[k-1]-3.0), sp_plan[k-1]+1.5)
+        u=sigma*k**0.5+0.05
+        fut.append(v); lo.append(v-u); hi.append(v+u)
+    return fut,lo,hi
 
 def forecast_data():
     random.seed(11); temp=[]; wind=[]
@@ -104,72 +143,42 @@ def render(T, langs, lang_urls, css_href, inline_css=None):
         return f'<div class="seg" role="radiogroup" aria-label="{label}">'+"".join(f'<label><input type="radio" name="{name}" value="{v}"{" checked" if v==sel else ""}><span>{t}</span></label>' for v,t in opts)+'</div>'
     def row(id_,label,control): return f'<div class="field row"><label for="{id_}">{label}</label>{control}</div>'
     def rstep(id_,label,*a,**k): return row(id_,label,stepper(id_,*a,label=label,**k))
-    def probes(sel,name,include_none=True):
-        none = f'<option value=""{"" if sel else " selected"}>{T("common.none")}</option>' if include_none else ""
-        opts = "".join(f'<option value="{k}"{" selected" if k==sel else ""}>{T("csys.probe",n=k)}</option>' for k in range(1,9))
-        return f'<select class="select" id="{name}" name="{name}">{none}{opts}</select>'
-    def file_input(name, accept):
-        return (f'<label class="input file" for="{name}">'
-                f'<input class="sr-only" id="{name}" name="{name}" type="file" accept="{accept}">'
-                f'<span class="file-pick">{T("common.chooseFile")}</span>'
-                f'<span class="file-name" data-empty="{T("common.noFile")}">{T("common.noFile")}</span></label>')
-    def metric(label,val,unit,bind="",cls=""):
+    def probes(sel,name): return f'<select class="select" id="{name}" name="{name}">'+"".join(f'<option value="{k}"{" selected" if k==sel else ""}>{T("csys.probe",n=k)}</option>' for k in range(1,9))+'</select>'
+    def metric(label,val,unit,bind=""):
         b=f' data-bind="{bind}"' if bind else ""
-        c=f' {cls}' if cls else ""
-        u=f' <small>{unit}</small>' if unit else ""
-        return f'<div class="metric{c}"><dt>{label}</dt><dd{b}>{val}{u}</dd></div>'
+        return f'<div class="metric"><dt>{label}</dt><dd{b}>{val} <small>{unit}</small></dd></div>'
     def title(z): return f"{tid(z)} {z[1]}"
-    def help_btn(hid, topic):
-        return f'<button class="help-btn" type="button" popovertarget="{hid}" style="anchor-name:--a-{hid}" aria-label="{T("help.aria", topic=topic)}">?</button>'
-    def help_pop(hid, body_key, more=""):
-        link=(f'<a href="https://github.com/Birkemosen/lune/blob/main/{more}" '
-              f'target="_blank" rel="noopener noreferrer">{T("help.readMore")}</a>') if more else ""
-        return f'<div id="{hid}" popover class="help-pop" style="position-anchor:--a-{hid}"><p>{T(body_key)}</p>{link}</div>'
-    def confirm_pop(pid, trigger_key, title_key, note_key, value, confirm_key, attrs="", style_extra="", **kw):
-        """Bekræftelses-popover inde i formularen. Trigger slutter med …; submit sender name=action."""
-        style=f' style="{style_extra}"' if style_extra else ""
-        attr=f" {attrs}" if attrs else ""
-        return (
-            f'<button class="btn danger" type="button" popovertarget="{pid}"{style}{attr}>{T(trigger_key, **kw)}</button>'
-            f'<div id="{pid}" popover class="confirm-pop" role="alertdialog" aria-labelledby="{pid}-t" aria-describedby="{pid}-d">'
-            f'<p class="confirm-title" id="{pid}-t">{T(title_key, **kw)}</p>'
-            f'<p id="{pid}-d">{T(note_key, **kw)}</p>'
-            f'<div class="confirm-actions">'
-            f'<button class="btn" type="button" popovertarget="{pid}" popovertargetaction="hide" autofocus>{T("common.cancel")}</button>'
-            f'<button class="btn danger-solid" type="submit" name="action" value="{value}" popovertarget="{pid}" popovertargetaction="hide">{T(confirm_key, **kw)}</button>'
-            f'</div></div>'
-        )
-    def ss_id(key): return "ss-" + key.replace("/", "-")
-    def foot_save(key, primary, left=""):
-        """Gem-footer: status + Fortryd + primær. `left` er valgfri confirm/note."""
-        status=f'<span class="save-status" id="{ss_id(key)}" aria-live="polite"></span>'
-        undo=f'<button type="reset" class="btn">{T("common.undo")}</button>'
-        btn=f'<button class="btn primary" type="submit">{primary}</button>'
-        if left:
-            return f'<footer class="panel-foot"><div class="foot-start">{left}{status}</div>{undo}{btn}</footer>'
-        return f'<footer class="panel-foot">{status}{undo}{btn}</footer>'
+    CL='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg>'          # minus
+    CR='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>'  # plus
+    def confirm(pid, open_label, title, body, act_label, value, extra_style=""):
+        """Bekræftelses-popover (LDS 5.16). Ligger i formularen, så Nulstil sender den med name=action."""
+        return (f'<button class="btn danger" type="button" popovertarget="{pid}"{extra_style}>{open_label}</button>'
+                f'<div id="{pid}" popover class="confirm-pop" role="alertdialog" aria-labelledby="{pid}-t" aria-describedby="{pid}-d">'
+                f'<h4 id="{pid}-t">{title}</h4><p id="{pid}-d">{body}</p>'
+                f'<div class="actions"><button class="btn" type="button" popovertarget="{pid}" popovertargetaction="hide" autofocus>{T("common.cancel")}</button>'
+                f'<button class="btn danger-solid" type="submit" name="action" value="{value}">{act_label}</button></div></div>')
 
     # ---- strimmel
+    def dev_chip(z):
+        """Afvigelse fra mål som chip i 5 trin (scale-cold-warm): ≤−1, ≤−0,3, ±0,3, <+1, ≥+1."""
+        if z[4]=="fault": return ""
+        d=z[2]-z[3]; k=1 if d<=-1 else 2 if d<=-0.3 else 3 if d<0.3 else 4 if d<1 else 5
+        sign="+" if d>0.05 else "−" if d<-0.05 else "±"
+        return f'<span class="tile-dev" data-dev="{k}" data-bind="z{z[0]}.dev">{sign}{T.num(abs(d))}°</span>'
     tiles="".join(f'''
-          <label class="tile" for="s-z{z[0]}" data-state="{z[4]}" data-level="{level(z)}"{f' data-group="{z[7]}"' if z[7] else ''}{' data-learn="needed" title="'+T("common.needsLearning")+'"' if z[0]==2 else ''}>
-            <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+          <label class="tile" for="s-z{z[0]}" data-state="{z[4]}" data-level="{level(z)}"{f' data-group="{z[7]}"' if z[7] else ''}>
+            <span class="lvl" aria-hidden="true">{"<i></i>"*10}</span>
+            <span class="tile-pct" data-bind="z{z[0]}.valve">{0 if z[4] in ("fault","off") else z[5]} %</span>
             <span class="tile-id">{tid(z)}</span>
             <span class="tile-name" data-bind="z{z[0]}.name">{z[1]}</span>
-            <span class="tile-val" data-bind="z{z[0]}.temp">{T("tile.fault") if z[4]=="fault" else T("tile.learning") if z[4]=="learning" else T.num(z[2])+"°"}</span>
+            {dev_chip(z)}
+            <span class="tile-val" data-bind="z{z[0]}.temp">{T("tile.fault") if z[4]=="fault" else T.num(z[2])+"°"}</span>
           </label>''' for z in Z)
     strip=f'''<nav class="strip" aria-label="{T("strip.label")}">
-          <label class="tile tile-sys" for="s-sys" title="{T("scope.manifold")}">
-            <span class="tile-id">{T("scope.manifold")}</span>
-            <span class="temps">
-              <span class="temp flow">
-                <span class="temp-lab" title="{T("m.supply")}">{T("m.supplyShort")}</span>
-                <span class="tile-val" data-bind="strip.flow">{T.num(34.2)}°</span>
-              </span>
-              <span class="temp ret">
-                <span class="temp-lab" title="{T("m.return")}">{T("m.returnShort")}</span>
-                <span class="tile-val" data-bind="strip.return">{T.num(29.8)}°</span>
-              </span>
-            </span>
+          <label class="tile tile-sys" for="s-sys">
+            <b>{T("scope.manifold")}</b>
+            <span class="big" data-bind="manifold.flowret">{T.num(34.2)}° / {T.num(29.8)}°</span>
+            <small data-bind="manifold.dtstate">{T("sys.dtstate",dt=T.num(4.4))}</small>
           </label>{tiles}
         </nav>'''
 
@@ -234,33 +243,35 @@ def render(T, langs, lang_urls, css_href, inline_css=None):
     comfort="".join(f'''
             <label for="s-z{z[0]}" data-state="{z[4]}">
               <span class="id">{rid(z)}</span>
-              <span class="name" data-bind="z{z[0]}.name">{z[1]}</span>
-              <span class="val" data-bind="z{z[0]}.comfort">—</span>
-              <svg class="spark" viewBox="0 0 240 40" preserveAspectRatio="none" aria-hidden="true" data-bind-spark="z{z[0]}"></svg>
+              <span class="name">{z[1]}</span>
+              <span class="val">{f'<b class="bad">{ST["fault"]}</b>' if z[4]=='fault' else f'<b class="{"c-warn" if z[3]-z[2]>0.5 else ""}">{T.num(z[2])}°</b> / {T.num(z[3])}°'}</span>
+              {spark(z)}
             </label>''' for z in Z)
-    bal="".join(f'<tr data-bind-row="bal.z{z[0]}"><td data-bind="bal.z{z[0]}.id">{rid(z)}</td><td class="num" data-bind="bal.z{z[0]}.prior">—</td><td class="num c-violet" data-bind="bal.z{z[0]}.learned">—</td><td class="num" data-bind="bal.z{z[0]}.effective">—</td></tr>' for z in Z)
+    balrows=[("1,00","1,08","1,08"),("0,85","0,81","0,81"),("0,40","0,44","0,44"),("1,00","0,97","0,97"),("1,00","0,97","0,97"),("0,85","—","0,85")]
+    bal="".join(f'<tr><td>{rid(z)}</td>'+"".join(f'<td class="num{" c-violet" if j==1 else ""}">{v.replace(",",T.meta("_dec"))}</td>' for j,v in enumerate(r))+'</tr>' for z,r in zip(Z,balrows))
+    faultz=Z[5]
     dash_sys=f'''
       <section class="view" id="v-dash-sys" aria-labelledby="h-dash-sys">
-        <header class="view-head"><h2 id="h-dash-sys">{T("scope.manifold")}</h2><p data-bind="dash.sys.sub">{T("dash.sys.sub",zones=6,calling=0,faults=0)}</p></header>
+        <header class="view-head"><h2 id="h-dash-sys">{T("scope.manifold")}</h2><p>{T("dash.sys.sub",zones=6,calling=3,faults=1)}</p></header>
 
-        <div class="panel alert" data-bind-show="dash.alert" hidden>
-          <div class="panel-head"><h3 data-bind="dash.alertTitle">{T("alert.zoneFault",zone="—")}</h3></div>
+        <div class="panel alert">
+          <div class="panel-head"><h3>{T("alert.zoneFault",zone=title(faultz))}</h3></div>
           <p class="note">{T("alert.zoneFaultBody")}</p>
-          <div class="panel-foot" style="justify-content:flex-start"><label class="btn" data-bind-for="dash.alertZone" for="s-z1">{T("common.open",x="—")}</label></div>
+          <div class="panel-foot" style="justify-content:flex-start"><label class="btn" for="s-z6">{T("common.open",x="Z6")}</label></div>
         </div>
 
         <section class="panel c5">
-          <header class="panel-head"><h3>{T("heat.title")}</h3><span class="badge" data-bind="heat.badge">{T("state.idle")}</span></header>
+          <header class="panel-head"><h3>{T("heat.title")}</h3><span class="badge hot">{T("badge.calling")}</span></header>
           <dl class="metrics">
             {metric(T("m.supply"),T.num(34.2),"°C","manifold.flow")}
             {metric(T("m.return"),T.num(29.8),"°C","manifold.return")}
             {metric(T("m.dt"),T.num(4.4),"K","manifold.dt")}
             {metric(T("m.opening"),"32","%","manifold.opening")}
           </dl>
-          <div class="bar" style="--v:0%" role="meter" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="{T("m.openingAria")}"><i></i></div>
+          <div class="bar" style="--v:32%" role="meter" aria-valuenow="32" aria-valuemin="0" aria-valuemax="100" aria-label="{T("m.openingAria")}"><i></i></div>
           <div class="sub trend-wrap">
             <h4>{T("trend.title")} <span class="legend"><i class="lf"></i>{T("m.supply")}<i class="lr"></i>{T("m.return")}</span></h4>
-            <svg class="trend" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="{T("trend.aria")}" data-bind-trend="manifold"></svg>
+            {trend()}
             <div class="axis" aria-hidden="true"><span>−24 {H}</span><span>−12 {H}</span><span>{T("trend.now")}</span></div>
           </div>
         </section>
@@ -271,9 +282,10 @@ def render(T, langs, lang_urls, css_href, inline_css=None):
           </div>
         </section>
 
+{forecast_panel()}
 
         <section class="panel c6">
-          <header class="panel-head"><h3>{T("bal.title")}</h3><span class="badge violet" data-bind="bal.mode">{T("bal.adaptive")}</span></header>
+          <header class="panel-head"><h3>{T("bal.title")}</h3><span class="badge violet">{T("bal.adaptive")}</span></header>
           <div class="table-wrap"><table class="table">
             <thead><tr><th>{T("bal.zone")}</th><th class="num">{T("bal.prior")}</th><th class="num">{T("bal.learned")}</th><th class="num">{T("bal.effective")}</th></tr></thead>
             <tbody>{bal}</tbody>
@@ -281,14 +293,98 @@ def render(T, langs, lang_urls, css_href, inline_css=None):
         </section>
 
         <section class="panel c6">
-          <header class="panel-head"><h3>{T("dev.title")}</h3><span class="badge" data-bind="dev.badge">{T("dev.online")}</span></header>
+          <header class="panel-head"><h3>{T("dev.title")}</h3><span class="badge ok">{T("dev.online")}</span></header>
           <dl class="metrics">
             {metric("Wi-Fi","−58","dBm","wifi.rssi")}
-            {metric(T("dev.uptime"),f'6 <small>{T("common.days")}</small> 4 <small>{T("common.hours")}</small> 12 <small>{T("common.minutes")}</small>',"","sys.uptime")}
+            {metric(T("dev.uptime"),"6",T("common.days"),"sys.uptime")}
           </dl>
-          <pre class="log" data-bind="log" aria-live="polite" lang="en"></pre>
+          <pre class="log" data-bind="log" aria-live="polite" lang="en">14:05  <span class="info">forecast</span> fetched, max wind 11 m/s
+14:05  <span class="violet">balancing</span> Z3 0.42 → 0.44
+14:06  <span class="bad">motor Z6</span> end-stop timeout (45 s)
+14:06  <span class="bad">zone Z6</span> FAULT, valve closed</pre>
         </section>
       </section>'''
+
+
+    def zone_chart(z):
+        temp,sp,valve,pre,fut,lo,hi,psp = zone_series(z)
+        W,Hh = 600,120; N=60                          # 30 timer á 20 px; nu ved x=480
+        X=lambda k: round(k*W/N,1)
+        allv = temp+sp+fut+lo+hi+psp
+        lo_,hi_ = min(allv), max(allv); mid=(lo_+hi_)/2; span=max(hi_-lo_+0.4, 3.0)
+        ymin, ymax = mid-span/2, mid+span/2
+        Y=lambda v: round(Hh-(v-ymin)/(ymax-ymin)*Hh,1)
+        def step(vals, k0):
+            pts=[]
+            for j,v in enumerate(vals):
+                k=k0+j
+                if j and v!=vals[j-1]: pts.append(f"{X(k)},{Y(vals[j-1])}")
+                pts.append(f"{X(k)},{Y(v)}")
+            return pts
+        tp=[f"{X(k)},{Y(v)}" for k,v in enumerate(temp)]
+        spp=step(sp,0)
+        dev=" ".join(tp)+" "+" ".join(reversed(spp))
+        now=X(47)
+        fp=[f"{now},{Y(temp[-1])}"]+[f"{X(47+k)},{Y(v)}" for k,v in enumerate(fut,1)]
+        band=" ".join([f"{now},{Y(temp[-1])}"]+[f"{X(47+k)},{Y(v)}" for k,v in enumerate(hi,1)]+[f"{X(47+k)},{Y(v)}" for k,v in reversed(list(enumerate(lo,1)))])
+        pspp=step([sp[-1]]+psp,47)
+        # preload-bånd (fortid)
+        bands=""; k=0
+        while k<48:
+            if pre[k]:
+                k0=k
+                while k<48 and pre[k]: k+=1
+                bands+=f'<rect class="pre" x="{X(k0)}" y="0" width="{X(k)-X(k0)}" height="{Hh}"/>'
+            k+=1
+        grid="".join(f'<line class="gl" x1="0" x2="{W}" y1="{y}" y2="{y}"/>' for y in (0,Hh/2,Hh))
+        days=f'<line class="day" x1="{X(20)}" x2="{X(20)}" y1="0" y2="{Hh}"/>'   # midnat
+        svg=(f'<svg viewBox="0 0 {W} {Hh}" preserveAspectRatio="none" data-bind-zchart="z{z[0]}">'
+             f'{grid}{days}{bands}<rect class="future" x="{now}" y="0" width="{W-now}" height="{Hh}"/>'
+             f'<polygon class="dev" points="{dev}"/>'
+             f'<polygon class="band" points="{band}"/>'
+             f'<polyline class="sp" points="{" ".join(spp)}"/>'
+             f'<polyline class="sp plan" points="{" ".join(pspp)}"/>'
+             f'<polyline class="t" points="{" ".join(tp)}"/>'
+             f'<polyline class="fc" points="{" ".join(fp)}"/>'
+             f'<line class="now" x1="{now}" x2="{now}" y1="0" y2="{Hh}"/></svg>')
+        vbars="".join(f'<rect x="{X(k)+1}" y="{round(18-v/100*18,1)}" width="{round(W/N-2,1)}" height="{round(v/100*18,1)}"/>' for k,v in enumerate(valve))
+        vsvg=f'<svg viewBox="0 0 {W} 18" preserveAspectRatio="none" class="zc-valve-svg" aria-hidden="true">{vbars}</svg>'
+        devs=[a-b for a,b in zip(temp,sp)]; avg=sum(devs)/len(devs)
+        under=sum(1 for d in devs if d<-0.3)*0.5
+        hh=int(under); mm=int(round((under-hh)*60))
+        Hs=T.meta("_h")
+        ylab="".join(f"<span>{T.num(v)}°</span>" for v in (ymax, (ymax+ymin)/2, ymin))
+        xl=[f"−24 {Hs}","−18","−12","−6",T("zchart.now"),f"+6 {Hs}"]
+        xpos=[round(max(0,47-48+k*12)/N*100,2) for k in range(4)] + [round(47/N*100,2), round(59/N*100,2)]   # følger datapunkterne: nu = punkt 47
+        xlab="".join(f'<span style="left:{p}%"{" class=n" if j==4 else ""}>{l}</span>' for j,(l,p) in enumerate(zip(xl,xpos)))
+        fault=z[4]=="fault"
+        sgn=lambda v: ("+" if v>0.05 else "−" if v<-0.05 else "")+T.num(abs(v))
+        return f'''
+        <section class="panel" data-state="{z[4]}" aria-labelledby="zc-h-{z[0]}">
+          <header class="panel-head"><h3 id="zc-h-{z[0]}">{T("zchart.title")}</h3><p>{T("zchart.sub")}</p></header>
+          <dl class="metrics">
+            {metric(T("zchart.avgDev"), sgn(avg), "°C")}
+            {metric(T("zchart.under"), f"{hh} {Hs} {mm:02d}", "min")}
+            {metric(T("zchart.expected",time="20:00"), T.num(fut[-1]), "°C")}
+            {metric(T("zchart.valveAvg"), str(round(sum(valve)/len(valve))), "%")}
+          </dl>
+          <div class="zc">
+            <div class="zc-y" aria-hidden="true">{ylab}</div>
+            <div class="zc-plot" role="img" aria-label="{T("zchart.aria", avg=sgn(avg), exp=T.num(fut[-1]))}">{svg}</div>
+            <div class="zc-vlabel" aria-hidden="true">{T("zchart.valve")}</div>
+            <div class="zc-valve">{vsvg}</div>
+            <div class="zc-x" aria-hidden="true">{xlab}</div>
+          </div>
+          <div class="fc-legend" aria-hidden="true">
+            <span><i class="lt"></i>{T("legend.temp")}</span>
+            <span><i class="lsp"></i>{T("legend.target")}</span>
+            <span><i class="lfc"></i>{T("zchart.lForecast")}</span>
+            <span><i class="lpre"></i>{T("fc.lPre")}</span>
+            <span><i class="lvalve"></i>{T("zchart.valve")}</span>
+          </div>
+          <p class="note">{T("zchart.projHint")}</p>
+          {f'<p class="msg bad"><span><b>{T("zchart.faultStrong")}</b> {T("zchart.fault")}</span></p>' if fault else ''}
+        </section>'''
 
     # ---- dashboard: zone
     def dash_zone(z):
@@ -296,21 +392,20 @@ def render(T, langs, lang_urls, css_href, inline_css=None):
         member=grp=="member"
         sub=ST[st]+(" · "+T("zdash.follows",z="Z4") if member else " · "+T("zdash.primary",g="Z4–5") if grp=="primary" else "")
         alert=f'''
-        <form class="panel alert" data-save="zone/{i}/recovery" data-bind-show="z{i}.fault" hidden>
+        <form class="panel alert" data-save="zone/{i}/recovery">
           <div class="panel-head"><h3>{T("zdash.faultTitle")}</h3></div>
           <p class="note">{T("zdash.faultBody")}</p>
-          <div class="panel-foot" style="justify-content:flex-start"><button class="btn primary" type="submit" name="action" value="reset_fault">{T("common.resetFault")}</button></div>
-        </form>'''
+          <div class="panel-foot" style="justify-content:flex-start"><button class="btn" type="submit" name="action" value="reset_fault">{T("common.resetFault")}</button></div>
+        </form>''' if st=="fault" else ""
         dis=' disabled' if member else ''
-        badge_cls={"calling":"badge hot","idle":"badge","fault":"badge bad","blocked":"badge warn","learning":"badge violet","off":"badge"}.get(st,"badge")
-        badge=f'<span class="{badge_cls}" data-bind="z{i}.badge">{ST.get(st,ST["idle"])}</span>'
-        pre=f'<p class="msg info" data-bind-show="z{i}.preload" hidden><span><b>{T("zdash.preloadStrong")}</b> <span data-bind="z{i}.preload">{T("zdash.preload",offset="+0,0")}</span></span></p>'
-        foot=(f'<footer class="panel-foot"><span class="note">{T("zdash.memberNote",m="Z5",p="Z4")}</span><label class="btn" for="s-z4">{T("common.open",x="Z4–5")}</label></footer>'
-              if member else '')
+        badge={"calling":f'<span class="badge hot">{ST["calling"]}</span>',"idle":f'<span class="badge">{ST["idle"]}</span>',"fault":f'<span class="badge bad">{ST["fault"]}</span>'}[st]
+        pre=f'<p class="msg info"><span><b>{T("zdash.preloadStrong")}</b> {T("zdash.preload")}</span></p>' if i in (1,5) else ""
+        foot=(f'<span class="note">{T("zdash.memberNote",m="Z5",p="Z4")}</span><label class="btn" for="s-z4">{T("common.open",x="Z4–5")}</label>'
+              if member else f'<button class="btn primary" type="submit">{T("zdash.saveTarget")}</button>')
         ta=T("zdash.targetAria")
         return f'''
       <section class="view" id="v-dash-z{i}" aria-labelledby="h-dash-z{i}">
-        <header class="view-head"><h2 id="h-dash-z{i}"><span data-bind="z{i}.title">{title(z)}</span></h2><p data-bind="z{i}.sub">{sub}</p></header>{alert}
+        <header class="view-head"><h2 id="h-dash-z{i}">{title(z)}</h2><p>{sub}</p></header>{alert}
 
         <form class="panel c7" data-save="zone/{i}/target">
           <header class="panel-head"><h3>{T("zdash.comfort")}</h3>{badge}</header>
@@ -318,99 +413,50 @@ def render(T, langs, lang_urls, css_href, inline_css=None):
           <div class="climate">
             <div class="now" data-bind="z{i}.temp">{T.num(t)}<small>°C</small></div>
             <div class="target">
-              <button type="button" data-step="-1" aria-label="{T("common.decrease",x=ta)}"{dis}>−</button>
+              <button type="button" data-step="-1" aria-label="{T("common.decrease",x=ta)}"{dis}>{CL}</button>
               <label class="value"><small>{T("zdash.target")}</small><input type="number" inputmode="decimal" name="z{i}_target" value="{tg:.1f}" min="16" max="28" step="0.5"{dis}></label>
-              <button type="button" data-step="1" aria-label="{T("common.increase",x=ta)}"{dis}>+</button>
+              <button type="button" data-step="1" aria-label="{T("common.increase",x=ta)}"{dis}>{CR}</button>
             </div>
           </div>
-          <p class="autosave" aria-live="polite"></p>
-          {foot}
+          <footer class="panel-foot">{foot}</footer>
         </form>
 
         <section class="panel c5">
           <header class="panel-head"><h3>{T("zdash.valve")}</h3></header>
           <dl class="metrics">
             {metric(T("zdash.opening"),fl,"%",f"z{i}.flow")}
-            {metric(T("m.return"),T.num(ret),"°C",f"z{i}.return",cls="zone-ret")}
+            {metric(T("m.return"),T.num(ret),"°C",f"z{i}.return")}
           </dl>
           <div class="bar" style="--v:{fl}%" aria-hidden="true"><i></i></div>
           <dl class="kv">
-            <div><dt>{T("zdash.motor")}</dt><dd data-bind="z{i}.motor">—</dd></div>
-            <div><dt>{T("zdash.preheatAdv")}</dt><dd data-bind="z{i}.preheat">—</dd></div>
-            <div><dt>{T("zdash.offsetNow")}</dt><dd data-bind="z{i}.offset">—</dd></div>
-            <div><dt>{T("zdash.tempFrom")}</dt><dd data-bind="z{i}.tempFrom">—</dd></div>
+            <div><dt>{T("zdash.motor")}</dt><dd class="{'c-warn' if st=='fault' else 'c-ok'}">{T("common.needsLearning") if st=="fault" else T("common.learned")}</dd></div>
+            <div><dt>{T("zdash.preheatAdv")}</dt><dd>{T.num(0.0 if st=="fault" else 0.35,2)} °C</dd></div>
+            <div><dt>{T("zdash.offsetNow")}</dt><dd class="{'c-info' if i in (1,5) else ''}">{"+"+T.num(0.4) if i in (1,5) else T.num(0.0)} °C</dd></div>
+            <div><dt>{T("zdash.tempFrom")}</dt><dd class="c-info">{T("src.ble") if src=="ble" else T("src.probe")}</dd></div>
           </dl>
         </section>
-
-        <section class="panel c12">
-          <header class="panel-head"><h3>{T("zchart.title")}</h3><p>{T("zchart.sub")}</p></header>
-          <dl class="metrics">
-            <div data-bind-show="z{i}.expected" hidden>
-              <dt data-bind="z{i}.expectedLabel">{T("zchart.expected",time="—")}</dt>
-              <dd><span data-bind="z{i}.expected">—</span><small>°C</small></dd>
-            </div>
-          </dl>
-          <div class="zchart" style="--now:80%">
-            <div class="zchart-y" data-bind="z{i}.zchartY"><span>—</span><span>—</span><span>—</span></div>
-            <div class="zchart-plot">
-              <svg viewBox="0 0 300 100" preserveAspectRatio="none" role="img" aria-label="{T("zchart.aria")}" data-bind-zchart="z{i}"></svg>
-              <span class="zchart-now">{T("zchart.now")}</span>
-              <span class="zchart-scrub" hidden aria-hidden="true"></span>
-            </div>
-            <div class="zchart-x" data-bind="z{i}.zchartX"><span>−24h</span><span>−12h</span><span>{T("zchart.now")}</span><span>+6h</span></div>
-          </div>
-          <p class="zchart-legend" aria-hidden="true">
-            <span><i class="lt"></i>{T("zchart.lTemp")}</span>
-            <span><i class="lg"></i>{T("zchart.lTarget")}</span>
-            <span><i class="lp"></i>{T("zchart.lForecast")}</span>
-          </p>
-          <p class="note" data-bind="z{i}.zchartNote">{T("zchart.noForecast")}</p>
-          <p class="hint">{T("zchart.projHint")}</p>
-        </section>
+{zone_chart(z)}
       </section>'''
 
     # ---- konfiguration: manifold
     zone_opts="".join(f'<option value="{z[0]}">Z{z[0]} {z[1]}</option>' for z in Z)
-    def sect_h(sid, key, badge=""):
-        b=f' <span class="badge">{badge}</span>' if badge else ''
-        return (f'<h2 class="section-h" id="sec-{sid}-h">{T(key)}{b}'
-                f'<i class="section-h-dot" aria-hidden="true"></i>'
-                f'<i class="section-h-line" aria-hidden="true"></i></h2>')
-    def sect_sum(sid, key, n):
-        badge=T("sections.panels.one",n=n) if n==1 else T("sections.panels.other",n=n)
-        return (f'<summary class="section-h">{T(key)} <span class="badge">{badge}</span>'
-                f'<i class="section-h-dot" aria-hidden="true"></i>'
-                f'<i class="section-h-line" aria-hidden="true"></i></summary>')
-    def sect_nav(items):
-        if len(items)<3: return ""
-        links="".join(f'<a href="#sec-{sid}">{T(key)}</a>' for sid,key in items)
-        return f'<nav class="section-nav" aria-label="{T("sections.label")}">{links}</nav>'
-    def sect(key): return f'<header class="section-head"><span>{T(key)}</span></header>'
-    nav_items=[("manifold","sect.manifold"),("regulation","sect.regulation"),
-               ("connect","sect.connect"),("service","sect.service")]
     conf_sys=f'''
       <section class="view" id="v-conf-sys" aria-labelledby="h-conf-sys">
         <header class="view-head"><h2 id="h-conf-sys">{T("scope.manifold")}</h2><p>{T("csys.sub")}</p></header>
-        {sect_nav(nav_items)}
 
-        <section class="section" id="sec-manifold" aria-labelledby="sec-manifold-h">
-          {sect_h("manifold","sect.manifold")}
-          <div class="section-grid">
         <form class="panel c6" data-save="manifold">
-          <header class="panel-head"><h3>{T("csys.mm")}</h3>{help_btn("help-manifold",T("csys.mm"))}</header>
-          {help_pop("help-manifold","help.manifold","lune-v6/docs/Manual.md#manifold")}
+          <header class="panel-head"><h3>{T("csys.mm")}</h3></header>
           <div class="sub">
             <h4>{T("csys.manifold")}</h4>
             <div class="field"><span class="label">{T("csys.valveType")}</span>{seg("manifold_type",[("no",T("csys.no")),("nc",T("csys.nc"))],"nc",T("csys.valveType"))}</div>
-            {row("probe_flow",T("csys.supplyProbe"),probes(1,"probe_flow",include_none=False))}
-            {row("probe_return",T("csys.returnProbe"),probes(2,"probe_return",include_none=False))}
+            {row("probe_flow",T("csys.supplyProbe"),probes(7,"probe_flow"))}
+            {row("probe_return",T("csys.returnProbe"),probes(8,"probe_return"))}
           </div>
           <div class="sub">
             <h4>{T("csys.motors")}</h4>
             {switch("motor_drivers",T("csys.drivers"),T("csys.driversSub"),True)}
             {row("motor_type",T("csys.motorType"),'<select class="select" id="motor_type" name="motor_type"><option>Generic</option><option selected>HmIP VdMot</option></select>')}
-            {rstep("m_runtime",T("csys.maxRun"),38,5,40,1,"s",dec=0)}
-            {confirm_pop("confirm-relearn-all","csys.relearnAll","csys.relearnAllTitle","csys.relearnAllNote","relearn_all","csys.relearnAllConfirm")}
+            {rstep("m_runtime",T("csys.maxRun"),45,10,120,5,"s",dec=0)}
           </div>
           <details class="more">
             <summary>{T("csys.limits")}</summary>
@@ -438,30 +484,11 @@ def render(T, langs, lang_urls, css_href, inline_css=None):
               </div>
             </div>
           </details>
-          {foot_save("manifold",T("csys.saveManifold"))}
+          <footer class="panel-foot"><button class="btn primary" type="submit">{T("csys.saveManifold")}</button></footer>
         </form>
-        <form class="panel c6" data-save="return_probes">
-          <header class="panel-head"><h3>{T("csys.returnProbes")}</h3>{help_btn("help-return-probes",T("csys.returnProbes"))}</header>
-          {help_pop("help-return-probes","help.returnProbes","lune-v6/docs/Manual.md#return-probes")}
-          <div class="field"><span class="label">{T("csys.probeMode")}</span>{seg("return_probe_mode",[("2",T("csys.probeMode2")),("8",T("csys.probeMode8"))],"2",T("csys.probeMode"))}</div>
-          <p class="note">{T("csys.returnProbesNote")}</p>
-          <div class="sub">
-            <h4>{T("csys.probeLive")}</h4>
-            <dl class="metrics">
-              {"".join(f'<div class="metric" data-probe="{n}"><dt>{T("csys.probe",n=n)}</dt><dd data-bind="probe.{n}">— <small>°C</small></dd></div>' for n in range(1,9))}
-            </dl>
-          </div>
-          {foot_save("return_probes",T("csys.saveReturnProbes"))}
-        </form>
-          </div>
-        </section>
 
-        <section class="section" id="sec-regulation" aria-labelledby="sec-regulation-h">
-          {sect_h("regulation","sect.regulation")}
-          <div class="section-grid">
         <form class="panel c6" data-save="regulation">
-          <header class="panel-head"><h3>{T("csys.regulation")}</h3>{help_btn("help-regulation",T("csys.regulation"))}</header>
-          {help_pop("help-regulation","help.regulation","lune-v6/docs/Manual.md#regulation")}
+          <header class="panel-head"><h3>{T("csys.regulation")}</h3></header>
           <div class="sub">
             <h4>{T("csys.balancing")} <span class="badge violet" style="margin-left:6px">{T("csys.learningBadge")}</span></h4>
             <div class="field"><span class="label">{T("csys.mode")}</span>{seg("bal_mode",[("static",T("csys.static")),("adaptive",T("csys.adaptive"))],"adaptive",T("csys.mode"))}</div>
@@ -474,137 +501,59 @@ def render(T, langs, lang_urls, css_href, inline_css=None):
             <h4>{T("csys.preheat")}</h4>
             {switch("preheat_enabled",T("csys.absorb"),T("csys.absorbSub"),False)}
             <div class="gated-body sub">
-              {rstep("ph_band",T("csys.band"),0.5,0.1,5,0.1,"°C")}
-              {rstep("ph_delta",T("csys.delta"),0.3,0.1,10,0.1,"°C")}
+              {rstep("ph_band",T("csys.band"),0.5,0.1,3,0.1,"°C")}
+              {rstep("ph_delta",T("csys.delta"),0.3,0.1,2,0.1,"°C")}
             </div>
           </div>
-          {foot_save("regulation",T("csys.saveReg"),left=confirm_pop("confirm-reset-bal","csys.resetBal","csys.resetBalTitle","csys.resetBalNote","reset_balancing","csys.resetBalConfirm"))}
-        </form>
-        <form class="panel c6" data-save="heating">
-          <header class="panel-head"><h3>{T("csys.heating")}</h3>{help_btn("help-heating",T("csys.heating"))}</header>
-          {help_pop("help-heating","help.heating","lune-v6/docs/Manual.md#heating")}
-          <div class="field"><span class="label">{T("csys.heatMode")}</span>{seg("heat_mode",[("normal",T("csys.heatNormal")),("heat_pump",T("csys.heatPump"))],"heat_pump",T("csys.heatMode"))}</div>
-          {rstep("heat_min_open",T("csys.minOpening"),0,0,100,1,"%",dec=0)}
-          <div class="sub hp-limits">
-            <h4>{T("csys.heatPumpLimits")}</h4>
-            {rstep("hp_base",T("csys.hpBase"),60,30,100,1,"%",dec=0)}
-            {rstep("hp_overheat",T("csys.hpOverheat"),1.0,0.3,3.0,0.1,"°C")}
-            {rstep("hp_trim",T("csys.hpTrim"),15,0,100,1,"%",dec=0)}
-          </div>
-          {foot_save("heating",T("csys.saveHeating"))}
-        </form>
-          </div>
-        </section>
-
-        <section class="section" id="sec-connect" aria-labelledby="sec-connect-h">
-          {sect_h("connect","sect.connect")}
-          <div class="section-grid">
-        <form class="panel c6" data-save="connections" data-state="approved">
-          <header class="panel-head"><h3>{T("csys.touch")}</h3>{help_btn("help-connections",T("csys.touch"))}<span class="badge ok" data-bind="touch.badge">{T("csys.touchApproved")}</span></header>
-          {help_pop("help-connections","help.connections","lune-v6/docs/Manual.md#touch")}
-          <p class="msg bad" data-show-when="error"><span>{T("csys.touchErrorBody")}</span></p>
-          <p class="note" data-show-when="unpaired pending approved" data-bind="touch.status">{T("csys.touchControls")}</p>
-          <dl class="kv" data-show-when="approved pending error">
-            <div><dt>{T("csys.touchName")}</dt><dd data-bind="touch.name">Lune Touch</dd></div>
-            <div><dt>{T("csys.touchDelivers")}</dt><dd>{T("csys.touchDeliversValue")}</dd></div>
-          </dl>
-          <p class="hint" data-show-when="approved pending error">{T("csys.touchDeliversHint")}</p>
-          <details class="more" data-show-when="approved pending error">
-            <summary>{T("csys.touchIds")}</summary>
-            <dl class="kv">
-              <div><dt>{T("csys.touchInstall")}</dt><dd class="id-row"><code class="mono" id="touch-install" data-bind="touch.install">house-main</code><button type="button" class="btn copy" data-copy="#touch-install">{T("common.copy")}</button></dd></div>
-              <div><dt>{T("csys.touchCoord")}</dt><dd class="id-row"><code class="mono" id="touch-coord" data-bind="touch.coord">lune-touch</code><button type="button" class="btn copy" data-copy="#touch-coord">{T("common.copy")}</button></dd></div>
-            </dl>
-          </details>
-          <div class="actions">
-            {confirm_pop("confirm-touch","csys.touchRevoke","csys.touchRevokeTitle","csys.touchRevokeNote","revoke","csys.touchRevokeConfirm",attrs='data-show-when="approved error"',style_extra="margin-right:auto")}
-            <button class="btn" type="submit" name="action" value="retry" data-show-when="error">{T("csys.touchRetry")}</button>
-            <button class="btn" type="submit" name="action" value="cancel" data-show-when="pending">{T("csys.touchCancel")}</button>
-            <button class="btn primary" type="submit" name="action" value="approve" data-show-when="unpaired">{T("csys.touchApprove")}</button>
-          </div>
-        </form>
-          <form class="panel c6" data-save="ble_clock">
-            <header class="panel-head"><h3>{T("csys.bleClock")}</h3>{help_btn("help-ble-clock",T("csys.bleClock"))}</header>
-            {help_pop("help-ble-clock","help.bleClock","lune-v6/docs/Manual.md#ble-clock")}
-            {switch("ble_clock_enabled",T("csys.bleClockEnable"),T("csys.bleClockSub"),False)}
-            <dl class="kv">
-              <div><dt>{T("csys.bleClockLastSync")}</dt><dd data-bind="ble.lastSync">—</dd></div>
-            </dl>
-            <div class="actions">
-              <button class="btn" type="submit" name="action" value="sync">{T("csys.bleClockSync")}</button>
-            </div>
-          </form>
-          <form class="panel c6" data-save="device">
-            <header class="panel-head"><h3>{T("device.identity")}</h3>{help_btn("help-device-identity",T("device.identity"))}</header>
-            {help_pop("help-device-identity","help.deviceIdentity","lune-v6/docs/Manual.md#device-identity")}
-            {row("device_display_name",T("device.name"),'<input class="input" id="device_display_name" name="device_display_name" value="Lune V6" maxlength="32" autocomplete="off">')}
-            {row("device_location",T("device.place"),f'<input class="input" id="device_location" name="device_location" value="{T("device.sample")}" maxlength="64" autocomplete="off">')}
-            {foot_save("device",T("device.saveIdentity"))}
-          </form>
-          </div>
-        </section>
-
-        <details class="section" id="sec-service">
-          {sect_sum("service","sect.service",4)}
-          <div class="section-grid">
-        <form class="panel c6" data-save="firmware">
-          <header class="panel-head"><h3>{T("csys.firmware")}</h3>{help_btn("help-firmware",T("csys.firmware"))}</header>
-          {help_pop("help-firmware","help.firmware","lune-v6/docs/Manual.md#firmware")}
-          <dl class="kv">
-            <div><dt>{T("csys.fwInstalled")}</dt><dd data-bind="fw.installed">—</dd></div>
-            <div><dt>{T("csys.fwLatest")}</dt><dd data-bind="fw.latest">—</dd></div>
-          </dl>
-          <div class="actions">
-            <button class="btn" type="submit" name="action" value="check">{T("csys.fwCheck")}</button>
-            <button class="btn" type="submit" name="action" value="install">{T("csys.fwInstall")}</button>
-          </div>
-          <div class="field"><label for="ota_file">{T("csys.fwUpload")}</label>{file_input("ota_file",".bin,.ota.bin")}</div>
-          <footer class="panel-foot"><button class="btn primary" type="submit" name="action" value="upload">{T("csys.fwUploadBtn")}</button></footer>
-        </form>
-        <form class="panel c6" data-save="backup">
-          <header class="panel-head"><h3>{T("csys.backup")}</h3>{help_btn("help-backup",T("csys.backup"))}</header>
-          {help_pop("help-backup","help.backup","lune-v6/docs/Manual.md#backup")}
-          <p class="note">{T("csys.backupNote")}</p>
-          <label class="switch"><span class="switch-text"><b>{T("csys.backupLearned")}</b><small>{T("csys.backupLearnedSub")}</small></span><input type="checkbox" role="switch" name="include_learned"></label>
-          <div class="field"><label for="backup_file">{T("csys.backupImport")}</label>{file_input("backup_file","application/json,.json")}</div>
           <footer class="panel-foot">
-            <button class="btn" type="submit" name="action" value="export">{T("csys.backupExport")}</button>
-            <button class="btn primary" type="submit" name="action" value="import">{T("csys.backupImportBtn")}</button>
+            {confirm('cf-bal', T("csys.resetBal"), T("csys.resetBalConfirm")+'?', T("csys.resetBalNote"), T("csys.resetBalConfirm"), 'reset_balancing', ' style="margin-right:auto"')}
+            <button class="btn primary" type="submit">{T("csys.saveReg")}</button>
           </footer>
         </form>
-        <form class="panel c6" data-save="service">
-          <header class="panel-head"><h3>{T("csys.manual")}</h3>{help_btn("help-manual",T("csys.manual"))}</header>
-          {help_pop("help-manual","help.manual","lune-v6/docs/Manual.md#manual")}
+
+        <form class="panel c6" data-save="forecast">
+          <header class="panel-head"><h3>{T("csys.weather")}</h3><span class="badge info">{T("common.on")}</span></header>
           <div class="sub gated">
+            {switch("forecast_enabled",T("csys.windPreload"),T("csys.windPreloadSub"),True)}
+            <div class="gated-body sub">
+              <div class="pair">
+                <div class="field"><label for="fc_lat">{T("csys.lat")}</label><input class="input" id="fc_lat" name="fc_lat" type="number" inputmode="decimal" step="0.0001" min="-90" max="90" value="55.2700"></div>
+                <div class="field"><label for="fc_lon">{T("csys.lon")}</label><input class="input" id="fc_lon" name="fc_lon" type="number" inputmode="decimal" step="0.0001" min="-180" max="180" value="9.9000"></div>
+              </div>
+              {row("fc_model",T("csys.model"),'<select class="select" id="fc_model" name="fc_model"><option>DMI HARMONIE</option><option>ICON-EU</option><option>ECMWF IFS</option></select>')}
+              {rstep("fc_thr",T("csys.loadThr"),0.5,0,2,0.05,"",dec=2)}
+              {rstep("fc_max",T("csys.maxOffset"),1.5,0,4,0.1,"°C")}
+            </div>
+          </div>
+          <footer class="panel-foot">
+            <span class="note">{T("csys.fetched",time="14:05")}</span>
+            <button class="btn" type="submit" name="action" value="fetch">{T("csys.fetchNow")}</button>
+            <button class="btn primary" type="submit">{T("csys.saveWeather")}</button>
+          </footer>
+        </form>
+
+        <form class="panel c6" data-save="service">
+          <header class="panel-head"><h3>{T("csys.service")}</h3></header>
+          <div class="sub gated">
+            <h4>{T("csys.manual")}</h4>
             <p class="msg warn"><span>{T("csys.manualMsg")}</span></p>
             {switch("manual_mode",T("csys.manualMode"),"",False)}
             <div class="gated-body sub">
               {row("man_zone",T("csys.motor"),f'<select class="select" id="man_zone" name="man_zone">{zone_opts}</select>')}
-              <div class="sub">
-                <h4>{T("csys.manualTargetHead")}</h4>
-                {rstep("man_target",T("csys.motorTarget"),50,0,100,5,"%",dec=0)}
-                <div class="actions"><button class="btn" type="submit" name="action" value="stop">{T("csys.stop")}</button><button class="btn" type="submit" name="action" value="move">{T("csys.move")}</button></div>
-              </div>
-              <div class="sub">
-                <h4>{T("csys.manualTimedHead")}</h4>
-                <div class="field row"><span class="label">{T("csys.manualDir")}</span>{seg("man_dir",[("open",T("csys.manualOpen")),("close",T("csys.manualClose"))],"open",T("csys.manualDir"))}</div>
-                {rstep("man_seconds",T("csys.manualSeconds"),10,1,45,1,"s",dec=0)}
-                <div class="actions"><button class="btn" type="submit" name="action" value="stop">{T("csys.stop")}</button><button class="btn primary" type="submit" name="action" value="timed">{T("csys.manualRun")}</button></div>
-              </div>
+              {rstep("man_target",T("csys.motorTarget"),50,0,100,5,"%",dec=0)}
+              <div class="actions"><button class="btn" type="submit" name="action" value="stop">{T("csys.stop")}</button><button class="btn" type="submit" name="action" value="move">{T("csys.move")}</button></div>
+            </div>
+          </div>
+          <div class="sub">
+            <h4>{T("csys.device")}</h4>
+            <p class="note">Firmware 6.4.2 · ESPHome 2026.9.1 · 192.168.20.106</p>
+            <div class="actions">
+              <button class="btn" type="submit" name="action" value="dump_tasks">{T("csys.tasks")}</button>
+              {confirm('cf-probes', T("csys.resetProbes"), T("csys.resetProbesConfirm")+'?', T("csys.resetProbesNote"), T("csys.resetProbesConfirm"), 'reset_probe_map')}
+              {confirm('cf-restart', T("csys.restart"), T("csys.restartConfirm")+'?', T("csys.restartNote"), T("csys.restartConfirm"), 'restart')}
             </div>
           </div>
         </form>
-        <form class="panel c6" data-save="service">
-          <header class="panel-head"><h3>{T("csys.device")}</h3>{help_btn("help-device-actions",T("csys.device"))}</header>
-          {help_pop("help-device-actions","help.deviceActions","lune-v6/docs/Manual.md#device-actions")}
-          <div class="actions">
-            <button class="btn" type="submit" name="action" value="dump_tasks">{T("csys.tasks")}</button>
-            {confirm_pop("confirm-probes","csys.resetProbes","csys.resetProbesTitle","csys.resetProbesNote","reset_probe_map","csys.resetProbesConfirm")}
-            {confirm_pop("confirm-restart","csys.restart","csys.restartTitle","csys.restartNote","restart","csys.restartConfirm")}
-          </div>
-        </form>
-          </div>
-        </details>
       </section>'''
 
     # ---- konfiguration: zone
@@ -616,100 +565,73 @@ def render(T, langs, lang_urls, css_href, inline_css=None):
         merge=f'<option value="">{T("common.none")}</option>'+"".join(f'<option value="{y[0]}"{" selected" if (i==5 and y[0]==4) else ""}>Z{y[0]} {y[1]}</option>' for y in Z if y[0]!=i)
         pipes="".join(f'<option{" selected" if p==pipe else ""}>{p}</option>' for p in PIPES)
         fault=st=="fault"
+        L=(T("common.needsLearning"),"—","—",T.num(0,2),T("cz.endstopTimeout")) if fault else (T("common.learned"),"412 / 398",f"{T.num(0.96,2)} / {T.num(1.04,2)}",T.num(0.35,2),T("common.none"))
         member=f'<p class="msg violet"><span><b>{T("cz.memberStrong",p="Z4")}</b> {T("cz.member",p="Z4")}</span></p>' if grp=="member" else ""
         zid=f"Z{i}"
         return f'''
       <section class="view" id="v-conf-z{i}" aria-labelledby="h-conf-z{i}">
-        <header class="view-head"><h2 id="h-conf-z{i}"><span data-bind="z{i}.title">{title(z)}</span></h2><p>{T("cz.sub")}</p></header>
-
-        {sect("sect.zone")}
+        <header class="view-head"><h2 id="h-conf-z{i}">{title(z)}</h2><p>{T("cz.sub")}</p></header>
 
         <form class="panel c6" data-save="zone/{i}/room">
-          <header class="panel-head"><h3>{T("cz.roomSensors")}</h3>{help_btn("help-zone-room",T("cz.roomSensors"))}</header>
+          <header class="panel-head"><h3>{T("cz.roomSensors")}</h3></header>
           <div class="subs cols-2">
             <div class="sub">
               <h4>{T("cz.room")}</h4>
               {member}
               {switch(f"z{i}_enabled",T("cz.enabled"),"",st!="off")}
-              {row(f"z{i}_name",T("cz.name"),f'<input class="input" id="z{i}_name" name="z{i}_name" value="{n}" maxlength="24">')}
-              {rstep(f"z{i}_area",T("cz.area"),area,0,200,0.5,"m²")}
-              {row(f"z{i}_merge",f'{T("cz.group")}<span class="hint">{T("cz.groupHint")}</span>',f'<select class="select" id="z{i}_merge" name="z{i}_merge">{merge}</select>')}
+              <div class="field"><label for="z{i}_name">{T("cz.name")}</label><input class="input" id="z{i}_name" name="z{i}_name" value="{n}" maxlength="24"></div>
+              <div class="field"><label for="z{i}_area">{T("cz.area")}</label>{stepper(f"z{i}_area",area,0,200,0.5,"m²",T("cz.area"))}</div>
+              <div class="field"><label for="z{i}_merge">{T("cz.group")}<span class="hint">{T("cz.groupHint")}</span></label><select class="select" id="z{i}_merge" name="z{i}_merge">{merge}</select></div>
             </div>
             <div class="sub">
               <h4>{T("cz.sensors")}</h4>
-              <div class="field row"><span class="label">{T("cz.tempFrom")}</span>{seg(f"z{i}_src",[("probe",T("cz.probe")),("ble",T("cz.ble"))],src,T("cz.tempFrom"))}</div>
-              <div class="field row">
+              <div class="field"><span class="label">{T("cz.tempFrom")}</span>{seg(f"z{i}_src",[("probe",T("cz.probe")),("ble",T("cz.ble"))],src,T("cz.tempFrom"))}</div>
+              <div class="field">
                 <label for="z{i}_ble">{T("cz.bleMac")}<span class="hint">{T("cz.bleHint").replace("&","&amp;")}</span></label>
                 <div class="pair wide-first">
                   <input class="input" id="z{i}_ble" name="z{i}_ble" placeholder="AA:BB:CC:DD:EE:FF" pattern="^([0-9A-Fa-f]{{2}}:){{5}}[0-9A-Fa-f]{{2}}$" autocomplete="off" spellcheck="false">
                   <button type="button" class="btn" data-action="ble-scan" data-zone="{i}">{T("cz.scan")}</button>
                 </div>
               </div>
-              <div hidden data-ble-seen-row="{i}">
-                <p class="note" data-ble-seen-status="{i}" aria-live="polite"></p>
-                <div class="table-wrap">
-                  <table class="table" aria-label="{T("cz.bleSeen")}">
-                    <thead>
-                      <tr>
-                        <th>{T("cz.bleSeenSensor")}</th>
-                        <th class="num">{T("cz.bleSeenTemp")}</th>
-                        <th class="num">{T("cz.bleSeenRssi")}</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody data-ble-seen="{i}"></tbody>
-                  </table>
-                </div>
-              </div>
-              {row(f"z{i}_ret",T("cz.returnSensor"),probes(None,f"z{i}_ret")).replace('class="field row"','class="field row zone-ret"',1)}
+              <div class="field"><label for="z{i}_ret">{T("cz.returnSensor")}</label>{probes(i,f"z{i}_ret")}</div>
             </div>
           </div>
-          {foot_save(f"zone/{i}/room",T("cz.saveRoom"))}
+          <footer class="panel-foot"><button class="btn primary" type="submit">{T("cz.saveRoom")}</button></footer>
         </form>
 
         <form class="panel c6" data-save="zone/{i}/floor">
-          <header class="panel-head"><h3>{T("cz.floorWeather")}</h3>{help_btn("help-zone-floor",T("cz.floorWeather"))}</header>
+          <header class="panel-head"><h3>{T("cz.floorWeather")}</h3></header>
           <div class="subs cols-2">
             <div class="sub">
               <h4>{T("cz.floorPipes")}</h4>
-              {rstep(f"z{i}_spacing",T("cz.spacing"),sp,50,300,25,"mm",dec=0)}
-              {row(f"z{i}_pipe",T("cz.pipeType"),f'<select class="select" id="z{i}_pipe" name="z{i}_pipe">{pipes}</select>')}
-              {row(f"z{i}_slab",T("cz.slab"),f'<select class="select" id="z{i}_slab" name="z{i}_slab"><option value="unset">{T("cz.slabUnset")}</option><option value="cast_concrete">{T("cz.slabConcrete")}</option><option value="screed">{T("cz.slabScreed")}</option><option value="dry_plates">{T("cz.slabDry")}</option><option value="timber_joists">{T("cz.slabTimber")}</option></select>')}
-              {row(f"z{i}_covering",T("cz.covering"),f'<select class="select" id="z{i}_covering" name="z{i}_covering"><option value="unset">{T("cz.coverUnset")}</option><option value="tile_stone">{T("cz.coverTile")}</option><option value="vinyl_linoleum">{T("cz.coverVinyl")}</option><option value="parquet_laminate">{T("cz.coverParquet")}</option><option value="carpet">{T("cz.coverCarpet")}</option></select>')}
-              {rstep(f"z{i}_thick",T("cz.thickness"),0,0,15,0.5,"cm")}
-              {rstep(f"z{i}_lead",T("cz.lead"),3.0,0,12,0.5,H)}
+              <div class="field"><label for="z{i}_spacing">{T("cz.spacing")}</label>{stepper(f"z{i}_spacing",sp,50,300,25,"mm",T("cz.spacing"),dec=0)}</div>
+              <div class="field"><label for="z{i}_pipe">{T("cz.pipeType")}</label><select class="select" id="z{i}_pipe" name="z{i}_pipe">{pipes}</select></div>
+              <div class="field"><label for="z{i}_lead">{T("cz.lead")}</label>{stepper(f"z{i}_lead",3.0,0,12,0.5,H,T("cz.lead"))}</div>
             </div>
             <div class="sub">
               <h4>{T("cz.weather")}</h4>
-              <div class="field row"><span class="label">{T("cz.walls")}</span>{compass(i,walls)}</div>
-              {rstep(f"z{i}_wind",T("cz.wind"),1.0 if walls else 0.0,0,2,0.1,"×")}
-              {rstep(f"z{i}_solar",T("cz.solar"),0.6 if "s" in walls else 0.2,0,2,0.1,"×")}
+              <div class="field"><span class="label">{T("cz.walls")}</span>{compass(i,walls)}</div>
+              <div class="field"><label for="z{i}_wind">{T("cz.wind")}</label>{stepper(f"z{i}_wind",1.0 if walls else 0.0,0,2,0.1,"×",T("cz.wind"))}</div>
+              <div class="field"><label for="z{i}_solar">{T("cz.solar")}</label>{stepper(f"z{i}_solar",0.6 if "s" in walls else 0.2,0,2,0.1,"×",T("cz.solar"))}</div>
             </div>
           </div>
-          {foot_save(f"zone/{i}/floor",T("cz.saveFloor"))}
+          <footer class="panel-foot"><button class="btn primary" type="submit">{T("cz.saveFloor")}</button></footer>
         </form>
 
         <form class="panel" data-save="zone/{i}/motor">
-          <header class="panel-head"><h3>{T("cz.motor")}</h3>{help_btn("help-zone-motor",T("cz.motor"))}<span class="badge" data-bind="z{i}.motorBadge">—</span></header>
+          <header class="panel-head"><h3>{T("cz.motor")}</h3><span class="badge {'warn' if fault else 'ok'}">{L[0]}</span></header>
           <div class="subs cols-2">
-            <dl class="kv"><div><dt>{T("cz.ripples")}</dt><dd data-bind="z{i}.ripples">—</dd></div><div><dt>{T("cz.factors")}</dt><dd data-bind="z{i}.factors">—</dd></div></dl>
-            <dl class="kv"><div><dt>{T("zdash.preheatAdv")}</dt><dd data-bind="z{i}.preheat">—</dd></div><div><dt>{T("cz.lastFault")}</dt><dd data-bind="z{i}.lastFault">—</dd></div></dl>
-          </div>
-          <div data-bind-show="z{i}.learnBar" hidden>
-            <p class="hint" data-bind="z{i}.learnPhase"></p>
-            <div class="bar violet" style="--v:0%" data-bind-bar="z{i}.learn" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="{T("cz.learnProgress")}"><i></i></div>
+            <dl class="kv"><div><dt>{T("cz.ripples")}</dt><dd>{L[1]}</dd></div><div><dt>{T("cz.factors")}</dt><dd>{L[2]}</dd></div></dl>
+            <dl class="kv"><div><dt>{T("zdash.preheatAdv")}</dt><dd>{L[3]} °C</dd></div><div><dt>{T("cz.lastFault")}</dt><dd class="{'bad' if fault else ''}">{L[4]}</dd></div></dl>
           </div>
           <footer class="panel-foot">
-            <button class="btn primary" type="submit" name="action" value="reset_fault" data-bind-show="z{i}.fault"{"" if fault else " hidden"}>{T("common.resetFault")}</button>
-            {confirm_pop(f"confirm-relearn-z{i}","cz.relearn","cz.relearnTitle","cz.relearnNote","reset_relearn","cz.relearnConfirm",z=zid)}
+            <button class="btn" type="submit" name="action" value="reset_fault"{'' if fault else ' disabled'}>{T("common.resetFault")}</button>
+            {confirm(f"cf-relearn-{i}", T("cz.relearn"), T("cz.relearnConfirm",z=zid)+"?", T("cz.relearnNote",z=zid), T("cz.relearnConfirm",z=zid), "reset_relearn")}
           </footer>
         </form>
       </section>'''
 
     views=dash_sys+"".join(dash_zone(z) for z in Z)+conf_sys+"".join(conf_zone(z) for z in Z)
-    views+=help_pop("help-zone-room","help.zoneRoom","lune-v6/docs/Manual.md#zone-room")
-    views+=help_pop("help-zone-floor","help.zoneFloor","lune-v6/docs/Manual.md#zone-floor")
-    views+=help_pop("help-zone-motor","help.zoneMotor","lune-v6/docs/Manual.md#zone-motor")
 
     # ---- sprogvælger (kun hvis >1 sprog)
     cur=T.meta("_lang")
@@ -720,27 +642,9 @@ def render(T, langs, lang_urls, css_href, inline_css=None):
         langnav=""
 
     # Dynamiske strenge til binderen (statusser, relative tider, gem-beskeder)
-    rt_keys=("state.calling","state.idle","state.fault","state.off","state.learning","state.blocked","tile.fault","tile.learning","tile.learningPct","tile.blocked","badge.calling","sys.dt","sys.dtstate","dash.sys.sub",
-             "cz.learnPhase.home","cz.learnPhase.open","cz.learnPhase.close","cz.learnPhase.pass",
-             "cz.bleAssign","cz.bleAssigned","cz.bleSeen","cz.bleSeenEmpty","cz.bleScanning",
-             "rt.savedOk","rt.saveFailed","rt.saving","rt.unsaved.one","rt.unsaved.other","rt.nothingToSave","rt.leaveUnsaved",
-             "rt.autoSaving","rt.autoSaved","rt.autoFailed","rt.retry","rt.secondsAgo","rt.minutesAgo","rt.offline",
-             "common.learned","common.needsLearning","common.notLearned","common.undo","common.on",
-             "csys.touchWaiting","csys.touchWaitingBody","csys.touchApprove",
-             "csys.touchApproved","csys.touchPending","csys.touchError","csys.touchErrorBody",
-             "csys.touchCancel","csys.touchRetry",
-             "zchart.expected","zchart.at","zchart.noForecast","zchart.faultStrong")
-    rt={k:T(k) for k in rt_keys}
+    rt={k:T(k) for k in ("state.calling","state.idle","state.fault","state.off","tile.fault","rt.savedOk","rt.saveFailed","rt.secondsAgo","rt.minutesAgo","rt.offline","common.learned","common.needsLearning")}
     rt["_dec"]=T.meta("_dec"); rt["_lang"]=cur
     rt_json=json.dumps(rt,ensure_ascii=False,separators=(",",":"))
-    forms_path = ROOT.parents[1] / "js" / "lune-forms.js"
-    forms_js = forms_path.read_text(encoding="utf-8")
-    # Compact for flash: drop comments/blank lines and redundant whitespace.
-    import re as _re
-    forms_js = "\n".join(ln for ln in forms_js.splitlines() if ln.strip() and not ln.lstrip().startswith("/*") and not ln.lstrip().startswith("*"))
-    forms_js = _re.sub(r"\s+", " ", forms_js)
-    forms_js = _re.sub(r"\s*([{}();,:<>!=+\-*/?&|])\s*", r"\1", forms_js)
-    forms_js = forms_js.replace("}function", "}\nfunction").replace("})();", "})();")
 
     LOGO='<svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="var(--fg)"/><path d="M10 22V12M14 22V10M18 22V13M22 22V11" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/></svg>'
     I_DASH='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14a8 8 0 0 1 16 0"/><path d="M12 14l4-4"/><circle cx="12" cy="14" r="1.2"/></svg>'
@@ -748,13 +652,13 @@ def render(T, langs, lang_urls, css_href, inline_css=None):
     css_tag=f"<style>\n{inline_css}\n</style>" if inline_css else f'<link rel="stylesheet" href="{css_href}">'
     others="".join(f'<link rel="alternate" hreflang="{c.meta("_lang")}" href="{lang_urls[c.meta("_lang")]}">' for c in langs if c.meta("_lang")!=cur) if len(langs)>1 else ""
 
-    page = f'''<!doctype html>
+    return f'''<!doctype html>
 <html lang="{cur}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" media="(prefers-color-scheme: light)" content="#fbfaf8">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f5f0">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121210">
 <title>{T("doc.title")}</title>
 {others}
@@ -776,31 +680,16 @@ def render(T, langs, lang_urls, css_href, inline_css=None):
   <symbol id="i-rain" viewBox="0 0 24 24"><path d="M7 14h10a4 4 0 0 0 0-8 5.5 5.5 0 0 0-10.6 1.5A3.3 3.3 0 0 0 7 14z"/><path d="M8 17l-1 3M12 17l-1 3M16 17l-1 3"/></symbol>
 </svg>
 
-<div class="app" data-probe-layout="2">
-  <div class="top">
-    <div class="wrap">
+<div class="app">
+{LDS_DEFS}
+  <div class="navbar-wrap wrap">
       <header class="header">
         <details class="device">
-          <summary>{LOGO}<span class="name"><b data-bind="device.header.name">Lune V6</b><small data-bind="device.about.place">{T("device.sample")}</small></span><span class="caret" aria-hidden="true"></span></summary>
-          <div class="device-menu">
-            <section class="device-about" aria-labelledby="device-about-h">
-              <h3 id="device-about-h">{T("device.about")}</h3>
-              <dl class="kv">
-                <div><dt>{T("device.name")}</dt><dd data-bind="device.about.name">Lune V6</dd></div>
-                <div><dt>{T("device.place")}</dt><dd data-bind="device.about.place">{T("device.sample")}</dd></div>
-                <div><dt>{T("device.ip")}</dt><dd data-bind="device.about.ip">192.168.1.106</dd></div>
-                <div><dt>{T("device.mac")}</dt><dd data-bind="device.about.mac">D8:3B:DA:12:34:56</dd></div>
-                <div><dt>{T("device.firmware")}</dt><dd data-bind="device.about.firmware">6.4.2</dd></div>
-                <div><dt>{T("device.esphome")}</dt><dd data-bind="device.about.esphome">2026.9.1</dd></div>
-                <div><dt>{T("device.uptime")}</dt><dd data-bind="device.about.uptime">6 <small>{T("common.days")}</small> 4 <small>{T("common.hours")}</small> 12 <small>{T("common.minutes")}</small></dd></div>
-              </dl>
-              <button type="button" class="btn" data-action="copy-diag">{T("device.copyDiag")}</button>
-            </section>
-            <nav aria-label="{T("nav.devices")}">
-              <a href="http://192.168.1.106/" aria-current="page"><i></i>Lune V6<small>192.168.1.106 · {T("device.this")}</small></a>
-              <a href="http://192.168.1.186/"><i></i>Lune Touch<small>192.168.1.186</small></a>
-            </nav>
-          </div>
+          <summary>{LOGO}<span class="name"><b>Lune V6</b><small data-bind="device.name">{T("device.sample")}</small></span><span class="caret" aria-hidden="true"></span></summary>
+          <nav class="device-menu" aria-label="{T("nav.devices")}">
+            <a href="http://192.168.20.106/" aria-current="page"><i></i>Lune V6<small>192.168.20.106 · {T("device.this")}</small></a>
+            <a href="http://192.168.20.186/"><i></i>Lune Touch<small>192.168.20.186</small></a>
+          </nav>
         </details>
 
         <nav class="mode" aria-label="{T("mode.label")}">
@@ -817,7 +706,9 @@ def render(T, langs, lang_urls, css_href, inline_css=None):
           </label>
         </div>
       </header>
-
+  </div>
+  <div class="top">
+    <div class="wrap">
       {strip}
     </div>
   </div>
@@ -829,80 +720,16 @@ def render(T, langs, lang_urls, css_href, inline_css=None):
 <!-- Strenge til binderen: statusser og beskeder der skrives ved runtime -->
 <script type="application/json" id="i18n">{rt_json}</script>
 
-<!-- VALGFRI progressive enhancement: +/−, luk enhedsmenu, hjælp-popover nær ?, filnavn, dirty/save, autogem -->
+<!-- VALGFRI progressive enhancement: +/−, luk enhedsmenu, submit-hook -->
 <script>
-(function(){{
-var helpBtn=null;
-function placeHelp(pop, btn){{
-  if(!pop||!btn||window.matchMedia('(max-width:599.98px)').matches) return;
-  var r=btn.getBoundingClientRect(), gap=8;
-  pop.style.position='fixed';
-  pop.style.inset='unset';
-  pop.style.right='auto';
-  pop.style.bottom='auto';
-  pop.style.margin='0';
-  pop.style.top='0px';
-  pop.style.left='0px';
-  var w=pop.offsetWidth||280, h=pop.offsetHeight||120;
-  var left=Math.min(Math.max(8, r.left), Math.max(8, window.innerWidth-w-8));
-  var top=r.bottom+gap;
-  if(top+h>window.innerHeight-8) top=Math.max(8, r.top-h-gap);
-  pop.style.top=top+'px';
-  pop.style.left=left+'px';
-}}
-document.addEventListener('pointerdown',function(e){{
-  var h=e.target.closest&&e.target.closest('.help-btn');
-  if(h) helpBtn=h;
-}}, true);
-document.addEventListener('beforetoggle',function(e){{
-  if(e.newState!=='open'||!e.target.classList||!e.target.classList.contains('help-pop')) return;
-  var id=e.target.id;
-  var btn=(helpBtn&&helpBtn.getAttribute('popovertarget')===id)?helpBtn:null;
-  if(!btn&&document.activeElement&&document.activeElement.getAttribute&&document.activeElement.getAttribute('popovertarget')===id)
-    btn=document.activeElement;
-  if(!btn) btn=document.querySelector('[popovertarget="'+id+'"]');
-  if(btn){{ helpBtn=btn; placeHelp(e.target, btn); }}
-}}, true);
-document.addEventListener('toggle',function(e){{
-  if(e.newState!=='open'||!e.target.classList||!e.target.classList.contains('help-pop')) return;
-  var id=e.target.id;
-  var btn=(helpBtn&&helpBtn.getAttribute('popovertarget')===id)?helpBtn:document.querySelector('[popovertarget="'+id+'"]');
-  if(btn) placeHelp(e.target, btn);
-}}, true);
-document.addEventListener('click',function(e){{
-  var h=e.target.closest&&e.target.closest('.help-btn');
-  if(h){{
-    helpBtn=h;
-    var id=h.getAttribute('popovertarget');
-    var pop=id&&document.getElementById(id);
-    if(pop) requestAnimationFrame(function(){{ if(pop.matches(':popover-open')) placeHelp(pop,h); }});
-  }}
-  var b=e.target.closest('[data-step]');
-  if(b&&!b.disabled){{var i=b.parentNode.querySelector('input');b.dataset.step>0?i.stepUp():i.stepDown();i.dispatchEvent(new Event('change',{{bubbles:true}}));}}
-  var d=document.querySelector('.device[open]');if(d&&!d.contains(e.target))d.open=false;
-}});
-document.addEventListener('change',function(e){{
-  var inp=e.target; if(!inp||inp.type!=='file') return;
-  var lab=inp.closest('label.file'); if(!lab) return;
-  var name=lab.querySelector('.file-name'); if(!name) return;
-  name.textContent=(inp.files&&inp.files[0])?inp.files[0].name:(name.dataset.empty||'');
-}});
-/* Preview: simuler API-svar (success, medmindre data-save ender på /fail) */
-document.addEventListener('lune:save',function(e){{
-  var d=e.detail||{{}}, f=d.form||document.querySelector('form.panel[data-save="'+d.key+'"]');
-  if(!f||!f.luneSaved) return;
-  var fail=String(d.key||'').indexOf('fail')>=0;
-  setTimeout(function(){{ f.luneSaved(!fail, fail?undefined:undefined); }}, d.auto?400:700);
-}});
-}})();
-</script>
-<script>
-/*__LUNE_FORMS__*/
+document.addEventListener('click',function(e){{var b=e.target.closest('[data-step]');
+if(b&&!b.disabled){{var i=b.parentNode.querySelector('input');b.dataset.step>0?i.stepUp():i.stepDown();i.dispatchEvent(new Event('change',{{bubbles:true}}));}}
+var d=document.querySelector('.device[open]');if(d&&!d.contains(e.target))d.open=false;}});
+document.addEventListener('submit',function(e){{e.preventDefault();document.dispatchEvent(new CustomEvent('lune:save',{{detail:{{key:e.target.dataset.save,data:new FormData(e.target,e.submitter)}}}}));}});
 </script>
 </body>
 </html>
 '''
-    return page.replace("/*__LUNE_FORMS__*/", forms_js)
 
 # ---------------------------------------------------------------- C-header -
 def c_array(name, data):

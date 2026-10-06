@@ -1,0 +1,55 @@
+# Eksempel: varme-dashboard i Home Assistant efter LDS-princippet
+# "overblik → detaljer → indstillinger". Brug sektions-visningen og tile-kort:
+# - Overblik: én kort-række med de vigtigste tal (tile-kort viser ét tal hver).
+# - Detaljer: tryk på et kort åbner HA's more-info-dialog (graf og historik).
+# - Indstillinger: tandhjulet i more-info, eller et link til Lune Touch.
+# Erstat entity-id'erne med dine egne (TODO). Kræver temaet "Lune".
+views:
+  - title: Varme
+    path: varme
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Huset
+          - type: tile
+            entity: climate.lune_hus            # TODO: Lune Touch' hus-termostat
+            features:
+              - type: target-temperature
+            features_position: bottom
+          - type: tile
+            entity: sensor.ude_temperatur       # TODO
+            name: Ude
+          - type: tile
+            entity: sensor.varmepumpe_fremlob   # TODO
+            name: Fremløb
+            color: deep-orange                  # varme = orange
+          - type: tile
+            entity: sensor.varmepumpe_retur     # TODO
+            name: Retur
+            color: blue                         # retur = blå
+      - type: grid
+        cards:
+          - type: heading
+            heading: Stueetage
+          - type: tile
+            entity: climate.lune_v6_z1          # TODO: én pr. zone
+            features:
+              - type: target-temperature
+          - type: tile
+            entity: climate.lune_v6_z2
+          - type: tile
+            entity: climate.lune_v6_z3
+      - type: grid
+        cards:
+          - type: heading
+            heading: Sidste 24 timer
+          - type: history-graph
+            hours_to_show: 24
+            entities:
+              - entity: sensor.varmepumpe_fremlob
+                name: Fremløb
+              - entity: sensor.varmepumpe_retur
+                name: Retur

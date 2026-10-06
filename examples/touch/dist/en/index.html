@@ -211,25 +211,28 @@
           <div class="panel-foot" style="justify-content:flex-start"><label class="btn" for="m-conf">Open heat source settings</label></div>
         </div>
 
-        <section class="panel c4">
-          <header class="panel-head"><h3>House climate</h3></header>
+        <section class="panel c5">
+          <header class="panel-head"><h3>Right now</h3></header>
           <dl class="metrics">
             <div class="metric"><dt>House temperature</dt><dd data-bind="house.temp">21.2 <small>°C</small></dd></div>
-            <div class="metric"><dt>Outdoor</dt><dd data-bind="house.outdoor">8.4 <small>°C</small></dd></div>
+            <div class="metric"><dt>Outdoor</dt><dd data-bind="house.outdoor" class="c-info">8.4 <small>°C</small></dd></div>
             <div class="metric"><dt>Comfort target</dt><dd data-bind="house.target">21.0 <small>°C</small></dd></div>
           </dl>
         </section>
 
-        <section class="panel c5" data-hs-type="asgard">
+        <section class="panel c7">
+          <header class="panel-head"><h3>Needs attention</h3><button class="help-btn" type="button" popovertarget="help-attn" style="anchor-name:--a-help-attn" aria-label="Help: Needs attention">?</button><p>Only what is not settled. Choose a row to open the zone.</p></header>
+          <div id="help-attn" popover class="help-pop" style="position-anchor:--a-help-attn"><p>Calling: the zone is below its target and asks for heat. Fault: the motor or sensor does not respond, and the zone is kept closed until the fault is reset on the V6.</p></div>
+          <div class="comfort"><label for="s-m1z3" data-state="calling"><span class="id">M1</span><span class="name">Spise</span><span class="val"><b>21.4°</b> Calling</span></label><label for="s-m1z5" data-state="calling"><span class="id">M1</span><span class="name">Spisekrog</span><span class="val"><b>21.0°</b> Calling</span></label><label for="s-m2z3" data-state="fault"><span class="id">M2</span><span class="name">Gang</span><span class="val"><b>20.2°</b> Fault</span></label></div>
+        </section>
+
+        <section class="panel wide" data-hs-type="asgard">
           <header class="panel-head"><h3>Heat source</h3><span class="badge ok">Connected</span></header>
-          <dl class="metrics">
-            <div class="metric"><dt>Last push</dt><dd data-bind="heat.lastPush">2 min ago <small></small></dd></div>
-            <div class="metric"><dt>Setpoint</dt><dd data-bind="heat.setpoint">21.0 <small>°C</small></dd></div>
-          </dl>
           <div class="hs-type-asgard sub">
             <dl class="metrics">
               <div class="metric"><dt>Supply</dt><dd data-bind="heat.supply">38.2 <small>°C</small></dd></div>
-              <div class="metric"><dt>Return</dt><dd data-bind="heat.return">32.1 <small>°C</small></dd></div>
+              <div class="metric"><dt>Return</dt><dd data-bind="heat.return" class="c-info">32.1 <small>°C</small></dd></div>
+              <div class="metric"><dt>Setpoint</dt><dd data-bind="heat.setpoint">21.0 <small>°C</small></dd></div>
             </dl>
             <h4>Plan vs reality</h4>
             <div class="bars" style="--bars-n:12"><div class="bars-plot"><div class="col"><i class="plan" style="--plan:35"></i><i class="act" style="--act:27"></i></div><div class="col"><i class="plan" style="--plan:44"></i><i class="act" style="--act:37"></i></div><div class="col"><i class="plan" style="--plan:53"></i><i class="act" style="--act:47"></i></div><div class="col"><i class="plan" style="--plan:62"></i><i class="act" style="--act:57"></i></div><div class="col"><i class="plan" style="--plan:71"></i><i class="act" style="--act:67"></i></div><div class="col"><i class="plan" style="--plan:80"></i><i class="act" style="--act:72"></i></div><div class="col"><i class="plan" style="--plan:89"></i><i class="act" style="--act:82"></i></div><div class="col"><i class="plan" style="--plan:43"></i><i class="act" style="--act:37"></i></div><div class="col"><i class="plan" style="--plan:52"></i><i class="act" style="--act:47"></i></div><div class="col"><i class="plan" style="--plan:61"></i><i class="act" style="--act:57"></i></div><div class="col"><i class="plan" style="--plan:70"></i><i class="act" style="--act:62"></i></div><div class="col"><i class="plan" style="--plan:79"></i><i class="act" style="--act:72"></i></div></div><div class="bars-legend"><span><i class="lp"></i>Plan</span><span><i class="la"></i>Actual</span></div></div>
@@ -245,9 +248,13 @@
           <header class="panel-head"><h3>Manifold</h3></header>
           <dl class="metrics">
             <div class="metric"><dt>Supply °C</dt><dd>33.1 <small>°C</small></dd></div>
-            <div class="metric"><dt>Return °C</dt><dd>29.9 <small>°C</small></dd></div>
+            <div class="metric"><dt>Return °C</dt><dd class="c-info">29.9 <small>°C</small></dd></div>
           </dl>
           <p class="note">Note: Manifold settings live on each V6 board. Use the paired controller for valve and balancing options.</p>
+        </section>
+        <section class="panel c7">
+          <header class="panel-head"><h3>Zones</h3><p>Choose a zone to see its temperature.</p></header>
+          <div class="comfort"><label for="s-m1z1" data-state="idle"><span class="id">Z1</span><span class="name">Entré</span><span class="val"><b>20.9°</b> 21.0°</span></label><label for="s-m1z2" data-state="idle"><span class="id">Z2</span><span class="name">Køkken</span><span class="val"><b>21.2°</b> 21.0°</span></label><label for="s-m1z3" data-state="calling"><span class="id">Z3</span><span class="name">Spise</span><span class="val"><b>21.4°</b> 21.5°</span></label><label for="s-m1z4" data-state="idle"><span class="id">Z4</span><span class="name">Stue</span><span class="val"><b>21.1°</b> 21.5°</span></label><label for="s-m1z5" data-state="calling"><span class="id">Z5</span><span class="name">Spisekrog</span><span class="val"><b>21.0°</b> 21.5°</span></label><label for="s-m1z6" data-state="idle"><span class="id">Z6</span><span class="name">Kontor</span><span class="val"><b>20.6°</b> 21.0°</span></label></div>
         </section>
       </section>
       <section class="view" id="v-dash-zone" aria-labelledby="h-dash-zone">
@@ -258,6 +265,12 @@
             <div class="metric"><dt>House temperature</dt><dd>21.4 <small>°C</small></dd></div>
             <div class="metric"><dt>Comfort target</dt><dd>21.5 <small>°C</small></dd></div>
           </dl>
+          <h4>Temperature today</h4>
+          <svg class="insight" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="Temperature today">
+              <path class="area" d="M0 58C28 56 48 44 78 38C112 31 132 24 164 26C198 28 214 34 240 32V80H0Z"/>
+              <path class="goal" d="M0 42H240"/>
+              <path class="line" d="M0 58C28 56 48 44 78 38C112 31 132 24 164 26C198 28 214 34 240 32"/>
+            </svg>
           <p class="note">Zone detail is filled by the coordinator at runtime. This reference page shows layout and navigation only.</p>
         </section>
       </section>

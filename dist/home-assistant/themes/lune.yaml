@@ -1,0 +1,278 @@
+# Genereret af tools/lds_ha.py fra tokens/tokens.json — redigér tokens, ikke denne fil.
+# Lune Design System 2.1.1 · Home Assistant-tema med lyst og mørkt tilstand (+ UIX).
+# Installation: læg filen i /config/themes/ og tilføj i configuration.yaml:
+#   frontend:
+#     themes: !include_dir_merge_named themes
+# Vælg derefter "Lune" under din profil (Tema → Lune, tilstand: Auto/Lys/Mørk).
+# Med UI eXtension (UIX) installeret får HA også LDS-navbar, kortdybde, dialoger og Geist (se uix-*).
+Lune:
+  # Fælles (begge tilstande)
+  primary-font-family: "'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+  paper-font-common-base_-_font-family: "'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+  ha-font-family-body: "'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+  ha-card-border-radius: "16px"
+  ha-card-border-width: "1px"
+  ha-card-box-shadow: "none"
+  ha-dialog-border-radius: "24px"
+  ha-badge-border-radius: "999px"
+
+  # ---- UIX: kræver UI eXtension (HACS). Uden UIX ignoreres disse nøgler bare. ----
+  uix-theme: Lune
+  # Geist som variabel font. Læg filen i /config/www/fonts/ (serveres som /local/fonts/).
+  uix-fonts: |
+    geist:
+      family: Geist
+      source: url("/local/fonts/Geist-Variable.woff2") format("woff2")
+      descriptors:
+        weight: "100 900"
+        style: normal
+        display: swap
+  ha-font-family-heading: "'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+  # Kort: LDS-dybde (lys topkant + bløde lagdelte skygger i stedet for HA's standardskygge)
+  uix-card: |
+    ha-card {
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 0 0 1px var(--ha-card-border-color), 0 1px 2px rgba(0,0,0,.25), 0 10px 30px rgba(0,0,0,.18) !important;
+      border: none !important;
+    }
+  # Topbjælken som svævende pille (LDS 5.1 Navbar). Indholdet scroller under den.
+  uix-root-yaml: |
+    .: |
+      .header {
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: max(12px, env(safe-area-inset-top)) 16px 0 !important;
+      }
+      .toolbar {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 0 8px !important;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--card-background-color) 82%, transparent) !important;
+        -webkit-backdrop-filter: blur(18px) saturate(1.3);
+        backdrop-filter: blur(18px) saturate(1.3);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 0 0 1px var(--divider-color), 0 10px 30px rgba(0,0,0,.22);
+      }
+      .main-title { font-weight: 600; letter-spacing: -0.01em; }
+  # Dialoger (more-info = LDS-detaljeark): store radier og svævende skygge
+  uix-dialog: |
+    :host {
+      --ha-dialog-border-radius: 24px;
+      --dialog-box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 0 0 1px var(--divider-color), 0 30px 80px rgba(0,0,0,.5);
+    }
+
+  modes:
+    light:
+      primary-color: "#161614"
+      accent-color: "#007748"
+      text-primary-color: "#fbfaf8"
+      primary-text-color: "#161614"
+      secondary-text-color: "#55544f"
+      disabled-text-color: "#66655f"
+      divider-color: "rgba(26,26,20,.16)"
+      primary-background-color: "#fbfaf8"
+      secondary-background-color: "#e4e2da"
+      card-background-color: "#e4e2da"
+      ha-card-background: "#e4e2da"
+      app-header-background-color: "#fbfaf8"
+      app-header-text-color: "#161614"
+      sidebar-background-color: "#fbfaf8"
+      sidebar-text-color: "#55544f"
+      sidebar-icon-color: "#55544f"
+      sidebar-selected-text-color: "#161614"
+      sidebar-selected-icon-color: "#007748"
+      state-icon-color: "#55544f"
+      error-color: "#a52f2f"
+      warning-color: "#6e4c00"
+      success-color: "#27611d"
+      info-color: "#1f5f8b"
+      state-climate-heat-color: "#da5800"
+      state-climate-cool-color: "#196ea9"
+      state-climate-auto-color: "#007748"
+      state-climate-heat_cool-color: "#724aab"
+      state-climate-fan_only-color: "#007a75"
+      state-climate-dry-color: "#007a75"
+      state-water_heater-active-color: "#da5800"
+      state-light-active-color: "#9b7300"
+      state-sun-above_horizon-color: "#9b7300"
+      state-fan-active-color: "#007a75"
+      state-humidifier-on-color: "#007a75"
+      state-valve-open-color: "#007a75"
+      state-plant-active-color: "#5b7f1d"
+      state-person-home-color: "#5b7f1d"
+      state-device_tracker-home-color: "#5b7f1d"
+      state-lock-locked-color: "#27611d"
+      state-lock-unlocked-color: "#6e4c00"
+      state-lock-jammed-color: "#a52f2f"
+      state-alarm_control_panel-armed_away-color: "#4354ab"
+      state-alarm_control_panel-armed_home-color: "#4354ab"
+      state-alarm_control_panel-armed_night-color: "#4354ab"
+      state-alarm_control_panel-triggered-color: "#a52f2f"
+      state-cover-open-color: "#4354ab"
+      state-binary_sensor-active-color: "#4354ab"
+      state-media_player-playing-color: "#a5397e"
+      state-media_player-on-color: "#a5397e"
+      state-vacuum-cleaning-color: "#724aab"
+      state-automation-on-color: "#724aab"
+      state-script-on-color: "#724aab"
+      state-switch-active-color: "#161614"
+      state-input_boolean-on-color: "#161614"
+      switch-checked-color: "#161614"
+      switch-checked-button-color: "#161614"
+      switch-checked-track-color: "#161614"
+      switch-unchecked-button-color: "#55544f"
+      switch-unchecked-track-color: "#d7d5cc"
+      input-fill-color: "#ffffff"
+      input-ink-color: "#161614"
+      energy-solar-color: "#9b7300"
+      energy-grid-return-color: "#007748"
+      energy-non-fossil-color: "#007748"
+      energy-grid-consumption-color: "#196ea9"
+      energy-battery-in-color: "#724aab"
+      energy-battery-out-color: "#724aab"
+      energy-gas-color: "#da5800"
+      energy-water-color: "#007a75"
+      rgb-state-icon-color: "85, 84, 79"
+      rgb-state-climate-heat-color: "218, 88, 0"
+      rgb-state-climate-cool-color: "25, 110, 169"
+      rgb-state-climate-auto-color: "0, 119, 72"
+      rgb-state-climate-heat_cool-color: "114, 74, 171"
+      rgb-state-climate-fan_only-color: "0, 122, 117"
+      rgb-state-climate-dry-color: "0, 122, 117"
+      rgb-state-water_heater-active-color: "218, 88, 0"
+      rgb-state-light-active-color: "155, 115, 0"
+      rgb-state-sun-above_horizon-color: "155, 115, 0"
+      rgb-state-fan-active-color: "0, 122, 117"
+      rgb-state-humidifier-on-color: "0, 122, 117"
+      rgb-state-valve-open-color: "0, 122, 117"
+      rgb-state-plant-active-color: "91, 127, 29"
+      rgb-state-person-home-color: "91, 127, 29"
+      rgb-state-device_tracker-home-color: "91, 127, 29"
+      rgb-state-lock-locked-color: "39, 97, 29"
+      rgb-state-lock-unlocked-color: "110, 76, 0"
+      rgb-state-lock-jammed-color: "165, 47, 47"
+      rgb-state-alarm_control_panel-armed_away-color: "67, 84, 171"
+      rgb-state-alarm_control_panel-armed_home-color: "67, 84, 171"
+      rgb-state-alarm_control_panel-armed_night-color: "67, 84, 171"
+      rgb-state-alarm_control_panel-triggered-color: "165, 47, 47"
+      rgb-state-cover-open-color: "67, 84, 171"
+      rgb-state-binary_sensor-active-color: "67, 84, 171"
+      rgb-state-media_player-playing-color: "165, 57, 126"
+      rgb-state-media_player-on-color: "165, 57, 126"
+      rgb-state-vacuum-cleaning-color: "114, 74, 171"
+      rgb-state-automation-on-color: "114, 74, 171"
+      rgb-state-script-on-color: "114, 74, 171"
+      rgb-primary-color: "22, 22, 20"
+      rgb-accent-color: "0, 119, 72"
+      rgb-error-color: "165, 47, 47"
+      rgb-warning-color: "110, 76, 0"
+      rgb-success-color: "39, 97, 29"
+      rgb-info-color: "31, 95, 139"
+      ha-card-border-color: "rgba(26,26,20,.08)"
+    dark:
+      primary-color: "#f3f4f6"
+      accent-color: "#51bd85"
+      text-primary-color: "#0e0f10"
+      primary-text-color: "#f3f4f6"
+      secondary-text-color: "#a2a6ad"
+      disabled-text-color: "#8a8f97"
+      divider-color: "rgba(240,242,245,.09)"
+      primary-background-color: "#0e0f10"
+      secondary-background-color: "#191a1c"
+      card-background-color: "#191a1c"
+      ha-card-background: "#191a1c"
+      app-header-background-color: "#0e0f10"
+      app-header-text-color: "#f3f4f6"
+      sidebar-background-color: "#0e0f10"
+      sidebar-text-color: "#a2a6ad"
+      sidebar-icon-color: "#a2a6ad"
+      sidebar-selected-text-color: "#f3f4f6"
+      sidebar-selected-icon-color: "#51bd85"
+      state-icon-color: "#a2a6ad"
+      error-color: "#ff6362"
+      warning-color: "#fcb442"
+      success-color: "#70ca68"
+      info-color: "#65b2f1"
+      state-climate-heat-color: "#f67400"
+      state-climate-cool-color: "#62ace8"
+      state-climate-auto-color: "#51bd85"
+      state-climate-heat_cool-color: "#b093e5"
+      state-climate-fan_only-color: "#4ec3bd"
+      state-climate-dry-color: "#4ec3bd"
+      state-water_heater-active-color: "#f67400"
+      state-light-active-color: "#ebbd57"
+      state-sun-above_horizon-color: "#ebbd57"
+      state-fan-active-color: "#4ec3bd"
+      state-humidifier-on-color: "#4ec3bd"
+      state-valve-open-color: "#4ec3bd"
+      state-plant-active-color: "#a3cf68"
+      state-person-home-color: "#a3cf68"
+      state-device_tracker-home-color: "#a3cf68"
+      state-lock-locked-color: "#70ca68"
+      state-lock-unlocked-color: "#fcb442"
+      state-lock-jammed-color: "#ff6362"
+      state-alarm_control_panel-armed_away-color: "#7e93e2"
+      state-alarm_control_panel-armed_home-color: "#7e93e2"
+      state-alarm_control_panel-armed_night-color: "#7e93e2"
+      state-alarm_control_panel-triggered-color: "#ff6362"
+      state-cover-open-color: "#7e93e2"
+      state-binary_sensor-active-color: "#7e93e2"
+      state-media_player-playing-color: "#de82b7"
+      state-media_player-on-color: "#de82b7"
+      state-vacuum-cleaning-color: "#b093e5"
+      state-automation-on-color: "#b093e5"
+      state-script-on-color: "#b093e5"
+      state-switch-active-color: "#f3f4f6"
+      state-input_boolean-on-color: "#f3f4f6"
+      switch-checked-color: "#f3f4f6"
+      switch-checked-button-color: "#f3f4f6"
+      switch-checked-track-color: "#f3f4f6"
+      switch-unchecked-button-color: "#a2a6ad"
+      switch-unchecked-track-color: "#232427"
+      input-fill-color: "#141517"
+      input-ink-color: "#f3f4f6"
+      energy-solar-color: "#ebbd57"
+      energy-grid-return-color: "#51bd85"
+      energy-non-fossil-color: "#51bd85"
+      energy-grid-consumption-color: "#62ace8"
+      energy-battery-in-color: "#b093e5"
+      energy-battery-out-color: "#b093e5"
+      energy-gas-color: "#f67400"
+      energy-water-color: "#4ec3bd"
+      rgb-state-icon-color: "162, 166, 173"
+      rgb-state-climate-heat-color: "246, 116, 0"
+      rgb-state-climate-cool-color: "98, 172, 232"
+      rgb-state-climate-auto-color: "81, 189, 133"
+      rgb-state-climate-heat_cool-color: "176, 147, 229"
+      rgb-state-climate-fan_only-color: "78, 195, 189"
+      rgb-state-climate-dry-color: "78, 195, 189"
+      rgb-state-water_heater-active-color: "246, 116, 0"
+      rgb-state-light-active-color: "235, 189, 87"
+      rgb-state-sun-above_horizon-color: "235, 189, 87"
+      rgb-state-fan-active-color: "78, 195, 189"
+      rgb-state-humidifier-on-color: "78, 195, 189"
+      rgb-state-valve-open-color: "78, 195, 189"
+      rgb-state-plant-active-color: "163, 207, 104"
+      rgb-state-person-home-color: "163, 207, 104"
+      rgb-state-device_tracker-home-color: "163, 207, 104"
+      rgb-state-lock-locked-color: "112, 202, 104"
+      rgb-state-lock-unlocked-color: "252, 180, 66"
+      rgb-state-lock-jammed-color: "255, 99, 98"
+      rgb-state-alarm_control_panel-armed_away-color: "126, 147, 226"
+      rgb-state-alarm_control_panel-armed_home-color: "126, 147, 226"
+      rgb-state-alarm_control_panel-armed_night-color: "126, 147, 226"
+      rgb-state-alarm_control_panel-triggered-color: "255, 99, 98"
+      rgb-state-cover-open-color: "126, 147, 226"
+      rgb-state-binary_sensor-active-color: "126, 147, 226"
+      rgb-state-media_player-playing-color: "222, 130, 183"
+      rgb-state-media_player-on-color: "222, 130, 183"
+      rgb-state-vacuum-cleaning-color: "176, 147, 229"
+      rgb-state-automation-on-color: "176, 147, 229"
+      rgb-state-script-on-color: "176, 147, 229"
+      rgb-primary-color: "243, 244, 246"
+      rgb-accent-color: "81, 189, 133"
+      rgb-error-color: "255, 99, 98"
+      rgb-warning-color: "252, 180, 66"
+      rgb-success-color: "112, 202, 104"
+      rgb-info-color: "101, 178, 241"
+      ha-card-border-color: "rgba(240,242,245,.05)"
