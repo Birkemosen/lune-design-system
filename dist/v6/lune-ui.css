@@ -40,6 +40,8 @@
     --bg: light-dark(#fbfaf8, #0e0f10);
     --card: light-dark(#e4e2da, #191a1c);
     --raised: light-dark(#d7d5cc, #232427);
+    --lift-bg: light-dark(#fbfaf8, #232427);
+    --lift-shadow-c: light-dark(rgba(26,26,20,.10), rgba(0,0,0,.45));
     --field: light-dark(#ffffff, #141517);
     --border: light-dark(rgba(26,26,20,.16), rgba(240,242,245,.09));
     --field-edge: light-dark(rgba(26,26,20,.24), rgba(240,242,245,.13));
@@ -151,6 +153,7 @@
     /* shadow */
     --card-edge: 0 0 0 1px var(--card-edge-c);
     --float: inset 0 1px 0 rgba(255,255,255,.07), 0 0 0 1px var(--border), 0 30px 80px rgba(0,0,0,.5);
+    --lift: 0 0 0 1px var(--card-edge-c), 0 1px 2px var(--lift-shadow-c), 0 10px 28px var(--lift-shadow-c);
     /* motion */
     --ease: cubic-bezier(.4,0,.2,1);
     --dur: 200ms;
