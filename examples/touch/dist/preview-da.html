@@ -126,6 +126,7 @@
     --fs-xl: 1.5rem;
     --fs-2xl: 2rem;
     --fs-hero: 4rem;
+    --fs-display: 3rem;
     --fs-panel: var(--fs-lg);
     --fs-view: var(--fs-2xl);
     /* space */
@@ -149,6 +150,7 @@
     --panel-gap: var(--space-4);
     --row-h: 40px;
     --tile-h: auto;
+    --room-min: 152px;
     --container: 1200px;
     --sheet-w: 520px;
     --sheet-inset: 12px;
@@ -1319,65 +1321,112 @@
   .chip-icon[data-tone="neutral"]{ background: var(--raised); color: var(--fg); }
 
   /* ---- Hjem (DESIGN.md 15.7): hovedsektion, termostat-ring, felter, varmekort ---- */
-  /* Hovedsektion: én sætning om situationen + hustemperatur og mål i ringen. */
+  /* Hovedsektion: hilsen, én overskrift i to toner (situation · varmekilde), én sætning,
+     to genveje (varmekilde, næste varme) nederst — og hustemperatur + mål i ringen. */
   .home-hero {
-    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-5) var(--space-7);
-    padding: var(--space-6) var(--panel-pad);
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; gap: var(--space-6) var(--space-7);
+    padding: var(--space-7) var(--space-7) var(--space-6);
     border-radius: var(--r-card); background: var(--card); box-shadow: var(--card-edge);
   }
-  .home-hero > div > small { font-size: var(--fs-sm); color: var(--muted); }
-  .home-hero h2 { margin-top: var(--space-1); font-size: var(--fs-2xl); letter-spacing: -.03em; line-height: 1.1; }
-  .home-hero p { margin-top: var(--space-3); max-width: 52ch; color: var(--muted); }
-  @media (max-width: 767.98px) { .home-hero { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; } }
+  .hero-text { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
+  .hero-text > small { font-size: var(--fs-sm); font-weight: 500; color: var(--accent-ink); }
+  .home-hero h2 { font-size: var(--fs-display); font-weight: 600; letter-spacing: -.04em; line-height: 1.05; text-wrap: balance; }
+  .home-hero h2 .sub { display: block; color: var(--muted); }
+  .home-hero h2 .sub:empty { display: none; }
+  .hero-text > p { max-width: 52ch; font-size: var(--fs-lg); line-height: 1.45; color: var(--muted); }
+  /* Genveje: samme flade som felterne; åbner tingens ark. */
+  .hero-facts { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: auto; padding-top: var(--space-4); }
+  .hero-fact {
+    display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0 var(--space-3);
+    flex: 1 1 0; min-width: min(100%, 15rem); max-width: 20rem; padding: var(--space-3) var(--space-4);
+    border: 0; border-radius: var(--r-tile); background: var(--card); box-shadow: var(--card-edge);
+    color: var(--fg); font: inherit; text-align: left; cursor: pointer;
+    transition: background var(--dur) var(--ease);
+  }
+  .hero-fact:hover { background: var(--raised); }
+  .hero-fact > .chip-icon { grid-row: 1 / 4; }
+  .hero-fact > small { font-size: var(--fs-xs); color: var(--muted); }
+  .hero-fact > b { font-size: var(--fs-lg); font-weight: 600; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hero-fact > span { font-size: var(--fs-xs); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hero-fact[hidden] { display: none; }
+  @media (max-width: 1099.98px) { .home-hero h2 { font-size: var(--fs-2xl); } }
+  @media (max-width: 767.98px) {
+    .home-hero { grid-template-columns: minmax(0, 1fr); padding: var(--space-5) var(--panel-pad); }
+    .home-hero h2 { font-size: var(--fs-2xl); }
+    .hero-text > p { font-size: var(--fs-md); }
+    /* Mobil: tekst og ring. */
+    .hero-text { display: contents; }
+    .home-hero { row-gap: var(--space-3); }
+    .home-hero .thermo { order: 1; margin-block: var(--space-4); }
+    .hero-facts { display: none; }    /* felterne står lige under */
+  }
 
-  /* Termostat-ring: 270°-bue. Sporet er neutralt, buen er målet (varme, én farve, 3.2.2),
-     mærket er den aktuelle temperatur. --v og --now = 0–100 % af skalaen. */
-  .thermo { display: grid; justify-items: center; gap: var(--space-2); }
-  .thermo-ring { position: relative; width: min(240px, 64vw); aspect-ratio: 1; }
+  /* Termostat-ring: 270°-bue. Sporet er neutralt, buen er husets temperatur nu (varme, én farve,
+     3.2.2), mærket er målet. --now og --v = 0–100 % af skalaen. */
+  .thermo { display: grid; justify-items: center; align-content: space-between; gap: var(--space-4); }
+  .thermo-ring { position: relative; width: min(260px, 64vw); aspect-ratio: 1; }
   .thermo-ring svg { display: block; width: 100%; height: 100%; transform: rotate(135deg); }
   .thermo-ring circle { fill: none; stroke-linecap: round; }
-  .thermo-ring .trk { stroke: var(--seg-off); stroke-width: 10; stroke-dasharray: 75 100; }
-  .thermo-ring .arc { stroke: var(--accent); stroke-width: 10; stroke-dasharray: calc(var(--v, 0) * .75) 100; }
-  .thermo-ring .now { stroke: var(--fg); stroke-width: 14; stroke-dasharray: .1 100; stroke-dashoffset: calc(var(--now, 0) * -.75); }
-  .thermo-val { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; text-align: center; }
-  .thermo-val b { font-size: var(--fs-hero); font-weight: 600; letter-spacing: -.05em; line-height: .95; }
-  .thermo-val b small { font-size: var(--fs-xl); color: var(--muted); letter-spacing: 0; }
+  .thermo-ring .trk { stroke: var(--seg-off); stroke-width: 7; stroke-dasharray: 75 100; }
+  .thermo-ring .arc { stroke: var(--accent); stroke-width: 7; stroke-dasharray: calc(var(--now, 0) * .75) 100; }
+  .thermo-ring :is(.tg, .tg-edge) { stroke-dasharray: .1 100; stroke-dashoffset: calc(var(--v, 0) * -.75); }
+  .thermo-ring .tg-edge { stroke: var(--card); stroke-width: 9; }
+  .thermo-ring .tg { stroke: var(--fg); stroke-width: 5; }
+  .thermo-val { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: var(--space-1); text-align: center; }
+  .thermo-val b { font-size: var(--fs-hero); font-weight: 600; letter-spacing: -.05em; line-height: .95; font-variant-numeric: tabular-nums; }
+  .thermo-val b small { margin-left: .02em; font-size: .4em; color: var(--muted); letter-spacing: 0; vertical-align: .95em; }
   .thermo-val span { font-size: var(--fs-sm); color: var(--muted); }
+  .thermo-val span:empty { display: none; }
   .thermo .climate { gap: var(--space-2); }
+  /* Målet vises med enhed og sprogets decimaltegn (tekstfelt, ikke type=number). */
+  .climate .target .value:has(> .unit) { grid-template-columns: auto auto; justify-content: center; align-items: start; }
+  .climate .target .value:has(> .unit) > small { grid-column: 1 / -1; justify-self: center; }
+  .climate .target .value > .unit { font-size: var(--fs-lg); font-weight: 600; color: var(--muted); line-height: 1.6; }
+  .climate .target .value:has(> .unit) input { width: 4ch; text-align: right; font-variant-numeric: tabular-nums; }
 
-  /* Felter på Hjem: maks. 4 i en række. Ét felt = én ting; hele feltet åbner tingens ark. */
+  /* Overskrift over en blok på Hjem: lille linje + titel. */
+  .home-head { display: grid; gap: var(--space-1); margin-top: var(--space-4); }
+  .home-head small { font-size: var(--fs-sm); color: var(--muted); }
+  .home-head h3 { font-size: var(--fs-xl); font-weight: 600; letter-spacing: -.02em; }
+
+  /* Felter på Hjem: maks. 4 i en række. Ét felt = én ting; hele feltet åbner tingens ark.
+     Hoved øverst, tal under, visualiseringen i bunden (felterne i en række er lige høje). */
   .home-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
   @media (max-width: 1099.98px) { .home-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (max-width: 599.98px)  { .home-tiles { grid-template-columns: minmax(0, 1fr); } }
   .home-tile {
     display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
-    grid-template-areas: "icon title go" "icon status go" "val val val" "viz viz viz";
-    align-items: center; gap: 2px var(--space-3);
-    width: 100%; padding: var(--space-4);
+    grid-template-areas: "icon title go" "icon status go" "val val val" "price price price" "viz viz viz";
+    grid-template-rows: auto auto auto auto 1fr;
+    align-items: center; gap: 0 var(--space-3);
+    width: 100%; padding: var(--space-5);
     border: 0; border-radius: var(--r-card); background: var(--card); box-shadow: var(--card-edge);
     color: var(--fg); font: inherit; text-align: left; cursor: pointer;
     transition: background var(--dur) var(--ease);
   }
   .home-tile:hover { background: var(--raised); }
   .home-tile > .chip-icon { grid-area: icon; }
-  .home-tile > b { grid-area: title; font-size: var(--fs-md); font-weight: 600; }
-  .home-tile > .ht-status { grid-area: status; overflow: hidden; font-size: var(--fs-sm); color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
+  .home-tile > b { grid-area: title; align-self: end; font-size: var(--fs-md); font-weight: 600; }
+  .home-tile > .ht-status { grid-area: status; align-self: start; overflow: hidden; font-size: var(--fs-sm); color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
   .home-tile::after { content: "›"; grid-area: go; font-size: var(--fs-lg); color: var(--muted); }
-  .home-tile > .ht-val { grid-area: val; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-2); margin-top: var(--space-3);
+  .home-tile > .ht-val { grid-area: val; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-2); margin-top: var(--space-4);
     font-size: var(--fs-xl); font-weight: 600; letter-spacing: -.02em; line-height: 1.1; }
   .home-tile > .ht-val small { font-size: var(--fs-sm); font-weight: 400; color: var(--muted); letter-spacing: 0; }
-  .home-tile > .ht-viz { grid-area: viz; display: block; width: 100%; height: 48px; margin-top: var(--space-2); overflow: visible; }
+  .home-tile > .ht-viz { grid-area: viz; align-self: end; display: block; width: 100%; height: 64px; margin-top: var(--space-4); overflow: visible; }
   .home-tile[data-empty] > .ht-viz { display: none; }
   /* Én ekstra linje (fx aktuel elpris + skala-chip i Næste varme). */
-  .home-tile > .ht-price { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-1); font-size: var(--fs-sm); color: var(--muted); }
+  .home-tile > .ht-price { grid-area: price; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-2); font-size: var(--fs-sm); color: var(--muted); }
+  .home-tile > .ht-price[hidden] { display: none; }
   .ht-viz .t  { fill: none; stroke: var(--fg); stroke-width: 1.6; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-  .ht-viz .f  { fill: none; stroke: var(--accent); stroke-width: 1.6; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .ht-viz .f  { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
   .ht-viz .r  { fill: none; stroke: var(--data-return); stroke-width: 1.6; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
   .ht-viz .a  { fill: url(#lds-fade-heat); }
+  .ht-viz .wa { fill: var(--seg-off); opacity: .6; }
   .ht-viz .w  { fill: none; stroke: var(--data-return); stroke-width: 1.6; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
   .ht-viz .pre { fill: url(#lds-hatch-heat); }
+  .ht-viz .base { stroke: var(--border); stroke-width: 1; stroke-dasharray: 2 3; vector-effect: non-scaling-stroke; }
   .ht-viz .col { fill: var(--seg-off); }
-  .ht-viz .col.on { fill: var(--accent); }
+  .ht-viz .col.on { fill: var(--violet); }
 
   /* Skala-chip (5 trin, scale-good-bad: pris, luft, signal). Tallet står altid i chippen. */
   .scale-chip { display: inline-flex; align-items: center; height: 20px; padding: 0 var(--space-2); border-radius: var(--r-pill);
@@ -1389,18 +1438,54 @@
   .scale-chip[data-scale="4"] { background: var(--scale-good-bad-4); color: light-dark(var(--on-fill), var(--on-warn-fill)); }
   .scale-chip[data-scale="5"] { background: var(--scale-good-bad-5); color: light-dark(var(--on-fill), var(--on-warn-fill)); }
 
-  /* Varmekort: rum grupperet pr. manifold. Rummene er zonefelter (.tile) med 10-segment
-     ventilbjælke, procent og afvigelses-chip; gruppeoverskriften åbner manifoldens ark. */
+  /* Varmekort: rum grupperet pr. manifold. Rumfelterne fylder efter rummets areal (--area),
+     har afvigelses-chip (5 trin, forklaret i .heatmap-legend), temperatur og en 5-trins
+     ventilbjælke med «x % åben» under. Gruppeoverskriften åbner manifoldens ark. */
+  .heatmap-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3) var(--space-5); }
+  .heatmap-head > div:first-child { display: grid; gap: var(--space-1); flex: 1 0 auto; }
+  .heatmap-head small { font-size: var(--fs-sm); color: var(--muted); }
+  .heatmap-head h3 { font-size: var(--fs-xl); font-weight: 600; letter-spacing: -.02em; }
+  .heatmap-legend { display: flex; flex-wrap: wrap; flex: 0 1 auto; align-items: start; gap: var(--space-2) var(--space-5); font-size: var(--fs-xs); color: var(--muted); }
+  .heatmap-legend ol { display: flex; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
+  .heatmap-legend li { display: grid; justify-items: center; gap: var(--space-1); min-width: var(--space-6); font-variant-numeric: tabular-nums; }
+  .heatmap-legend li::before { content: ""; width: var(--space-6); height: var(--space-3); border-radius: var(--r-pill); background: var(--scale-cold-warm-3); }
+  .heatmap-legend li[data-dev="1"]::before { background: var(--scale-cold-warm-1); }
+  .heatmap-legend li[data-dev="2"]::before { background: var(--scale-cold-warm-2); }
+  .heatmap-legend li[data-dev="4"]::before { background: var(--scale-cold-warm-4); }
+  .heatmap-legend li[data-dev="5"]::before { background: var(--scale-cold-warm-5); }
+  .heatmap-legend > span { display: grid; justify-items: start; gap: var(--space-1); }
+  .heatmap-legend .lvl { display: grid; grid-template-columns: repeat(5, var(--space-2)); gap: 2px; padding-top: var(--space-1); }
+  .heatmap-legend .lvl i { height: 4px; border-radius: 2px; background: var(--seg-off); }
+  .heatmap-legend .lvl i:nth-child(-n+3) { background: var(--fg); }
+
   .heatmap { display: grid; gap: var(--space-5); }
   .room-group { display: grid; gap: var(--space-3); }
   .room-group-head { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); justify-self: start;
     padding: 0; border: 0; background: none; color: var(--fg); font: inherit; font-size: var(--fs-md); font-weight: 600; cursor: pointer; }
   .room-group-head small { font-size: var(--fs-sm); font-weight: 400; color: var(--muted); }
-  .room-group-head::after { content: "›"; color: var(--muted); }
-  .room-group-head:hover { color: var(--muted); }
-  .room-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: var(--space-2); }
-  .room-grid .tile { padding: var(--space-3); }
-  .room-grid .tile-val { font-size: var(--fs-xl); }
+  button.room-group-head::after { content: "›"; color: var(--muted); }
+  button.room-group-head:hover { color: var(--muted); }
+  .room-grid { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .room-grid .tile {
+    flex: var(--area, 12) 1 0; min-width: var(--room-min);
+    grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name dev" "val val" "lvl lvl" "pct pct";
+    row-gap: var(--space-2); padding: var(--space-4);
+  }
+  .room-grid .tile-id { display: none; }
+  .room-grid .tile-dev { display: inline-flex; }
+  .room-grid .tile-name { font-weight: 600; }
+  .room-grid .tile-val { font-size: var(--fs-xl); margin-block: var(--space-1); }
+  .room-grid .tile .lvl { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-1); direction: ltr; }
+  .room-grid .tile .lvl i { background: var(--seg-off); }
+  .room-grid .tile[data-open="1"] .lvl i:nth-child(-n+1),
+  .room-grid .tile[data-open="2"] .lvl i:nth-child(-n+2),
+  .room-grid .tile[data-open="3"] .lvl i:nth-child(-n+3),
+  .room-grid .tile[data-open="4"] .lvl i:nth-child(-n+4),
+  .room-grid .tile[data-open="5"] .lvl i { background: currentColor; }
+  .room-grid .tile[data-state="fault"] .lvl i { background: var(--danger); }
+  .room-grid .tile-pct { justify-self: start; font-size: var(--fs-xs); font-weight: 500; text-align: left; }
+  /* Grupperede zoner er ét rum her; grupperingen vises i rummets ark. */
+  .room-grid .tile[data-group] { box-shadow: var(--card-edge); outline: 0; }
   /* V6 offline: seneste værdier dæmpet + besked; farve er aldrig eneste signal. */
   .room-group[data-offline] .room-grid { opacity: .55; }
   .offline-note { font-size: var(--fs-sm); color: var(--warn); }
@@ -1408,9 +1493,11 @@
     border-radius: 50%; background: var(--warn-fill); color: var(--on-warn-fill); font-size: var(--fs-xs); font-weight: 700; vertical-align: -2px; }
   .heatmap-note { font-size: var(--fs-xs); color: var(--faint); }
   @media (max-width: 599.98px) {
-    .room-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .room-grid .tile { grid-template-areas: "id name" "val val" "lvl pct"; grid-template-columns: auto minmax(0, 1fr); text-align: left; border-radius: var(--r-tile); }
+    .room-grid .tile { padding: var(--space-3); }
+    .room-grid .tile { row-gap: var(--space-2); border-radius: var(--r-tile); text-align: left; }
     .room-grid .tile :is(.tile-name, .tile-pct) { display: block; }
+    .room-grid .tile .lvl { gap: var(--space-1); margin-top: 0; overflow: visible; }
+    .room-grid .tile .lvl i { height: 4px; border-radius: 2px; }
     .room-grid .tile .tile-val { font-size: var(--fs-lg); }
   }
 
@@ -2006,95 +2093,103 @@
           <div class="panel-foot"><button class="btn" type="button" popovertarget="sheet-r09">Åbn Gang</button></div>
         </div>
         <section class="home-hero">
-          <div>
+          <div class="hero-text">
             <small>God morgen</small>
-            <h2 id="h-home">Varmt nok overalt. Varmepumpen hviler.</h2>
+            <h2 id="h-home">Varmt nok overalt. <span class="sub">Varmepumpen hviler.</span></h2>
             <p>Huset er 0,9° over målet, og 2 rum kalder på varme. Odin planlægger næste varme kl. 06, og vinden øges i nat.</p>
+            <div class="hero-facts">
+              <button class="hero-fact" type="button" popovertarget="sheet-heat"><span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3c3 4 5 6.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-5 .5 2 1.5 3 3 3-1-3 0-6 0-8z"/></svg></span><small>Varmepumpe</small><b>36,0° → 29,0°</b><span>hviler · Odin styrer</span></button>
+              <button class="hero-fact" type="button" popovertarget="sheet-plan"><span class="chip-icon" data-tone="violet" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span><small>Næste varme</small><b>kl. 06–09</b><span>≈ 8,1 kWh</span></button>
+            </div>
           </div>
           <form class="thermo" data-save="house-target">
             <div class="thermo-ring" style="--v:60;--now:69" role="img" aria-label="Huset er 21,9 °C, målet er 21,0 °C">
-              <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="44" pathLength="100"/><circle class="arc" cx="50" cy="50" r="44" pathLength="100"/><circle class="now" cx="50" cy="50" r="44" pathLength="100"/></svg>
-              <div class="thermo-val"><b data-bind="house.temp">21,9<small>°</small></b><span>Huset nu</span></div>
+              <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="44" pathLength="100"/><circle class="arc" cx="50" cy="50" r="44" pathLength="100"/><circle class="tg-edge" cx="50" cy="50" r="44" pathLength="100"/><circle class="tg" cx="50" cy="50" r="44" pathLength="100"/></svg>
+              <div class="thermo-val"><span>Huset nu</span><b data-bind="house.temp">21,9<small>°</small></b><span>ude 8,4°</span></div>
             </div>
             <div class="climate">
               <div class="target">
                 <button type="button" data-step="-1" aria-label="Sænk husets mål">−</button>
-                <label class="value"><small>Mål °C</small><input type="number" inputmode="decimal" id="house_target" name="house_target" value="21.0" min="5" max="30" step="0.5"></label>
+                <label class="value"><small>Mål</small><input type="text" inputmode="decimal" id="house_target" name="house_target" value="21,0" data-min="5" data-max="30" data-step-size="0.5" autocomplete="off"><span class="unit" aria-hidden="true">°</span></label>
                 <button type="button" data-step="1" aria-label="Hæv husets mål">+</button>
               </div>
               <p class="autosave" aria-live="polite"></p>
             </div>
           </form>
         </section>
+        <header class="home-head"><small>Lige nu</small><h3>Varme, plan og vejr</h3></header>
         <div class="home-tiles">
           <button class="home-tile" type="button" popovertarget="sheet-heat">
             <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3c3 4 5 6.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-5 .5 2 1.5 3 3 3-1-3 0-6 0-8z"/></svg></span><b>Varme</b>
             <span class="ht-status">Hviler · Odin styrer</span>
             <span class="ht-val">36,0° → 29,0° <small>fremløb → retur</small></span>
-            <svg class="ht-viz" viewBox="0 0 240 48" preserveAspectRatio="none" aria-hidden="true"><polyline class="f" points="0.0,20.4 10.4,19.1 20.9,18.2 31.3,16.4 41.7,14.8 52.2,14.0 62.6,12.5 73.0,9.7 83.5,9.4 93.9,8.6 104.3,6.9 114.8,7.7 125.2,7.5 135.7,8.9 146.1,9.8 156.5,12.0 167.0,12.8 177.4,14.1 187.8,16.3 198.3,17.4 208.7,18.7 219.1,20.6 229.6,19.9 240.0,20.2"/><polyline class="r" points="0.0,40.9 10.4,40.7 20.9,39.7 31.3,39.3 41.7,38.6 52.2,37.4 62.6,35.9 73.0,35.3 83.5,34.8 93.9,35.0 104.3,34.4 114.8,34.7 125.2,35.0 135.7,35.5 146.1,35.9 156.5,35.8 167.0,36.7 177.4,37.6 187.8,38.4 198.3,39.9 208.7,40.3 219.1,40.4 229.6,40.5 240.0,40.4"/></svg>
+            <svg class="ht-viz" viewBox="0 0 240 64" preserveAspectRatio="none" aria-hidden="true"><path class="a" d="M0,64 L0.0,27.2 L10.4,25.5 L20.9,24.3 L31.3,21.9 L41.7,19.7 L52.2,18.7 L62.6,16.6 L73.0,12.9 L83.5,12.5 L93.9,11.4 L104.3,9.2 L114.8,10.2 L125.2,10.0 L135.7,11.8 L146.1,13.0 L156.5,16.0 L167.0,17.1 L177.4,18.8 L187.8,21.7 L198.3,23.2 L208.7,25.0 L219.1,27.4 L229.6,26.5 L240.0,27.0 L240,64Z"/><polyline class="f" points="0.0,27.2 10.4,25.5 20.9,24.3 31.3,21.9 41.7,19.7 52.2,18.7 62.6,16.6 73.0,12.9 83.5,12.5 93.9,11.4 104.3,9.2 114.8,10.2 125.2,10.0 135.7,11.8 146.1,13.0 156.5,16.0 167.0,17.1 177.4,18.8 187.8,21.7 198.3,23.2 208.7,25.0 219.1,27.4 229.6,26.5 240.0,27.0"/><polyline class="r" points="0.0,54.5 10.4,54.2 20.9,53.0 31.3,52.4 41.7,51.5 52.2,49.8 62.6,47.9 73.0,47.1 83.5,46.4 93.9,46.7 104.3,45.9 114.8,46.2 125.2,46.7 135.7,47.3 146.1,47.9 156.5,47.7 167.0,49.0 177.4,50.1 187.8,51.2 198.3,53.1 208.7,53.8 219.1,53.8 229.6,54.0 240.0,53.8"/></svg>
           </button>
           <button class="home-tile" type="button" popovertarget="sheet-plan">
             <span class="chip-icon" data-tone="violet" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span><b>Næste varme</b>
             <span class="ht-status">Planlagt af Odin</span>
             <span class="ht-val">kl. 06–09 <small>≈ 8,1 kWh</small></span>
             <span class="ht-price">Elpris nu 1,82 kr/kWh <span class="scale-chip" data-scale="2">Billig</span></span>
-            <svg class="ht-viz" viewBox="0 0 240 48" preserveAspectRatio="none" aria-hidden="true"><rect class="col" x="1" y="46" width="8" height="2"/><rect class="col" x="11" y="46" width="8" height="2"/><rect class="col" x="21" y="46" width="8" height="2"/><rect class="col" x="31" y="46" width="8" height="2"/><rect class="col" x="41" y="46" width="8" height="2"/><rect class="col" x="51" y="46" width="8" height="2"/><rect class="col" x="61" y="46" width="8" height="2"/><rect class="col" x="71" y="46" width="8" height="2"/><rect class="col" x="81" y="46" width="8" height="2"/><rect class="col" x="91" y="46" width="8" height="2"/><rect class="col" x="101" y="46" width="8" height="2"/><rect class="col" x="111" y="46" width="8" height="2"/><rect class="col" x="121" y="46" width="8" height="2"/><rect class="col" x="131" y="46" width="8" height="2"/><rect class="col on" x="141" y="19.588235294117645" width="8" height="28.411764705882355"/><rect class="col on" x="151" y="2.0" width="8" height="46.0"/><rect class="col on" x="161" y="12.823529411764703" width="8" height="35.1764705882353"/><rect class="col" x="171" y="46" width="8" height="2"/><rect class="col" x="181" y="46" width="8" height="2"/><rect class="col" x="191" y="46" width="8" height="2"/><rect class="col" x="201" y="46" width="8" height="2"/><rect class="col" x="211" y="46" width="8" height="2"/><rect class="col" x="221" y="46" width="8" height="2"/><rect class="col" x="231" y="46" width="8" height="2"/></svg>
+            <svg class="ht-viz" viewBox="0 0 240 64" preserveAspectRatio="none" aria-hidden="true"><line class="base" x1="0" y1="63.5" x2="240" y2="63.5"/><rect class="col on" x="142" y="26.941176470588232" width="6" height="37.05882352941177" rx="3"/><rect class="col on" x="152" y="4.0" width="6" height="60.0" rx="3"/><rect class="col on" x="162" y="18.11764705882353" width="6" height="45.88235294117647" rx="3"/></svg>
           </button>
           <button class="home-tile" type="button" popovertarget="sheet-weather">
             <span class="chip-icon" data-tone="info" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9h11a3 3 0 1 0-3-3M3 14h15a3 3 0 1 1-3 3M3 19h7"/></svg></span><b>Vejr</b>
             <span class="ht-status">Forvarmer 6 rum i nat</span>
             <span class="ht-val">8,4° <small>ude · vind 6 m/s</small></span>
-            <svg class="ht-viz" viewBox="0 0 240 48" preserveAspectRatio="none" aria-hidden="true"><rect class="pre" x="150" y="0" width="70" height="48"/><polyline class="t" points="0.0,38.4 10.4,37.2 20.9,33.7 31.3,32.2 41.7,27.9 52.2,24.9 62.6,22.4 73.0,18.4 83.5,17.1 93.9,14.4 104.3,14.4 114.8,14.3 125.2,14.3 135.7,14.9 146.1,18.9 156.5,21.5 167.0,23.7 177.4,26.3 187.8,30.5 198.3,33.8 208.7,34.8 219.1,38.8 229.6,37.8 240.0,39.2"/></svg>
+            <svg class="ht-viz" viewBox="0 0 240 64" preserveAspectRatio="none" aria-hidden="true"><rect class="pre" x="150" y="0" width="70" height="64"/><path class="wa" d="M0,64 L0.0,51.1 L10.4,49.5 L20.9,44.9 L31.3,42.9 L41.7,37.1 L52.2,33.2 L62.6,29.9 L73.0,24.6 L83.5,22.8 L93.9,19.3 L104.3,19.2 L114.8,19.0 L125.2,19.0 L135.7,19.9 L146.1,25.2 L156.5,28.7 L167.0,31.7 L177.4,35.1 L187.8,40.6 L198.3,45.1 L208.7,46.5 L219.1,51.7 L229.6,50.4 L240.0,52.3 L240,64Z"/><polyline class="t" points="0.0,51.1 10.4,49.5 20.9,44.9 31.3,42.9 41.7,37.1 52.2,33.2 62.6,29.9 73.0,24.6 83.5,22.8 93.9,19.3 104.3,19.2 114.8,19.0 125.2,19.0 135.7,19.9 146.1,25.2 156.5,28.7 167.0,31.7 177.4,35.1 187.8,40.6 198.3,45.1 208.7,46.5 219.1,51.7 229.6,50.4 240.0,52.3"/></svg>
           </button>
           <button class="home-tile" type="button" popovertarget="sheet-pump">
-            <span class="chip-icon" data-tone="neutral" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v8l6 4"/></svg></span><b>Cirkulation</b>
+            <span class="chip-icon" data-tone="neutral" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="1.6"/><path d="M12 10.4c0-2.6 1.2-4.4 3.6-5M13.4 12.8c2.3 1.3 3.2 3.3 2.6 5.7M10.6 12.8c-2.3 1.3-4.5 1.2-6.2-.6"/></svg></span><b>Cirkulation</b>
             <span class="ht-status">Pumpen kører</span>
             <span class="ht-val">22,4 <small>l/min · 2,9 m · 38 W</small></span>
-            <svg class="ht-viz" viewBox="0 0 240 48" preserveAspectRatio="none" aria-hidden="true"><polyline class="w" points="0.0,32.7 10.4,31.8 20.9,30.8 31.3,26.6 41.7,26.9 52.2,23.0 62.6,19.5 73.0,19.8 83.5,16.6 93.9,15.2 104.3,16.2 114.8,15.2 125.2,14.8 135.7,16.7 146.1,17.6 156.5,21.3 167.0,23.4 177.4,26.2 187.8,27.3 198.3,28.2 208.7,30.9 219.1,31.6 229.6,33.5 240.0,32.4"/></svg>
+            <svg class="ht-viz" viewBox="0 0 240 64" preserveAspectRatio="none" aria-hidden="true"><polyline class="w" points="0.0,43.6 10.4,42.4 20.9,41.1 31.3,35.5 41.7,35.8 52.2,30.7 62.6,26.0 73.0,26.4 83.5,22.2 93.9,20.3 104.3,21.6 114.8,20.2 125.2,19.7 135.7,22.3 146.1,23.4 156.5,28.4 167.0,31.2 177.4,34.9 187.8,36.4 198.3,37.6 208.7,41.2 219.1,42.2 229.6,44.6 240.0,43.3"/></svg>
           </button></div>
         
         <section class="panel" aria-labelledby="h-heatmap">
-          <header class="panel-head"><h3 id="h-heatmap">Varmekort</h3><p>Rum pr. styring</p></header>
+          <header class="heatmap-head">
+            <div><small>Rum</small><h3 id="h-heatmap">Varmekort</h3></div>
+            <div class="heatmap-legend" role="group" aria-label="Forklaring"><ol><li data-dev="1">≤−1</li><li data-dev="2">−0,3</li><li data-dev="3">±0,3</li><li data-dev="4">+0,3</li><li data-dev="5">≥+1</li></ol><span>° fra mål</span><span><span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>ventil åben</span></div>
+          </header>
           <div class="heatmap">
           <section class="room-group" aria-label="Teknikrum">
             <button class="room-group-head" type="button" popovertarget="sheet-m1">Teknikrum <small>M1 · 36,0° → 29,0°</small></button>
             
             <div class="room-grid">
-            <button class="tile" type="button" popovertarget="sheet-r01" data-state="idle" data-level="2" aria-label="Kontor, Hviler, 22,9°">
-              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">18 %</span>
+            <button class="tile" type="button" popovertarget="sheet-r01" data-state="idle" data-open="1" style="--area:12" aria-label="Kontor, Hviler, 22,9°">
+              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="tile-pct">18 % åben</span>
               <span class="tile-id">Z1</span>
               <span class="tile-name">Kontor</span>
               <span class="tile-dev" data-dev="4">+0,9°</span>
               <span class="tile-val">22,9°</span>
             </button>
-            <button class="tile" type="button" popovertarget="sheet-r02" data-state="idle" data-level="3" aria-label="Hobbyrum, Hviler, 23,0°">
-              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">22 %</span>
+            <button class="tile" type="button" popovertarget="sheet-r02" data-state="idle" data-open="2" style="--area:16" aria-label="Hobbyrum, Hviler, 23,0°">
+              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="tile-pct">22 % åben</span>
               <span class="tile-id">Z2</span>
               <span class="tile-name">Hobbyrum</span>
               <span class="tile-dev" data-dev="5">+1,0°</span>
               <span class="tile-val">23,0°</span>
             </button>
-            <button class="tile" type="button" popovertarget="sheet-r03" data-state="idle" data-level="1" aria-label="Bryggers, Hviler, 21,6°">
-              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">4 %</span>
+            <button class="tile" type="button" popovertarget="sheet-r03" data-state="idle" data-open="1" style="--area:8" aria-label="Bryggers, Hviler, 21,6°">
+              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="tile-pct">4 % åben</span>
               <span class="tile-id">Z3</span>
               <span class="tile-name">Bryggers</span>
               <span class="tile-dev" data-dev="4">+0,6°</span>
               <span class="tile-val">21,6°</span>
             </button>
-            <button class="tile" type="button" popovertarget="sheet-r04" data-state="idle" data-level="1" aria-label="Køkken, Hviler, 21,7°">
-              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">0 %</span>
+            <button class="tile" type="button" popovertarget="sheet-r04" data-state="idle" data-open="0" style="--area:14" aria-label="Køkken, Hviler, 21,7°">
+              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="tile-pct">lukket</span>
               <span class="tile-id">Z4</span>
               <span class="tile-name">Køkken</span>
               <span class="tile-dev" data-dev="4">+0,7°</span>
               <span class="tile-val">21,7°</span>
             </button>
-            <button class="tile" type="button" popovertarget="sheet-r05" data-state="calling" data-level="6" aria-label="Stue, Kalder på varme, 21,4°">
-              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">54 %</span>
+            <button class="tile" type="button" popovertarget="sheet-r05" data-state="calling" data-open="3" style="--area:48" aria-label="Stue, Kalder på varme, 21,4°">
+              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="tile-pct">54 % åben</span>
               <span class="tile-id">Z5</span>
               <span class="tile-name">Stue</span>
               <span class="tile-dev" data-dev="3">−0,1°</span>
@@ -2105,41 +2200,41 @@
             <button class="room-group-head" type="button" popovertarget="sheet-m2">1. sal <small>M2 · 33,2° → 29,6°</small></button>
             
             <div class="room-grid">
-            <button class="tile" type="button" popovertarget="sheet-r06" data-state="calling" data-level="7" aria-label="Josephine, Kalder på varme, 21,4°">
-              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">62 %</span>
+            <button class="tile" type="button" popovertarget="sheet-r06" data-state="calling" data-open="4" style="--area:12" aria-label="Josephine, Kalder på varme, 21,4°">
+              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="tile-pct">62 % åben</span>
               <span class="tile-id">Z1</span>
               <span class="tile-name">Josephine</span>
               <span class="tile-dev" data-dev="2">−0,6°</span>
               <span class="tile-val">21,4°</span>
             </button>
-            <button class="tile" type="button" popovertarget="sheet-r07" data-state="idle" data-level="4" aria-label="Laura, Hviler, 22,2°">
-              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">35 %</span>
+            <button class="tile" type="button" popovertarget="sheet-r07" data-state="idle" data-open="2" style="--area:11" aria-label="Laura, Hviler, 22,2°">
+              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="tile-pct">35 % åben</span>
               <span class="tile-id">Z2</span>
               <span class="tile-name">Laura</span>
               <span class="tile-dev" data-dev="3">+0,2°</span>
               <span class="tile-val">22,2°</span>
             </button>
-            <button class="tile" type="button" popovertarget="sheet-r08" data-state="idle" data-level="2" aria-label="Toilet, Hviler, 22,7°">
-              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">14 %</span>
+            <button class="tile" type="button" popovertarget="sheet-r08" data-state="idle" data-open="1" style="--area:4" aria-label="Toilet, Hviler, 22,7°">
+              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="tile-pct">14 % åben</span>
               <span class="tile-id">Z3</span>
               <span class="tile-name">Toilet</span>
               <span class="tile-dev" data-dev="4">+0,7°</span>
               <span class="tile-val">22,7°</span>
             </button>
-            <button class="tile" type="button" popovertarget="sheet-r09" data-state="fault" data-level="0" aria-label="Gang, Motorfejl, Fejl">
-              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">0 %</span>
+            <button class="tile" type="button" popovertarget="sheet-r09" data-state="fault" data-open="0" style="--area:10" aria-label="Gang, Motorfejl, Fejl">
+              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="tile-pct">lukket</span>
               <span class="tile-id">Z4</span>
               <span class="tile-name">Gang</span>
               
               <span class="tile-val">Fejl</span>
             </button>
-            <button class="tile" type="button" popovertarget="sheet-r10" data-state="idle" data-level="5" aria-label="Bad, Hviler, 23,3°">
-              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">48 %</span>
+            <button class="tile" type="button" popovertarget="sheet-r10" data-state="idle" data-open="3" style="--area:8" aria-label="Bad, Hviler, 23,3°">
+              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="tile-pct">48 % åben</span>
               <span class="tile-id">Z5</span>
               <span class="tile-name">Bad</span>
               <span class="tile-dev" data-dev="5">+1,3°</span>
@@ -2150,31 +2245,31 @@
             <button class="room-group-head" type="button" popovertarget="sheet-m3">Anneks <small>M3 · 30,5° → 27,8°</small></button>
             <p class="offline-note">V6 er ikke tilgængelig · senest set for 2 t siden</p>
             <div class="room-grid">
-            <button class="tile" type="button" popovertarget="sheet-r11" data-state="idle" data-level="2" aria-label="Værksted, Hviler, 16,8°">
-              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">20 %</span>
+            <button class="tile" type="button" popovertarget="sheet-r11" data-state="idle" data-open="1" style="--area:22" aria-label="Værksted, Hviler, 16,8°">
+              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="tile-pct">20 % åben</span>
               <span class="tile-id">Z1</span>
               <span class="tile-name">Værksted</span>
               <span class="tile-dev" data-dev="1">−1,2°</span>
               <span class="tile-val">16,8°</span>
             </button>
-            <button class="tile" type="button" popovertarget="sheet-r12" data-state="off" data-level="0" aria-label="Lager, Ingen data, —">
-              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">0 %</span>
+            <button class="tile" type="button" popovertarget="sheet-r12" data-state="off" data-open="0" style="--area:18" aria-label="Lager, Ingen data, —">
+              <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="tile-pct">lukket</span>
               <span class="tile-id">Z2</span>
               <span class="tile-name">Lager</span>
               
               <span class="tile-val">—</span>
             </button></div>
           </section></div>
-          <p class="heatmap-note">Chippen viser afstand til målet, bjælken hvor meget ventilen er åben.</p>
+          <p class="heatmap-note">Farven viser afstand til målet, bjælken hvor meget ventilen er åben. Felterne fylder efter rummets areal.</p>
         </section>
       </section>
       <section class="view" id="v-sys" aria-labelledby="h-sys">
         <h2 class="sr-only" id="h-sys">System</h2>
         <input class="state" type="radio" name="syscat" id="c-none" checked aria-label="Kategorier"><input class="state" type="radio" name="syscat" id="c-device" data-hash="enhed" aria-label="Enhed"><input class="state" type="radio" name="syscat" id="c-controllers" data-hash="styringer" aria-label="Styringer"><input class="state" type="radio" name="syscat" id="c-heatsource" data-hash="varmekilde" aria-label="Varmekilde"><input class="state" type="radio" name="syscat" id="c-prices" data-hash="elpris" aria-label="Elpris"><input class="state" type="radio" name="syscat" id="c-pump" data-hash="cirkulation" aria-label="Cirkulationspumpe"><input class="state" type="radio" name="syscat" id="c-weather" data-hash="vejr" aria-label="Vejr"><input class="state" type="radio" name="syscat" id="c-network" data-hash="netvaerk" aria-label="Netværk"><input class="state" type="radio" name="syscat" id="c-firmware" data-hash="firmware" aria-label="Firmware og backup"><input class="state" type="radio" name="syscat" id="c-service" data-hash="service" aria-label="Service">
         <div class="sys">
-          <nav class="sys-nav" aria-label="Kategorier"><label for="c-device"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"/></svg>Enhed</label><label for="c-controllers"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h16M12 4v16"/></svg>Styringer</label><label for="c-heatsource"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 4 5 6.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-5 .5 2 1.5 3 3 3-1-3 0-6 0-8z"/></svg>Varmekilde</label><label for="c-prices"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M16 7H10a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6H8"/></svg>Elpris</label><label for="c-pump"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4v8l6 4"/></svg>Cirkulationspumpe</label><label for="c-weather"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h11a3 3 0 1 0-3-3M3 14h15a3 3 0 1 1-3 3M3 19h7"/></svg>Vejr</label><label for="c-network"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9a15 15 0 0 1 20 0M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg>Netværk</label><label for="c-firmware"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10M8 10l4 4 4-4M5 19h14"/></svg>Firmware og backup</label><label for="c-service"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6a4 4 0 0 0-5 5l-5 5 3 3 5-5a4 4 0 0 0 5-5l-2 2-3-3z"/></svg>Service</label></nav>
+          <nav class="sys-nav" aria-label="Kategorier"><label for="c-device"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"/></svg>Enhed</label><label for="c-controllers"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h16M12 4v16"/></svg>Styringer</label><label for="c-heatsource"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 4 5 6.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-5 .5 2 1.5 3 3 3-1-3 0-6 0-8z"/></svg>Varmekilde</label><label for="c-prices"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M16 7H10a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6H8"/></svg>Elpris</label><label for="c-pump"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="1.6"/><path d="M12 10.4c0-2.6 1.2-4.4 3.6-5M13.4 12.8c2.3 1.3 3.2 3.3 2.6 5.7M10.6 12.8c-2.3 1.3-4.5 1.2-6.2-.6"/></svg>Cirkulationspumpe</label><label for="c-weather"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9h11a3 3 0 1 0-3-3M3 14h15a3 3 0 1 1-3 3M3 19h7"/></svg>Vejr</label><label for="c-network"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 9a15 15 0 0 1 20 0M5 13a10 10 0 0 1 14 0M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg>Netværk</label><label for="c-firmware"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10M8 10l4 4 4-4M5 19h14"/></svg>Firmware og backup</label><label for="c-service"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6a4 4 0 0 0-5 5l-5 5 3 3 5-5a4 4 0 0 0 5-5l-2 2-3-3z"/></svg>Service</label></nav>
           <div class="sys-main"><section class="sys-cat" data-cat="device" aria-labelledby="h-c-device"><label class="sys-back" for="c-none">System</label><header><div><small>System</small><h2 id="h-c-device">Enhed</h2></div></header>
       <form data-save="settings">
         <section class="setting-group"><h4>Identitet</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="dev_name">Navn</label></div><div class="setting-control"><input class="input w-sm" type="text" id="dev_name" name="name" value="Hus"></div></div><div class="setting"><div class="setting-label"><label for="dev_idle">Skærmdvale efter</label><small>0 = aldrig</small></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk skærmdvale efter">−</button><span class="value"><input type="number" inputmode="decimal" id="dev_idle" name="dev_idle" value="5" min="0" max="120" step="1"><span class="unit">min</span></span><button type="button" data-step="1" aria-label="Hæv skærmdvale efter">+</button></div></div></div></div></section>
@@ -2352,7 +2447,7 @@
   <div id="sheet-pump" popover class="sheet" role="dialog" aria-labelledby="sheet-pump-t" data-hash="cirkulation">
     <input class="state tab" type="radio" name="tab-pump" id="t-pump-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-pump" id="t-pump-h" value="history" data-hash="historik" aria-label="Historik">
     <header class="sheet-head">
-      <span class="chip-icon" data-tone="neutral" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v8l6 4"/></svg></span>
+      <span class="chip-icon" data-tone="neutral" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="1.6"/><path d="M12 10.4c0-2.6 1.2-4.4 3.6-5M13.4 12.8c2.3 1.3 3.2 3.3 2.6 5.7M10.6 12.8c-2.3 1.3-4.5 1.2-6.2-.6"/></svg></span>
       <div><h2 id="sheet-pump-t">Cirkulation</h2><p>Pumpen kører</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-pump" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-pump-o" data-tab="overview">Overblik</label><label for="t-pump-h" data-tab="history">Historik</label></nav>
