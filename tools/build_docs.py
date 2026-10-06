@@ -595,9 +595,61 @@ _S = [
   comp("System-side", "Kategoriliste (240 px, klæber) og indhold (maks. 640 px). Én kategori ad gangen, én gem-bjælke pr. kategori. Mobil: listen er en skærm; en kategori har «‹ System» øverst. Virker uden JS. Deep link: #system/netvaerk (kræver #m-sys på en rigtig side).", sys_demo, sys_code,
        ["Kategorier fra systemCategories i config", "Én formular pr. kategori"], ["Indstillinger for én ting i huset (de hører i dens ark)", "Kort/paneler til indstillinger"]),
 ]
+# ---- Hjem: hovedsektion, termostat-ring, felter og varmekort (DESIGN.md 15.10) ----
+def _rt(name, z, t, d, lvl, pct, st="idle"):
+    k = 1 if d <= -1 else 2 if d <= -0.3 else 3 if d < 0.3 else 4 if d < 1 else 5
+    chip = "" if st == "fault" else f'<span class="tile-dev" data-dev="{k}">{"+" if d > 0 else "−"}{str(abs(d)).replace(".", ",")}°</span>'
+    val = "Fejl" if st == "fault" else f'{str(t).replace(".", ",")}°'
+    return (f'<button class="tile" type="button" data-state="{st}" data-level="{lvl}">{LVL}<span class="tile-pct">{pct} %</span>'
+            f'<span class="tile-id">{z}</span><span class="tile-name">{name}</span>{chip}<span class="tile-val">{val}</span></button>')
+home_demo = ('<section class="home-hero"><div><small>God morgen</small><h2>Varmt nok overalt.</h2><p>Huset er 0,9° over målet. Odin planlægger næste varme kl. 06.</p></div>'
+  '<form class="thermo" data-save="doc-house"><div class="thermo-ring" style="--v:60;--now:69" role="img" aria-label="Huset er 21,9 °C, målet er 21,0 °C">'
+  '<svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="44" pathLength="100"/><circle class="arc" cx="50" cy="50" r="44" pathLength="100"/><circle class="now" cx="50" cy="50" r="44" pathLength="100"/></svg>'
+  '<div class="thermo-val"><b>21,9<small>°</small></b><span>Huset nu</span></div></div>'
+  '<div class="climate"><div class="target"><button type="button" data-step="-1" aria-label="Sænk husets mål">−</button><label class="value"><small>Mål °C</small><input type="number" value="21.0" step="0.5" name="doc_house_target"></label><button type="button" data-step="1" aria-label="Hæv husets mål">+</button></div><p class="autosave" aria-live="polite"></p></div></form></section>'
+  '<div class="home-tiles">'
+  '<button class="home-tile" type="button"><span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3c3 4 5 6.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-5 .5 2 1.5 3 3 3-1-3 0-6 0-8z"/></svg></span><b>Varme</b><span class="ht-status">Hviler · Odin styrer</span>'
+  '<span class="ht-val">36,0° → 29,0° <small>fremløb → retur</small></span><svg class="ht-viz" viewBox="0 0 240 48" preserveAspectRatio="none" aria-hidden="true"><polyline class="f" points="0,20 60,16 120,12 180,18 240,22"/><polyline class="r" points="0,34 60,32 120,30 180,33 240,35"/></svg></button>'
+  '<button class="home-tile" type="button"><span class="chip-icon" data-tone="violet" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16"/></svg></span><b>Næste varme</b><span class="ht-status">Planlagt af Odin</span>'
+  '<span class="ht-val">kl. 06–09 <small>≈ 8,1 kWh</small></span><span class="ht-price">Elpris nu 1,82 kr/kWh <span class="scale-chip" data-scale="2">Billig</span></span>'
+  '<svg class="ht-viz" viewBox="0 0 240 48" preserveAspectRatio="none" aria-hidden="true"><rect class="col" x="1" y="46" width="8" height="2"/><rect class="col on" x="141" y="18" width="8" height="30"/><rect class="col on" x="151" y="2" width="8" height="46"/><rect class="col on" x="161" y="13" width="8" height="35"/></svg></button>'
+  '<button class="home-tile" type="button" data-empty><span class="chip-icon" data-tone="neutral" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg></span><b>Cirkulation</b><span class="ht-status">Ingen data fra pumpen</span><span class="ht-val">— <small>l/min</small></span><svg class="ht-viz" aria-hidden="true"></svg></button>'
+  '</div>'
+  '<div class="heatmap"><section class="room-group"><button class="room-group-head" type="button">Teknikrum <small>M1 · 36,0° → 29,0°</small></button><div class="room-grid">'
+  + _rt("Kontor", "Z1", 22.9, 0.9, 2, 18) + _rt("Stue", "Z5", 21.4, -0.1, 6, 54, "calling") + _rt("Gang", "Z4", 19.1, -0.9, 0, 0, "fault") +
+  '</div></section><section class="room-group" data-offline><button class="room-group-head" type="button">Anneks <small>M3 · 30,5° → 27,8°</small></button>'
+  '<p class="offline-note">V6 er ikke tilgængelig · senest set for 2 t siden</p><div class="room-grid">' + _rt("Værksted", "Z1", 16.8, -1.2, 2, 20) +
+  '</div></section><p class="heatmap-note">Chippen viser afstand til målet, bjælken hvor meget ventilen er åben.</p></div>')
+home_code = """<section class="home-hero">
+  <div><small>God morgen</small><h2>Varmt nok overalt.</h2><p>Én sætning om situationen.</p></div>
+  <form class="thermo" data-save="house-target">
+    <div class="thermo-ring" style="--v:60;--now:69" role="img" aria-label="…">   <!-- --v = mål, --now = aktuel (0–100 % af skalaen) -->
+      <svg viewBox="0 0 100 100"><circle class="trk" … pathLength="100"/><circle class="arc" …/><circle class="now" …/></svg>
+      <div class="thermo-val"><b>21,9<small>°</small></b><span>Huset nu</span></div>
+    </div>
+    <div class="climate"><div class="target">− <input name="house_target"> +</div><p class="autosave"></p></div>   <!-- autogem -->
+  </form>
+</section>
+<div class="home-tiles">            <!-- maks. 4 pr. række -->
+  <button class="home-tile" popovertarget="sheet-heat">
+    <span class="chip-icon">…</span><b>Varme</b><span class="ht-status">…</span>
+    <span class="ht-val">36,0° → 29,0° <small>…</small></span>
+    <svg class="ht-viz">…</svg>       <!-- én visualisering; data-empty skjuler den -->
+  </button>
+</div>
+<div class="heatmap">
+  <section class="room-group" data-offline>   <!-- V6 offline: dæmpet + .offline-note -->
+    <button class="room-group-head" popovertarget="sheet-m3">Anneks <small>M3 · …</small></button>
+    <div class="room-grid"><button class="tile" popovertarget="sheet-r11" data-level="2">…</button></div>
+  </section>
+</div>"""
+_S.append(comp("Hjem: hovedsektion, felter og varmekort", "Touch' Hjem (15.7/15.10): én hovedsektion med husets temperatur og mål i termostat-ringen (autogem), højst fire felter (ét tal + én visualisering; hele feltet åbner arket) og varmekortet med rum pr. styring. Uden data: «—» og ingen visualisering.", home_demo, home_code,
+       ["Ringen har én farve (varme); mærket er den aktuelle temperatur", "Prisen som én linje + skala-chip", "Offline-styring: dæmpet + tekst"],
+       ["Flere end 4 felter i en række", "Flere tal eller grafer i et felt", "Farvede rumfelter"]))
+
 components = section("komponenter", "Komponenter", "Levende eksempler med den rigtige CSS, grupperet efter hvor de bruges. Fold Markup ud for koden. Fuld beskrivelse i DESIGN.md afsnit 5 og 15.", "".join([
   grp("k-navigation","Navigation","Navbar, zonestrimmel og ark: hvor man er, og hvad man ser på."), _I[1], _I[0], _M[0], _M[1], _S[0],
-  grp("k-hjem","Indhold på Hjem","Overblik og hverdagshandlinger. Kort bruges her, fordi indholdet er kort."), _I[2], _I[6], _I[4], _I[7], _I[8], _M[2], _M[9], _M[3], _I[12],
+  grp("k-hjem","Indhold på Hjem","Overblik og hverdagshandlinger. Kort bruges her, fordi indholdet er kort."), _S[2], _I[2], _I[6], _I[4], _I[7], _I[8], _M[2], _M[9], _M[3], _I[12],
   grp("k-indstillinger","Indstillinger","I ark og på System. Altid grupperede lister, aldrig kort. Sektioner bruges i V6/Touch' konfiguration indtil migreringen."), _I[9], _S[1], _M[4], _I[10], _M[5],
   grp("k-feedback","Feedback og handlinger","Status, beskeder, knapper og bekræftelser."), _I[3], _I[5], _I[11], _M[6], _M[7], _M[8],
 ]))

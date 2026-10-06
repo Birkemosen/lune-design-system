@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Lune Design System 2.2.0</title>
+<title>Lune Design System 2.3.0</title>
 <style>
 /* ==========================================================================
    LUNE DESIGN SYSTEM 2 — fælles stylesheet for Lune V6 og Lune Touch
@@ -271,7 +271,7 @@
     .strip.strip--many { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
 
-  /* Touch-hierarki (DESIGN.md 5.2.1): hus + manifolds på niveau 1, zonerne i
+  /* FORÆLDET (2.2): Touch-hierarki (DESIGN.md 5.2.1): hus + manifolds på niveau 1, zonerne i
      .substrip på niveau 2, kun når manifolden eller en af dens zoner er valgt
      (reglerne genereres af lds_build.py ud fra `tiers` + `manifolds`). */
   .strip.strip--tiers {
@@ -1533,6 +1533,105 @@
   .chip-icon[data-tone="danger"] { background: var(--danger-fill); }
   .chip-icon[data-tone="neutral"]{ background: var(--raised); color: var(--fg); }
 
+  /* ---- Hjem (DESIGN.md 15.7): hovedsektion, termostat-ring, felter, varmekort ---- */
+  /* Hovedsektion: én sætning om situationen + hustemperatur og mål i ringen. */
+  .home-hero {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-5) var(--space-7);
+    padding: var(--space-6) var(--panel-pad);
+    border-radius: var(--r-card); background: var(--card); box-shadow: var(--card-edge);
+  }
+  .home-hero > div > small { font-size: var(--fs-sm); color: var(--muted); }
+  .home-hero h2 { margin-top: var(--space-1); font-size: var(--fs-2xl); letter-spacing: -.03em; line-height: 1.1; }
+  .home-hero p { margin-top: var(--space-3); max-width: 52ch; color: var(--muted); }
+  @media (max-width: 767.98px) { .home-hero { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; } }
+
+  /* Termostat-ring: 270°-bue. Sporet er neutralt, buen er målet (varme, én farve, 3.2.2),
+     mærket er den aktuelle temperatur. --v og --now = 0–100 % af skalaen. */
+  .thermo { display: grid; justify-items: center; gap: var(--space-2); }
+  .thermo-ring { position: relative; width: min(240px, 64vw); aspect-ratio: 1; }
+  .thermo-ring svg { display: block; width: 100%; height: 100%; transform: rotate(135deg); }
+  .thermo-ring circle { fill: none; stroke-linecap: round; }
+  .thermo-ring .trk { stroke: var(--seg-off); stroke-width: 10; stroke-dasharray: 75 100; }
+  .thermo-ring .arc { stroke: var(--accent); stroke-width: 10; stroke-dasharray: calc(var(--v, 0) * .75) 100; }
+  .thermo-ring .now { stroke: var(--fg); stroke-width: 14; stroke-dasharray: .1 100; stroke-dashoffset: calc(var(--now, 0) * -.75); }
+  .thermo-val { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; text-align: center; }
+  .thermo-val b { font-size: var(--fs-hero); font-weight: 600; letter-spacing: -.05em; line-height: .95; }
+  .thermo-val b small { font-size: var(--fs-xl); color: var(--muted); letter-spacing: 0; }
+  .thermo-val span { font-size: var(--fs-sm); color: var(--muted); }
+  .thermo .climate { gap: var(--space-2); }
+
+  /* Felter på Hjem: maks. 4 i en række. Ét felt = én ting; hele feltet åbner tingens ark. */
+  .home-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
+  @media (max-width: 1099.98px) { .home-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 599.98px)  { .home-tiles { grid-template-columns: minmax(0, 1fr); } }
+  .home-tile {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "icon title go" "icon status go" "val val val" "viz viz viz";
+    align-items: center; gap: 2px var(--space-3);
+    width: 100%; padding: var(--space-4);
+    border: 0; border-radius: var(--r-card); background: var(--card); box-shadow: var(--card-edge);
+    color: var(--fg); font: inherit; text-align: left; cursor: pointer;
+    transition: background var(--dur) var(--ease);
+  }
+  .home-tile:hover { background: var(--raised); }
+  .home-tile > .chip-icon { grid-area: icon; }
+  .home-tile > b { grid-area: title; font-size: var(--fs-md); font-weight: 600; }
+  .home-tile > .ht-status { grid-area: status; overflow: hidden; font-size: var(--fs-sm); color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
+  .home-tile::after { content: "›"; grid-area: go; font-size: var(--fs-lg); color: var(--muted); }
+  .home-tile > .ht-val { grid-area: val; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-2); margin-top: var(--space-3);
+    font-size: var(--fs-xl); font-weight: 600; letter-spacing: -.02em; line-height: 1.1; }
+  .home-tile > .ht-val small { font-size: var(--fs-sm); font-weight: 400; color: var(--muted); letter-spacing: 0; }
+  .home-tile > .ht-viz { grid-area: viz; display: block; width: 100%; height: 48px; margin-top: var(--space-2); overflow: visible; }
+  .home-tile[data-empty] > .ht-viz { display: none; }
+  /* Én ekstra linje (fx aktuel elpris + skala-chip i Næste varme). */
+  .home-tile > .ht-price { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-1); font-size: var(--fs-sm); color: var(--muted); }
+  .ht-viz .t  { fill: none; stroke: var(--fg); stroke-width: 1.6; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .ht-viz .f  { fill: none; stroke: var(--accent); stroke-width: 1.6; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .ht-viz .r  { fill: none; stroke: var(--data-return); stroke-width: 1.6; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .ht-viz .a  { fill: url(#lds-fade-heat); }
+  .ht-viz .w  { fill: none; stroke: var(--data-return); stroke-width: 1.6; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .ht-viz .pre { fill: url(#lds-hatch-heat); }
+  .ht-viz .col { fill: var(--seg-off); }
+  .ht-viz .col.on { fill: var(--accent); }
+
+  /* Skala-chip (5 trin, scale-good-bad: pris, luft, signal). Tallet står altid i chippen. */
+  .scale-chip { display: inline-flex; align-items: center; height: 20px; padding: 0 var(--space-2); border-radius: var(--r-pill);
+    font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0; background: var(--raised); color: var(--muted); }
+  /* Tekst: lyst tema hvid på 1/2/4/5 og næsten sort på 3; mørkt tema næsten sort (alle ≥ 4,5:1). */
+  .scale-chip[data-scale="1"] { background: var(--scale-good-bad-1); color: light-dark(var(--on-fill), var(--on-warn-fill)); }
+  .scale-chip[data-scale="2"] { background: var(--scale-good-bad-2); color: light-dark(var(--on-fill), var(--on-warn-fill)); }
+  .scale-chip[data-scale="3"] { background: var(--scale-good-bad-3); color: var(--on-warn-fill); }
+  .scale-chip[data-scale="4"] { background: var(--scale-good-bad-4); color: light-dark(var(--on-fill), var(--on-warn-fill)); }
+  .scale-chip[data-scale="5"] { background: var(--scale-good-bad-5); color: light-dark(var(--on-fill), var(--on-warn-fill)); }
+
+  /* Varmekort: rum grupperet pr. manifold. Rummene er zonefelter (.tile) med 10-segment
+     ventilbjælke, procent og afvigelses-chip; gruppeoverskriften åbner manifoldens ark. */
+  .heatmap { display: grid; gap: var(--space-5); }
+  .room-group { display: grid; gap: var(--space-3); }
+  .room-group-head { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); justify-self: start;
+    padding: 0; border: 0; background: none; color: var(--fg); font: inherit; font-size: var(--fs-md); font-weight: 600; cursor: pointer; }
+  .room-group-head small { font-size: var(--fs-sm); font-weight: 400; color: var(--muted); }
+  .room-group-head::after { content: "›"; color: var(--muted); }
+  .room-group-head:hover { color: var(--muted); }
+  .room-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: var(--space-2); }
+  .room-grid .tile { padding: var(--space-3); }
+  .room-grid .tile-val { font-size: var(--fs-xl); }
+  /* V6 offline: seneste værdier dæmpet + besked; farve er aldrig eneste signal. */
+  .room-group[data-offline] .room-grid { opacity: .55; }
+  .offline-note { font-size: var(--fs-sm); color: var(--warn); }
+  .offline-note::before { content: "!"; display: inline-grid; place-items: center; width: 16px; height: 16px; margin-right: var(--space-2);
+    border-radius: 50%; background: var(--warn-fill); color: var(--on-warn-fill); font-size: var(--fs-xs); font-weight: 700; vertical-align: -2px; }
+  .heatmap-note { font-size: var(--fs-xs); color: var(--faint); }
+  @media (max-width: 599.98px) {
+    .room-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .room-grid .tile { grid-template-areas: "id name" "val val" "lvl pct"; grid-template-columns: auto minmax(0, 1fr); text-align: left; border-radius: var(--r-tile); }
+    .room-grid .tile :is(.tile-name, .tile-pct) { display: block; }
+    .room-grid .tile .tile-val { font-size: var(--fs-lg); }
+  }
+
+  /* Læseværdier fra en anden enhed (fx V6 i Touch' rum-ark): dæmpet når enheden er offline. */
+  .setting-group[data-offline] .setting-list { opacity: .55; }
+
   /* ---- Faner (.tabs) ----------------------------------------------------
      Radioer (class="state", name="tab-{id}", value=overview|history|settings)
      står først i arket; fanerne er labels; panelerne vises med søskende-selektorer
@@ -2085,7 +2184,7 @@
 
   <div class="navbar-wrap wrap">
     <header class="header" style="grid-template-columns:1fr auto">
-      <div class="device"><summary style="pointer-events:none"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="var(--fg)"/><path d="M10 22V12M14 22V10M18 22V13M22 22V11" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/></svg><span class="name"><b>Lune Design System</b><small>v2.2.0</small></span></summary></div>
+      <div class="device"><summary style="pointer-events:none"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="var(--fg)"/><path d="M10 22V12M14 22V10M18 22V13M22 22V11" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/></svg><span class="name"><b>Lune Design System</b><small>v2.3.0</small></span></summary></div>
       <label class="icon-btn theme-btn" for="theme" title="Skift lyst/mørkt tema">
         <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg>
         <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
@@ -2096,7 +2195,7 @@
   <main class="content wrap">
     <div class="doc-layout"><nav class="doc-toc" aria-label="Indhold"><b>Grundlag</b><a href="#principper">Principper</a><a href="#arkitektur">Arkitektur</a><a href="#farver">Farver</a><a href="#grundelementer">Typografi og afstand</a><b>Komponenter</b><a href="#k-navigation">Navigation</a><a href="#k-hjem">Indhold på Hjem</a><a href="#k-indstillinger">Indstillinger</a><a href="#k-feedback">Feedback og handlinger</a><b>Mønstre</b><a href="#moenstre">Mønstre og indhold</a></nav>
     <div class="view"><span id="principper"></span>
-      <div class="view-head" style="grid-column:1/-1;padding-top:var(--space-4)"><h2 style="font-size:var(--fs-hero);line-height:1;letter-spacing:-.05em">Lune Design System</h2><p>v2.2.0 · Lune V6 og Lune Touch</p></div>
+      <div class="view-head" style="grid-column:1/-1;padding-top:var(--space-4)"><h2 style="font-size:var(--fs-hero);line-height:1;letter-spacing:-.05em">Lune Design System</h2><p>v2.3.0 · Lune V6 og Lune Touch</p></div>
       <p class="lead" style="grid-column:1/-1">Tokens, komponenter og regler til at bygge UI på ESP32: ren CSS og HTML, tilstand uden JavaScript, ingen eksterne ressourcer. Denne side bruger selve systemets CSS. Skift tema øverst til højre for at se begge temaer.</p>
       <section class="panel c4 principle"><h3>Et blik er nok</h3><p>Store tal, små labels under. Én hero-temperatur pr. visning.</p></section><section class="panel c4 principle"><h3>Farve betyder noget</h3><p>Neutralt, indtil der er noget at sige. Én betydning pr. farve.</p></section><section class="panel c4 principle"><h3>Samme sted, samme ting</h3><p>Zonestrimlen vælger hvad, tilstandspillen vælger hvordan.</p></section><section class="panel c4 principle"><h3>Få store paneler</h3><p>2–4 paneler pr. visning, altid åbne. Kun ekspert-tuning foldes.</p></section><section class="panel c4 principle"><h3>Tilstand uden JavaScript</h3><p>Radio, checkbox og details. JS kun til live-data.</p></section><section class="panel c4 principle"><h3>Tilgængelig fra start</h3><p>≥ 4,5:1 kontrast, ≥ 44 px trykflader, tastatur og fokus.</p></section>
       <header class="doc-h" id="arkitektur"><h2>Arkitektur</h2><p>Tre niveauer: Hjem (overblik og hverdagshandlinger), ark pr. ting (overblik, historik og tingens indstillinger) og System (det der gælder hele enheden). Erstatter Dashboard/Konfiguration. Fuld beskrivelse i DESIGN.md afsnit 15.</p></header>
@@ -2316,6 +2415,35 @@
 &lt;/div&gt;
 &lt;button popovertarget=&quot;sheet-z1&quot; data-tab=&quot;settings&quot;&gt;…&lt;/button&gt;   &lt;!-- åbner på Indstillinger (JS) --&gt;</pre></details>
       </article><header class="doc-h2" id="k-hjem"><h3>Indhold på Hjem</h3><p>Overblik og hverdagshandlinger. Kort bruges her, fordi indholdet er kort.</p></header>
+      <article class="doc-comp " id="k-hjem-hovedsektion-felter-og-varmekort">
+        <h3>Hjem: hovedsektion, felter og varmekort</h3>
+        <p class="doc-desc">Touch' Hjem (15.7/15.10): én hovedsektion med husets temperatur og mål i termostat-ringen (autogem), højst fire felter (ét tal + én visualisering; hele feltet åbner arket) og varmekortet med rum pr. styring. Uden data: «—» og ingen visualisering.</p>
+        <div class="stage "><section class="home-hero"><div><small>God morgen</small><h2>Varmt nok overalt.</h2><p>Huset er 0,9° over målet. Odin planlægger næste varme kl. 06.</p></div><form class="thermo" data-save="doc-house"><div class="thermo-ring" style="--v:60;--now:69" role="img" aria-label="Huset er 21,9 °C, målet er 21,0 °C"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="44" pathLength="100"/><circle class="arc" cx="50" cy="50" r="44" pathLength="100"/><circle class="now" cx="50" cy="50" r="44" pathLength="100"/></svg><div class="thermo-val"><b>21,9<small>°</small></b><span>Huset nu</span></div></div><div class="climate"><div class="target"><button type="button" data-step="-1" aria-label="Sænk husets mål">−</button><label class="value"><small>Mål °C</small><input type="number" value="21.0" step="0.5" name="doc_house_target"></label><button type="button" data-step="1" aria-label="Hæv husets mål">+</button></div><p class="autosave" aria-live="polite"></p></div></form></section><div class="home-tiles"><button class="home-tile" type="button"><span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3c3 4 5 6.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-5 .5 2 1.5 3 3 3-1-3 0-6 0-8z"/></svg></span><b>Varme</b><span class="ht-status">Hviler · Odin styrer</span><span class="ht-val">36,0° → 29,0° <small>fremløb → retur</small></span><svg class="ht-viz" viewBox="0 0 240 48" preserveAspectRatio="none" aria-hidden="true"><polyline class="f" points="0,20 60,16 120,12 180,18 240,22"/><polyline class="r" points="0,34 60,32 120,30 180,33 240,35"/></svg></button><button class="home-tile" type="button"><span class="chip-icon" data-tone="violet" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16"/></svg></span><b>Næste varme</b><span class="ht-status">Planlagt af Odin</span><span class="ht-val">kl. 06–09 <small>≈ 8,1 kWh</small></span><span class="ht-price">Elpris nu 1,82 kr/kWh <span class="scale-chip" data-scale="2">Billig</span></span><svg class="ht-viz" viewBox="0 0 240 48" preserveAspectRatio="none" aria-hidden="true"><rect class="col" x="1" y="46" width="8" height="2"/><rect class="col on" x="141" y="18" width="8" height="30"/><rect class="col on" x="151" y="2" width="8" height="46"/><rect class="col on" x="161" y="13" width="8" height="35"/></svg></button><button class="home-tile" type="button" data-empty><span class="chip-icon" data-tone="neutral" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg></span><b>Cirkulation</b><span class="ht-status">Ingen data fra pumpen</span><span class="ht-val">— <small>l/min</small></span><svg class="ht-viz" aria-hidden="true"></svg></button></div><div class="heatmap"><section class="room-group"><button class="room-group-head" type="button">Teknikrum <small>M1 · 36,0° → 29,0°</small></button><div class="room-grid"><button class="tile" type="button" data-state="idle" data-level="2"><span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="tile-pct">18 %</span><span class="tile-id">Z1</span><span class="tile-name">Kontor</span><span class="tile-dev" data-dev="4">+0,9°</span><span class="tile-val">22,9°</span></button><button class="tile" type="button" data-state="calling" data-level="6"><span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="tile-pct">54 %</span><span class="tile-id">Z5</span><span class="tile-name">Stue</span><span class="tile-dev" data-dev="3">−0,1°</span><span class="tile-val">21,4°</span></button><button class="tile" type="button" data-state="fault" data-level="0"><span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="tile-pct">0 %</span><span class="tile-id">Z4</span><span class="tile-name">Gang</span><span class="tile-val">Fejl</span></button></div></section><section class="room-group" data-offline><button class="room-group-head" type="button">Anneks <small>M3 · 30,5° → 27,8°</small></button><p class="offline-note">V6 er ikke tilgængelig · senest set for 2 t siden</p><div class="room-grid"><button class="tile" type="button" data-state="idle" data-level="2"><span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="tile-pct">20 %</span><span class="tile-id">Z1</span><span class="tile-name">Værksted</span><span class="tile-dev" data-dev="1">−1,2°</span><span class="tile-val">16,8°</span></button></div></section><p class="heatmap-note">Chippen viser afstand til målet, bjælken hvor meget ventilen er åben.</p></div></div>
+        <div class="rules"><div class="do"><h4>Brug</h4><ul><li>Ringen har én farve (varme); mærket er den aktuelle temperatur</li><li>Prisen som én linje + skala-chip</li><li>Offline-styring: dæmpet + tekst</li></ul></div><div class="dont"><h4>Undgå</h4><ul><li>Flere end 4 felter i en række</li><li>Flere tal eller grafer i et felt</li><li>Farvede rumfelter</li></ul></div></div>
+        <details class="more"><summary>Markup</summary><pre class="code">&lt;section class=&quot;home-hero&quot;&gt;
+  &lt;div&gt;&lt;small&gt;God morgen&lt;/small&gt;&lt;h2&gt;Varmt nok overalt.&lt;/h2&gt;&lt;p&gt;Én sætning om situationen.&lt;/p&gt;&lt;/div&gt;
+  &lt;form class=&quot;thermo&quot; data-save=&quot;house-target&quot;&gt;
+    &lt;div class=&quot;thermo-ring&quot; style=&quot;--v:60;--now:69&quot; role=&quot;img&quot; aria-label=&quot;…&quot;&gt;   &lt;!-- --v = mål, --now = aktuel (0–100 % af skalaen) --&gt;
+      &lt;svg viewBox=&quot;0 0 100 100&quot;&gt;&lt;circle class=&quot;trk&quot; … pathLength=&quot;100&quot;/&gt;&lt;circle class=&quot;arc&quot; …/&gt;&lt;circle class=&quot;now&quot; …/&gt;&lt;/svg&gt;
+      &lt;div class=&quot;thermo-val&quot;&gt;&lt;b&gt;21,9&lt;small&gt;°&lt;/small&gt;&lt;/b&gt;&lt;span&gt;Huset nu&lt;/span&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;climate&quot;&gt;&lt;div class=&quot;target&quot;&gt;− &lt;input name=&quot;house_target&quot;&gt; +&lt;/div&gt;&lt;p class=&quot;autosave&quot;&gt;&lt;/p&gt;&lt;/div&gt;   &lt;!-- autogem --&gt;
+  &lt;/form&gt;
+&lt;/section&gt;
+&lt;div class=&quot;home-tiles&quot;&gt;            &lt;!-- maks. 4 pr. række --&gt;
+  &lt;button class=&quot;home-tile&quot; popovertarget=&quot;sheet-heat&quot;&gt;
+    &lt;span class=&quot;chip-icon&quot;&gt;…&lt;/span&gt;&lt;b&gt;Varme&lt;/b&gt;&lt;span class=&quot;ht-status&quot;&gt;…&lt;/span&gt;
+    &lt;span class=&quot;ht-val&quot;&gt;36,0° → 29,0° &lt;small&gt;…&lt;/small&gt;&lt;/span&gt;
+    &lt;svg class=&quot;ht-viz&quot;&gt;…&lt;/svg&gt;       &lt;!-- én visualisering; data-empty skjuler den --&gt;
+  &lt;/button&gt;
+&lt;/div&gt;
+&lt;div class=&quot;heatmap&quot;&gt;
+  &lt;section class=&quot;room-group&quot; data-offline&gt;   &lt;!-- V6 offline: dæmpet + .offline-note --&gt;
+    &lt;button class=&quot;room-group-head&quot; popovertarget=&quot;sheet-m3&quot;&gt;Anneks &lt;small&gt;M3 · …&lt;/small&gt;&lt;/button&gt;
+    &lt;div class=&quot;room-grid&quot;&gt;&lt;button class=&quot;tile&quot; popovertarget=&quot;sheet-r11&quot; data-level=&quot;2&quot;&gt;…&lt;/button&gt;&lt;/div&gt;
+  &lt;/section&gt;
+&lt;/div&gt;</pre></details>
+      </article>
       <article class="doc-comp " id="k-panel">
         <h3>Panel</h3>
         <p class="doc-desc">Standard-containeren. Titel, valgfri undertitel og badge, indhold, footer med handlinger. Alert-varianten til fejl der kræver handling.</p>
@@ -2716,7 +2844,17 @@ if(isSave&&f.dataset.state==="saving")return;
 var pop=sub&&sub.closest&&sub.closest(".confirm-pop");
 if(pop&&pop.matches(":popover-open"))pop.hidePopover();
 if(isSave&&track(f)&&!auto(f)){f.dataset.state="saving";if(b){b.setAttribute("aria-busy","true");b.textContent=t("rt.saving")}}
-document.dispatchEvent(new CustomEvent("lune:save",{detail:{key:f.dataset.save,data:new FormData(f,sub),auto:false,form:f}}))});
+/* Delvis gem = patch (DESIGN.md 6.1): form[data-patch] sender kun ændrede felter.
+   key "heat_source.connection" → resource "heat_source", part "connection". */
+var key=f.dataset.save,dot=key.indexOf("."),changed=null;
+if(f.hasAttribute("data-patch")){changed={};var s0=f._snap||{},c0=snap(f);
+Object.keys(Object.assign({},s0,c0)).forEach(function(k){if(s0[k]===c0[k])return;var nm=k.split(":")[0];
+var el=f.querySelector('[name="'+nm+'"]');if(!el)return;
+if(el.type==="radio"){var on=f.querySelector('[name="'+nm+'"]:checked');changed[nm]=on?on.value:null}
+else if(el.type==="checkbox"){changed[nm]=f.querySelectorAll('[name="'+nm+'"]').length>1?[].map.call(f.querySelectorAll('[name="'+nm+'"]:checked'),function(x){return x.value}):el.checked}
+else changed[nm]=el.value})}
+document.dispatchEvent(new CustomEvent("lune:save",{detail:{key:key,resource:dot>0?key.slice(0,dot):key,part:dot>0?key.slice(dot+1):null,
+method:changed?"PATCH":"POST",changed:changed,data:new FormData(f,sub),auto:false,form:f}}))});
 /* ---- Ark, faner, System og deep links (DESIGN.md 15) ---- */
 function dirtyIn(el){return!!(el&&el.querySelector("form[data-save][data-dirty]"))}
 function sheetOpen(){return document.querySelector(".sheet:popover-open")}
@@ -2729,7 +2867,8 @@ var url=location.pathname+location.search+(h?"#"+h:"");
 if(url!==location.pathname+location.search+location.hash)history.replaceState(null,"",url)}
 function readHash(){
 var parts=decodeURIComponent((location.hash||"").replace(/^#/,"")).split("/");if(!parts[0])return;
-var root=document.querySelector('[data-hash="'+parts[0]+'"]')||document.getElementById("sheet-"+parts[0]);
+/* Første niveau: et ark eller en tilstand (#m-sys) — aldrig en fane eller System-kategori. */
+var root=document.querySelector('[popover][data-hash="'+parts[0]+'"],input[name="mode"][data-hash="'+parts[0]+'"]')||document.getElementById("sheet-"+parts[0]);
 if(!root)return;
 if(root.matches("input")){root.checked=true;
 if(parts[1]){var c=document.querySelector('input[name="syscat"][data-hash="'+parts[1]+'"]')||document.getElementById("c-"+parts[1]);if(c)c.checked=true}}

@@ -94,7 +94,17 @@ if(isSave&&f.dataset.state==="saving")return;
 var pop=sub&&sub.closest&&sub.closest(".confirm-pop");
 if(pop&&pop.matches(":popover-open"))pop.hidePopover();
 if(isSave&&track(f)&&!auto(f)){f.dataset.state="saving";if(b){b.setAttribute("aria-busy","true");b.textContent=t("rt.saving")}}
-document.dispatchEvent(new CustomEvent("lune:save",{detail:{key:f.dataset.save,data:new FormData(f,sub),auto:false,form:f}}))});
+/* Delvis gem = patch (DESIGN.md 6.1): form[data-patch] sender kun ændrede felter.
+   key "heat_source.connection" → resource "heat_source", part "connection". */
+var key=f.dataset.save,dot=key.indexOf("."),changed=null;
+if(f.hasAttribute("data-patch")){changed={};var s0=f._snap||{},c0=snap(f);
+Object.keys(Object.assign({},s0,c0)).forEach(function(k){if(s0[k]===c0[k])return;var nm=k.split(":")[0];
+var el=f.querySelector('[name="'+nm+'"]');if(!el)return;
+if(el.type==="radio"){var on=f.querySelector('[name="'+nm+'"]:checked');changed[nm]=on?on.value:null}
+else if(el.type==="checkbox"){changed[nm]=f.querySelectorAll('[name="'+nm+'"]').length>1?[].map.call(f.querySelectorAll('[name="'+nm+'"]:checked'),function(x){return x.value}):el.checked}
+else changed[nm]=el.value})}
+document.dispatchEvent(new CustomEvent("lune:save",{detail:{key:key,resource:dot>0?key.slice(0,dot):key,part:dot>0?key.slice(dot+1):null,
+method:changed?"PATCH":"POST",changed:changed,data:new FormData(f,sub),auto:false,form:f}}))});
 /* ---- Ark, faner, System og deep links (DESIGN.md 15) ---- */
 function dirtyIn(el){return!!(el&&el.querySelector("form[data-save][data-dirty]"))}
 function sheetOpen(){return document.querySelector(".sheet:popover-open")}
@@ -107,7 +117,8 @@ var url=location.pathname+location.search+(h?"#"+h:"");
 if(url!==location.pathname+location.search+location.hash)history.replaceState(null,"",url)}
 function readHash(){
 var parts=decodeURIComponent((location.hash||"").replace(/^#/,"")).split("/");if(!parts[0])return;
-var root=document.querySelector('[data-hash="'+parts[0]+'"]')||document.getElementById("sheet-"+parts[0]);
+/* Første niveau: et ark eller en tilstand (#m-sys) — aldrig en fane eller System-kategori. */
+var root=document.querySelector('[popover][data-hash="'+parts[0]+'"],input[name="mode"][data-hash="'+parts[0]+'"]')||document.getElementById("sheet-"+parts[0]);
 if(!root)return;
 if(root.matches("input")){root.checked=true;
 if(parts[1]){var c=document.querySelector('input[name="syscat"][data-hash="'+parts[1]+'"]')||document.getElementById("c-"+parts[1]);if(c)c.checked=true}}

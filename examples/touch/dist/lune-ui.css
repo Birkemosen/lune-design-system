@@ -263,61 +263,6 @@
     .strip.strip--many { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
 
-  /* Touch-hierarki (DESIGN.md 5.2.1): hus + manifolds på niveau 1, zonerne i
-     .substrip på niveau 2, kun når manifolden eller en af dens zoner er valgt
-     (reglerne genereres af lds_build.py ud fra `tiers` + `manifolds`). */
-  .strip.strip--tiers {
-    grid-template-columns: repeat(calc(var(--strip-n) + 1), minmax(0, 1fr));
-    padding-block: var(--space-1) var(--space-2);
-  }
-  .strip.strip--tiers :is(.tile-sys, .tile-manifold) { min-height: 0; padding-block: var(--space-2); }
-  .substrip {
-    display: none;
-    grid-template-columns: repeat(var(--sub-n, 6), minmax(0, 1fr));
-    gap: var(--space-2);
-    padding-block: 0 var(--space-2);
-  }
-  /* Manifoldfelt: ID + navn, fremløb/retur, og én lodret mini-søjle pr. zone.
-     Søjlerne er ventilåbning = mængde → neutral (tekstfarve), som zonefeltets bjælke. */
-  .tile.tile-manifold {
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-rows: auto auto auto;
-    grid-template-areas: none;
-    align-items: start;
-    row-gap: 2px;
-    column-gap: var(--space-2);
-  }
-  .tile.tile-manifold .tile-id { grid-column: 1; grid-row: 1; }
-  .tile.tile-manifold .tile-name { grid-column: 2; grid-row: 1; min-width: 0; }
-  .tile.tile-manifold .tile-val { grid-column: 1 / -1; grid-row: 2; font-size: var(--fs-sm); font-weight: 500; color: var(--muted); }
-  .tile.tile-manifold .mini { grid-column: 1 / -1; grid-row: 3; display: flex; align-items: flex-end; gap: 3px; height: 28px; margin-top: 2px; }
-  .tile.tile-manifold .mini i { flex: 1 1 0; min-width: 0; min-height: 2px; border-radius: 2px; background: currentColor; }
-  .tile.tile-manifold .mini i[data-level="0"] { height: 2px; background: var(--seg-off); }
-  .tile.tile-manifold .mini i[data-level="1"] { height: 20%; }
-  .tile.tile-manifold .mini i[data-level="2"] { height: 40%; }
-  .tile.tile-manifold .mini i[data-level="3"] { height: 60%; }
-  .tile.tile-manifold .mini i[data-level="4"] { height: 80%; }
-  .tile.tile-manifold .mini i[data-level="5"] { height: 100%; }
-  .tile.tile-manifold .mini i[data-state="fault"]   { height: 100%; background: var(--danger); }
-  .tile.tile-manifold .mini i[data-state="blocked"] { height: 100%; background: var(--warn); }
-  .tile.tile-manifold .mini i[data-state="learning"] { background: var(--violet); }
-  .tile.tile-manifold .mini i[data-state="off"] { background: var(--seg-off); }
-  .tile.tile-manifold[data-state="fault"] .tile-id { color: var(--danger); }
-  .tile.tile-manifold.is-parent { box-shadow: inset 0 0 0 2px var(--fg); }
-  @media (max-width: 599.98px) {
-    .strip.strip--tiers { gap: 6px; grid-template-columns: repeat(5, minmax(0, 1fr)); }
-    .strip.strip--tiers .tile-sys { grid-column: auto; grid-template-columns: minmax(0, 1fr); }
-    .strip.strip--tiers .tile-manifold { grid-template-columns: 1fr; grid-template-rows: auto auto; text-align: center; padding: 8px 6px 7px; border-radius: 10px; }
-    .strip.strip--tiers .tile-manifold :is(.tile-name, .tile-val) { display: none; }
-    .strip.strip--tiers .tile-manifold .tile-id { grid-column: 1; font-size: 10px; justify-self: center; }
-    .strip.strip--tiers .tile-manifold .mini { grid-column: 1; height: 22px; gap: 2px; }
-    .substrip { gap: 6px; }
-  }
-
-  /* Touch: én V6-række pr. board (System + zoner) øverst på hus-dashboardet.
-     Samme felter som V6' strimmel; felterne er links til V6'ens egen side. */
-  .boards { grid-column: 1 / -1; display: grid; gap: var(--space-2); }
-  .boards .strip { padding-block: 0; }
   a.tile { text-decoration: none; }
 
   /* ---- 3.3 Indhold ---------------------------------------------------- */
@@ -358,128 +303,6 @@
   .view-head h2 { font-size: var(--fs-view); letter-spacing: -.03em; }
   .view-head p  { color: var(--muted); }
 
-  /* ---- 3.4 Sektioner (kun Konfiguration, DESIGN.md 4.3) ---------------
-     Bruges af V6/Touch' konfigurationssider, indtil de er flyttet til
-     ark/System (afsnit 15). Grupperer paneler under en overskrift.
-     3+ sektioner → .section-nav. Kun Service/Udvikler må være
-     details.section (lukket som standard).
-     Markup: h2.section-h > tekst + i.section-h-dot + i.section-h-line
-     Foldbar: summary.section-h > tekst + badge + i.section-h-dot + i.section-h-line */
-  .section-nav {
-    grid-column: 1 / -1;
-    display: flex;
-    flex-wrap: nowrap;
-    gap: var(--space-2);
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    padding-block: var(--space-2) var(--space-3);
-  }
-  .section-nav a {
-    flex: none;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    min-height: var(--hit);
-    padding: 0 var(--space-4);
-    border-radius: var(--r-pill);
-    background: var(--card);
-    box-shadow: var(--card-edge);
-    font-size: var(--fs-sm);
-    font-weight: 500;
-    text-decoration: none;
-    color: var(--muted);
-  }
-  .section-nav a:hover { color: var(--fg); }
-  .section-nav a[data-dirty]::after,
-  .section-nav a[data-fault]::after { content: ""; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--warn); }
-  .section-nav a[data-fault]::after { background: var(--danger); }
-
-  .section,
-  details.section {
-    grid-column: 1 / -1;
-    display: grid;
-    gap: 0;
-    margin: 0;
-    border: 0;
-    padding: 0;
-    background: transparent;
-    scroll-margin-top: var(--section-scroll-margin);
-  }
-  .section-h {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    margin: var(--space-6) 0 var(--space-3);
-    padding: 0;
-    min-height: var(--hit);
-    font-size: var(--fs-sm);
-    font-weight: 600;
-    color: var(--muted);
-  }
-  .section:first-of-type > .section-h,
-  details.section:first-of-type > .section-h,
-  .view-head + .section-nav + .section > .section-h,
-  .view-head + .section-nav + details.section > .section-h,
-  .view-head + .section > .section-h { margin-top: 0; }
-  .section-h-line { flex: 1 1 auto; height: 1px; min-width: var(--space-4); background: var(--border); }
-  .section-h-dot { display: none; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--warn); }
-  .section:is([data-dirty], [data-fault]) > .section-h .section-h-dot { display: block; }
-  .section[data-fault] > .section-h .section-h-dot { background: var(--danger); }
-
-  .section-grid {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: var(--space-3);
-    align-items: stretch;
-  }
-  .section-grid > * { grid-column: span 12; min-width: 0; }
-  @media (min-width: 900px) {
-    .section-grid > .c4 { grid-column: span 4; }
-    .section-grid > .c5 { grid-column: span 5; }
-    .section-grid > .c6 { grid-column: span 6; }
-    .section-grid > .c7 { grid-column: span 7; }
-    .section-grid > .c8 { grid-column: span 8; }
-  }
-
-  /* Konfiguration: 1/2/3 lige spalter (< 900 / ≥ 900 / ≥ 1280 px). Paneler
-     har naturlig højde og stables oppefra (align-items: start) — ens højde
-     gælder kun Dashboard. cN = én spalte; uden cN, eller med .wide, spænder
-     elementet alle spalter (sektioner, sektionslinks, view-head). */
-  .view[id^="v-conf-"],
-  .view[id^="v-conf-"] .section-grid {
-    --conf-cols: 1;
-    grid-template-columns: repeat(var(--conf-cols), minmax(0, 1fr));
-    align-items: start;
-  }
-  .view[id^="v-conf-"] > *,
-  .view[id^="v-conf-"] .section-grid > * { grid-column: 1 / -1; }
-  @media (min-width: 900px) {
-    .view[id^="v-conf-"],
-    .view[id^="v-conf-"] .section-grid { --conf-cols: 2; }
-    .view[id^="v-conf-"] > :is(.c4, .c5, .c6, .c7, .c8):not(.wide),
-    .view[id^="v-conf-"] .section-grid > :is(.c4, .c5, .c6, .c7, .c8):not(.wide) { grid-column: auto; }
-  }
-  @media (min-width: 1280px) {
-    .view[id^="v-conf-"],
-    .view[id^="v-conf-"] .section-grid { --conf-cols: 3; }
-    /* Færre end tre én-spalte-paneler (cN uden .wide): to spalter, ingen tom tredje. */
-    .view[id^="v-conf-"]:not(:has(
-      > :is(.c4, .c5, .c6, .c7, .c8):not(.wide) ~ :is(.c4, .c5, .c6, .c7, .c8):not(.wide) ~ :is(.c4, .c5, .c6, .c7, .c8):not(.wide)
-    )),
-    .view[id^="v-conf-"] .section-grid:not(:has(
-      > :is(.c4, .c5, .c6, .c7, .c8):not(.wide) ~ :is(.c4, .c5, .c6, .c7, .c8):not(.wide) ~ :is(.c4, .c5, .c6, .c7, .c8):not(.wide)
-    )) { --conf-cols: 2; }
-  }
-
-  details.section > summary.section-h { list-style: none; cursor: pointer; }
-  details.section > summary.section-h::-webkit-details-marker { display: none; }
-  details.section > summary.section-h::after {
-    content: ""; flex: none; width: 7px; height: 7px;
-    border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
-    transform: rotate(45deg) translateY(-2px); transition: transform var(--dur) var(--ease);
-  }
-  details.section[open] > summary.section-h::after { transform: rotate(225deg) translateY(-2px); }
 
   /* Legacy .section-head — midlertidig kompatibilitet (Touch-eksemplet) */
   .section-head { display: flex; align-items: center; gap: var(--space-3); padding-block: var(--space-4) var(--space-1); margin: 0; }
@@ -1482,6 +1305,105 @@
   .chip-icon[data-tone="danger"] { background: var(--danger-fill); }
   .chip-icon[data-tone="neutral"]{ background: var(--raised); color: var(--fg); }
 
+  /* ---- Hjem (DESIGN.md 15.7): hovedsektion, termostat-ring, felter, varmekort ---- */
+  /* Hovedsektion: én sætning om situationen + hustemperatur og mål i ringen. */
+  .home-hero {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-5) var(--space-7);
+    padding: var(--space-6) var(--panel-pad);
+    border-radius: var(--r-card); background: var(--card); box-shadow: var(--card-edge);
+  }
+  .home-hero > div > small { font-size: var(--fs-sm); color: var(--muted); }
+  .home-hero h2 { margin-top: var(--space-1); font-size: var(--fs-2xl); letter-spacing: -.03em; line-height: 1.1; }
+  .home-hero p { margin-top: var(--space-3); max-width: 52ch; color: var(--muted); }
+  @media (max-width: 767.98px) { .home-hero { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; } }
+
+  /* Termostat-ring: 270°-bue. Sporet er neutralt, buen er målet (varme, én farve, 3.2.2),
+     mærket er den aktuelle temperatur. --v og --now = 0–100 % af skalaen. */
+  .thermo { display: grid; justify-items: center; gap: var(--space-2); }
+  .thermo-ring { position: relative; width: min(240px, 64vw); aspect-ratio: 1; }
+  .thermo-ring svg { display: block; width: 100%; height: 100%; transform: rotate(135deg); }
+  .thermo-ring circle { fill: none; stroke-linecap: round; }
+  .thermo-ring .trk { stroke: var(--seg-off); stroke-width: 10; stroke-dasharray: 75 100; }
+  .thermo-ring .arc { stroke: var(--accent); stroke-width: 10; stroke-dasharray: calc(var(--v, 0) * .75) 100; }
+  .thermo-ring .now { stroke: var(--fg); stroke-width: 14; stroke-dasharray: .1 100; stroke-dashoffset: calc(var(--now, 0) * -.75); }
+  .thermo-val { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; text-align: center; }
+  .thermo-val b { font-size: var(--fs-hero); font-weight: 600; letter-spacing: -.05em; line-height: .95; }
+  .thermo-val b small { font-size: var(--fs-xl); color: var(--muted); letter-spacing: 0; }
+  .thermo-val span { font-size: var(--fs-sm); color: var(--muted); }
+  .thermo .climate { gap: var(--space-2); }
+
+  /* Felter på Hjem: maks. 4 i en række. Ét felt = én ting; hele feltet åbner tingens ark. */
+  .home-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
+  @media (max-width: 1099.98px) { .home-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 599.98px)  { .home-tiles { grid-template-columns: minmax(0, 1fr); } }
+  .home-tile {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "icon title go" "icon status go" "val val val" "viz viz viz";
+    align-items: center; gap: 2px var(--space-3);
+    width: 100%; padding: var(--space-4);
+    border: 0; border-radius: var(--r-card); background: var(--card); box-shadow: var(--card-edge);
+    color: var(--fg); font: inherit; text-align: left; cursor: pointer;
+    transition: background var(--dur) var(--ease);
+  }
+  .home-tile:hover { background: var(--raised); }
+  .home-tile > .chip-icon { grid-area: icon; }
+  .home-tile > b { grid-area: title; font-size: var(--fs-md); font-weight: 600; }
+  .home-tile > .ht-status { grid-area: status; overflow: hidden; font-size: var(--fs-sm); color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
+  .home-tile::after { content: "›"; grid-area: go; font-size: var(--fs-lg); color: var(--muted); }
+  .home-tile > .ht-val { grid-area: val; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-2); margin-top: var(--space-3);
+    font-size: var(--fs-xl); font-weight: 600; letter-spacing: -.02em; line-height: 1.1; }
+  .home-tile > .ht-val small { font-size: var(--fs-sm); font-weight: 400; color: var(--muted); letter-spacing: 0; }
+  .home-tile > .ht-viz { grid-area: viz; display: block; width: 100%; height: 48px; margin-top: var(--space-2); overflow: visible; }
+  .home-tile[data-empty] > .ht-viz { display: none; }
+  /* Én ekstra linje (fx aktuel elpris + skala-chip i Næste varme). */
+  .home-tile > .ht-price { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-1); font-size: var(--fs-sm); color: var(--muted); }
+  .ht-viz .t  { fill: none; stroke: var(--fg); stroke-width: 1.6; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .ht-viz .f  { fill: none; stroke: var(--accent); stroke-width: 1.6; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .ht-viz .r  { fill: none; stroke: var(--data-return); stroke-width: 1.6; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .ht-viz .a  { fill: url(#lds-fade-heat); }
+  .ht-viz .w  { fill: none; stroke: var(--data-return); stroke-width: 1.6; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .ht-viz .pre { fill: url(#lds-hatch-heat); }
+  .ht-viz .col { fill: var(--seg-off); }
+  .ht-viz .col.on { fill: var(--accent); }
+
+  /* Skala-chip (5 trin, scale-good-bad: pris, luft, signal). Tallet står altid i chippen. */
+  .scale-chip { display: inline-flex; align-items: center; height: 20px; padding: 0 var(--space-2); border-radius: var(--r-pill);
+    font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0; background: var(--raised); color: var(--muted); }
+  /* Tekst: lyst tema hvid på 1/2/4/5 og næsten sort på 3; mørkt tema næsten sort (alle ≥ 4,5:1). */
+  .scale-chip[data-scale="1"] { background: var(--scale-good-bad-1); color: light-dark(var(--on-fill), var(--on-warn-fill)); }
+  .scale-chip[data-scale="2"] { background: var(--scale-good-bad-2); color: light-dark(var(--on-fill), var(--on-warn-fill)); }
+  .scale-chip[data-scale="3"] { background: var(--scale-good-bad-3); color: var(--on-warn-fill); }
+  .scale-chip[data-scale="4"] { background: var(--scale-good-bad-4); color: light-dark(var(--on-fill), var(--on-warn-fill)); }
+  .scale-chip[data-scale="5"] { background: var(--scale-good-bad-5); color: light-dark(var(--on-fill), var(--on-warn-fill)); }
+
+  /* Varmekort: rum grupperet pr. manifold. Rummene er zonefelter (.tile) med 10-segment
+     ventilbjælke, procent og afvigelses-chip; gruppeoverskriften åbner manifoldens ark. */
+  .heatmap { display: grid; gap: var(--space-5); }
+  .room-group { display: grid; gap: var(--space-3); }
+  .room-group-head { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); justify-self: start;
+    padding: 0; border: 0; background: none; color: var(--fg); font: inherit; font-size: var(--fs-md); font-weight: 600; cursor: pointer; }
+  .room-group-head small { font-size: var(--fs-sm); font-weight: 400; color: var(--muted); }
+  .room-group-head::after { content: "›"; color: var(--muted); }
+  .room-group-head:hover { color: var(--muted); }
+  .room-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); gap: var(--space-2); }
+  .room-grid .tile { padding: var(--space-3); }
+  .room-grid .tile-val { font-size: var(--fs-xl); }
+  /* V6 offline: seneste værdier dæmpet + besked; farve er aldrig eneste signal. */
+  .room-group[data-offline] .room-grid { opacity: .55; }
+  .offline-note { font-size: var(--fs-sm); color: var(--warn); }
+  .offline-note::before { content: "!"; display: inline-grid; place-items: center; width: 16px; height: 16px; margin-right: var(--space-2);
+    border-radius: 50%; background: var(--warn-fill); color: var(--on-warn-fill); font-size: var(--fs-xs); font-weight: 700; vertical-align: -2px; }
+  .heatmap-note { font-size: var(--fs-xs); color: var(--faint); }
+  @media (max-width: 599.98px) {
+    .room-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .room-grid .tile { grid-template-areas: "id name" "val val" "lvl pct"; grid-template-columns: auto minmax(0, 1fr); text-align: left; border-radius: var(--r-tile); }
+    .room-grid .tile :is(.tile-name, .tile-pct) { display: block; }
+    .room-grid .tile .tile-val { font-size: var(--fs-lg); }
+  }
+
+  /* Læseværdier fra en anden enhed (fx V6 i Touch' rum-ark): dæmpet når enheden er offline. */
+  .setting-group[data-offline] .setting-list { opacity: .55; }
+
   /* ---- Faner (.tabs) ----------------------------------------------------
      Radioer (class="state", name="tab-{id}", value=overview|history|settings)
      står først i arket; fanerne er labels; panelerne vises med søskende-selektorer
@@ -1764,89 +1686,61 @@
      (liste af omfang). Indeholder: synlig visning pr. tilstand × omfang,
      aktiv tilstands-pille og valgt zonefelt. Redigér ikke her. */
   /* Aktiv tilstand: inverteret pille */
-  #m-dash:checked ~ .app .mode label[for="m-dash"],
-  #m-conf:checked ~ .app .mode label[for="m-conf"] { background: var(--inv-bg); color: var(--inv-fg); }
-  #m-dash:focus-visible ~ .app .mode label[for="m-dash"],
-  #m-conf:focus-visible ~ .app .mode label[for="m-conf"] { outline: 2px solid var(--focus); outline-offset: 2px; }
+  #m-home:checked ~ .app .mode label[for="m-home"],
+  #m-sys:checked ~ .app .mode label[for="m-sys"] { background: var(--inv-bg); color: var(--inv-fg); }
+  #m-home:focus-visible ~ .app .mode label[for="m-home"],
+  #m-sys:focus-visible ~ .app .mode label[for="m-sys"] { outline: 2px solid var(--focus); outline-offset: 2px; }
 
-  /* Delte visninger: house | manifold | zone × mode */
-  #m-dash:checked ~ #s-house:checked ~ .app #v-dash-house,
-  #m-conf:checked ~ #s-house:checked ~ .app #v-conf-house { display: grid; }
-  #m-dash:checked ~ input[data-kind="manifold"]:checked ~ .app #v-dash-manifold,
-  #m-conf:checked ~ input[data-kind="manifold"]:checked ~ .app #v-conf-manifold { display: grid; }
-  #m-dash:checked ~ input[data-kind="zone"]:checked ~ .app #v-dash-zone,
-  #m-conf:checked ~ input[data-kind="zone"]:checked ~ .app #v-conf-zone { display: grid; }
+  /* System: én visning; strimlen hører til Hjem */
+  #m-sys:checked ~ .app #v-sys { display: block; }
+  #m-sys:checked ~ .app :is(.strip, .substrip, .boards) { display: none; }
+  /* System: valgt kategori (radioer lige før .sys eller før .app) */
+  #c-device:checked ~ :is(.app, .sys) .sys-cat[data-cat="device"],
+  #c-controllers:checked ~ :is(.app, .sys) .sys-cat[data-cat="controllers"],
+  #c-heatsource:checked ~ :is(.app, .sys) .sys-cat[data-cat="heatsource"],
+  #c-prices:checked ~ :is(.app, .sys) .sys-cat[data-cat="prices"],
+  #c-pump:checked ~ :is(.app, .sys) .sys-cat[data-cat="pump"],
+  #c-weather:checked ~ :is(.app, .sys) .sys-cat[data-cat="weather"],
+  #c-network:checked ~ :is(.app, .sys) .sys-cat[data-cat="network"],
+  #c-firmware:checked ~ :is(.app, .sys) .sys-cat[data-cat="firmware"],
+  #c-service:checked ~ :is(.app, .sys) .sys-cat[data-cat="service"] { display: grid; }
+  #c-device:checked ~ :is(.app, .sys) .sys-nav label[for="c-device"],
+  #c-controllers:checked ~ :is(.app, .sys) .sys-nav label[for="c-controllers"],
+  #c-heatsource:checked ~ :is(.app, .sys) .sys-nav label[for="c-heatsource"],
+  #c-prices:checked ~ :is(.app, .sys) .sys-nav label[for="c-prices"],
+  #c-pump:checked ~ :is(.app, .sys) .sys-nav label[for="c-pump"],
+  #c-weather:checked ~ :is(.app, .sys) .sys-nav label[for="c-weather"],
+  #c-network:checked ~ :is(.app, .sys) .sys-nav label[for="c-network"],
+  #c-firmware:checked ~ :is(.app, .sys) .sys-nav label[for="c-firmware"],
+  #c-service:checked ~ :is(.app, .sys) .sys-nav label[for="c-service"] { background: var(--card); color: var(--fg); }
+  #c-device:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-device"],
+  #c-controllers:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-controllers"],
+  #c-heatsource:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-heatsource"],
+  #c-prices:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-prices"],
+  #c-pump:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-pump"],
+  #c-weather:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-weather"],
+  #c-network:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-network"],
+  #c-firmware:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-firmware"],
+  #c-service:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-service"] { outline: 2px solid var(--focus); outline-offset: 2px; }
+  /* Ingen kategori valgt: desktop viser den første, mobil viser listen */
+  @media (min-width: 600px) {
+    #c-none:checked ~ :is(.app, .sys) .sys-cat[data-cat="device"] { display: grid; }
+    #c-none:checked ~ :is(.app, .sys) .sys-nav label[for="c-device"] { background: var(--card); color: var(--fg); }
+  }
 
-  /* Valgt omfang: inverteret felt */
-  #s-house:checked ~ .app .tile[for="s-house"],
-  #s-m1:checked ~ .app .tile[for="s-m1"],
-  #s-m1z1:checked ~ .app .tile[for="s-m1z1"],
-  #s-m1z2:checked ~ .app .tile[for="s-m1z2"],
-  #s-m1z3:checked ~ .app .tile[for="s-m1z3"],
-  #s-m1z4:checked ~ .app .tile[for="s-m1z4"],
-  #s-m1z5:checked ~ .app .tile[for="s-m1z5"],
-  #s-m1z6:checked ~ .app .tile[for="s-m1z6"],
-  #s-m2:checked ~ .app .tile[for="s-m2"],
-  #s-m2z1:checked ~ .app .tile[for="s-m2z1"],
-  #s-m2z2:checked ~ .app .tile[for="s-m2z2"],
-  #s-m2z3:checked ~ .app .tile[for="s-m2z3"],
-  #s-m2z4:checked ~ .app .tile[for="s-m2z4"],
-  #s-m2z5:checked ~ .app .tile[for="s-m2z5"],
-  #s-m3:checked ~ .app .tile[for="s-m3"],
-  #s-m3z1:checked ~ .app .tile[for="s-m3z1"],
-  #s-m3z2:checked ~ .app .tile[for="s-m3z2"],
-  #s-m3z3:checked ~ .app .tile[for="s-m3z3"],
-  #s-m4:checked ~ .app .tile[for="s-m4"],
-  #s-m4z1:checked ~ .app .tile[for="s-m4z1"],
-  #s-m4z2:checked ~ .app .tile[for="s-m4z2"] {
+  /* Synlig visning: præcis én pr. (tilstand × omfang) */
+  #m-home:checked ~ #s-house:checked ~ .app #v-home-house { display: grid; }
+
+  /* Valgt omfang: inverteret zonefelt */
+  #s-house:checked ~ .app .tile[for="s-house"] {
     --seg-off: color-mix(in srgb, var(--inv-fg) 18%, transparent);
     --muted:   color-mix(in srgb, var(--inv-fg) 60%, transparent);
     background: var(--inv-bg);
     color: var(--inv-fg);
   }
-  #s-house:focus-visible ~ .app .tile[for="s-house"],
-  #s-m1:focus-visible ~ .app .tile[for="s-m1"],
-  #s-m1z1:focus-visible ~ .app .tile[for="s-m1z1"],
-  #s-m1z2:focus-visible ~ .app .tile[for="s-m1z2"],
-  #s-m1z3:focus-visible ~ .app .tile[for="s-m1z3"],
-  #s-m1z4:focus-visible ~ .app .tile[for="s-m1z4"],
-  #s-m1z5:focus-visible ~ .app .tile[for="s-m1z5"],
-  #s-m1z6:focus-visible ~ .app .tile[for="s-m1z6"],
-  #s-m2:focus-visible ~ .app .tile[for="s-m2"],
-  #s-m2z1:focus-visible ~ .app .tile[for="s-m2z1"],
-  #s-m2z2:focus-visible ~ .app .tile[for="s-m2z2"],
-  #s-m2z3:focus-visible ~ .app .tile[for="s-m2z3"],
-  #s-m2z4:focus-visible ~ .app .tile[for="s-m2z4"],
-  #s-m2z5:focus-visible ~ .app .tile[for="s-m2z5"],
-  #s-m3:focus-visible ~ .app .tile[for="s-m3"],
-  #s-m3z1:focus-visible ~ .app .tile[for="s-m3z1"],
-  #s-m3z2:focus-visible ~ .app .tile[for="s-m3z2"],
-  #s-m3z3:focus-visible ~ .app .tile[for="s-m3z3"],
-  #s-m4:focus-visible ~ .app .tile[for="s-m4"],
-  #s-m4z1:focus-visible ~ .app .tile[for="s-m4z1"],
-  #s-m4z2:focus-visible ~ .app .tile[for="s-m4z2"] { outline: 2px solid var(--focus); outline-offset: 2px; }
+  #s-house:focus-visible ~ .app .tile[for="s-house"] { outline: 2px solid var(--focus); outline-offset: 2px; }
 
-  /* Forælder-valgt: manifold når en af dens zoner er valgt */
-  input[data-kind="zone"][data-m="1"]:checked ~ .app .tile[for="s-m1"],
-  input[data-kind="zone"][data-m="2"]:checked ~ .app .tile[for="s-m2"],
-  input[data-kind="zone"][data-m="3"]:checked ~ .app .tile[for="s-m3"],
-  input[data-kind="zone"][data-m="4"]:checked ~ .app .tile[for="s-m4"] {
-    box-shadow: inset 0 0 0 2px var(--fg);
-    background: var(--card);
-    color: var(--fg);
-  }
-
-  /* Understrimmel synlig når manifold eller dens zone er valgt */
-  #s-m1:checked ~ .app .substrip[data-m="1"],
-  input[data-kind="zone"][data-m="1"]:checked ~ .app .substrip[data-m="1"] { display: grid; }
-  #s-m2:checked ~ .app .substrip[data-m="2"],
-  input[data-kind="zone"][data-m="2"]:checked ~ .app .substrip[data-m="2"] { display: grid; }
-  #s-m3:checked ~ .app .substrip[data-m="3"],
-  input[data-kind="zone"][data-m="3"]:checked ~ .app .substrip[data-m="3"] { display: grid; }
-  #s-m4:checked ~ .app .substrip[data-m="4"],
-  input[data-kind="zone"][data-m="4"]:checked ~ .app .substrip[data-m="4"] { display: grid; }
-
-  .strip.strip--tiers { --strip-n: 4; }
+  .strip { --strip-n: 0; }
 
   /* Typeafhængige felter (.typed-fields / .hs-fields) — uden :has() */
   .typed-fields, .hs-fields { display: none; gap: var(--space-4); }
@@ -1856,7 +1750,9 @@
   #hs-asgard:checked ~ .hs-fields[data-type="asgard"] { display: grid; }
   /* .seg med eksterne .state-radioer — aktiv pille */
   #hs-http:checked ~ .seg label[for="hs-http"] > span,
-  #hs-asgard:checked ~ .seg label[for="hs-asgard"] > span { background: var(--inv-bg); color: var(--inv-fg); }
+  #hs-http:checked ~ * .seg label[for="hs-http"] > span,
+  #hs-asgard:checked ~ .seg label[for="hs-asgard"] > span,
+  #hs-asgard:checked ~ * .seg label[for="hs-asgard"] > span { background: var(--inv-bg); color: var(--inv-fg); }
   #hs-http:focus-visible ~ .seg label[for="hs-http"] > span,
   #hs-asgard:focus-visible ~ .seg label[for="hs-asgard"] > span { outline: 2px solid var(--focus); }
   /* Dashboard: skjul type-fremmed indhold */
@@ -1867,7 +1763,9 @@
   #pm-odin:checked ~ .typed-fields[data-type="odin"],
   #pm-touch:checked ~ .typed-fields[data-type="touch"] { display: grid; }
   #pm-odin:checked ~ .seg label[for="pm-odin"] > span,
-  #pm-touch:checked ~ .seg label[for="pm-touch"] > span { background: var(--inv-bg); color: var(--inv-fg); }
+  #pm-odin:checked ~ * .seg label[for="pm-odin"] > span,
+  #pm-touch:checked ~ .seg label[for="pm-touch"] > span,
+  #pm-touch:checked ~ * .seg label[for="pm-touch"] > span { background: var(--inv-bg); color: var(--inv-fg); }
   #pm-odin:focus-visible ~ .seg label[for="pm-odin"] > span,
   #pm-touch:focus-visible ~ .seg label[for="pm-touch"] > span { outline: 2px solid var(--focus); }
 
@@ -1875,7 +1773,9 @@
   #om-dynamic:checked ~ .typed-fields[data-type="dynamic"],
   #om-fixed:checked ~ .typed-fields[data-type="fixed"] { display: grid; }
   #om-dynamic:checked ~ .seg label[for="om-dynamic"] > span,
-  #om-fixed:checked ~ .seg label[for="om-fixed"] > span { background: var(--inv-bg); color: var(--inv-fg); }
+  #om-dynamic:checked ~ * .seg label[for="om-dynamic"] > span,
+  #om-fixed:checked ~ .seg label[for="om-fixed"] > span,
+  #om-fixed:checked ~ * .seg label[for="om-fixed"] > span { background: var(--inv-bg); color: var(--inv-fg); }
   #om-dynamic:focus-visible ~ .seg label[for="om-dynamic"] > span,
   #om-fixed:focus-visible ~ .seg label[for="om-fixed"] > span { outline: 2px solid var(--focus); }
 
@@ -1885,9 +1785,13 @@
   #ss-entsoe:checked ~ .typed-fields[data-type="entsoe"],
   #ss-fixed:checked ~ .typed-fields[data-type="fixed"] { display: grid; }
   #ss-eds:checked ~ .seg label[for="ss-eds"] > span,
+  #ss-eds:checked ~ * .seg label[for="ss-eds"] > span,
   #ss-energy_charts:checked ~ .seg label[for="ss-energy_charts"] > span,
+  #ss-energy_charts:checked ~ * .seg label[for="ss-energy_charts"] > span,
   #ss-entsoe:checked ~ .seg label[for="ss-entsoe"] > span,
-  #ss-fixed:checked ~ .seg label[for="ss-fixed"] > span { background: var(--inv-bg); color: var(--inv-fg); }
+  #ss-entsoe:checked ~ * .seg label[for="ss-entsoe"] > span,
+  #ss-fixed:checked ~ .seg label[for="ss-fixed"] > span,
+  #ss-fixed:checked ~ * .seg label[for="ss-fixed"] > span { background: var(--inv-bg); color: var(--inv-fg); }
   #ss-eds:focus-visible ~ .seg label[for="ss-eds"] > span,
   #ss-energy_charts:focus-visible ~ .seg label[for="ss-energy_charts"] > span,
   #ss-entsoe:focus-visible ~ .seg label[for="ss-entsoe"] > span,
@@ -1898,8 +1802,11 @@
   #gt-schedule:checked ~ .typed-fields[data-type="schedule"],
   #gt-none:checked ~ .typed-fields[data-type="none"] { display: grid; }
   #gt-datahub:checked ~ .seg label[for="gt-datahub"] > span,
+  #gt-datahub:checked ~ * .seg label[for="gt-datahub"] > span,
   #gt-schedule:checked ~ .seg label[for="gt-schedule"] > span,
-  #gt-none:checked ~ .seg label[for="gt-none"] > span { background: var(--inv-bg); color: var(--inv-fg); }
+  #gt-schedule:checked ~ * .seg label[for="gt-schedule"] > span,
+  #gt-none:checked ~ .seg label[for="gt-none"] > span,
+  #gt-none:checked ~ * .seg label[for="gt-none"] > span { background: var(--inv-bg); color: var(--inv-fg); }
   #gt-datahub:focus-visible ~ .seg label[for="gt-datahub"] > span,
   #gt-schedule:focus-visible ~ .seg label[for="gt-schedule"] > span,
   #gt-none:focus-visible ~ .seg label[for="gt-none"] > span { outline: 2px solid var(--focus); }
@@ -1908,16 +1815,13 @@
   #en-datahub:checked ~ .typed-fields[data-type="datahub"],
   #en-fixed:checked ~ .typed-fields[data-type="fixed"] { display: grid; }
   #en-datahub:checked ~ .seg label[for="en-datahub"] > span,
-  #en-fixed:checked ~ .seg label[for="en-fixed"] > span { background: var(--inv-bg); color: var(--inv-fg); }
+  #en-datahub:checked ~ * .seg label[for="en-datahub"] > span,
+  #en-fixed:checked ~ .seg label[for="en-fixed"] > span,
+  #en-fixed:checked ~ * .seg label[for="en-fixed"] > span { background: var(--inv-bg); color: var(--inv-fg); }
   #en-datahub:focus-visible ~ .seg label[for="en-datahub"] > span,
   #en-fixed:focus-visible ~ .seg label[for="en-fixed"] > span { outline: 2px solid var(--focus); }
   /* @end:state */
 
-  /* I konfiguration viser zonefelterne en lille prik: "redigerer" */
-  #m-conf:checked ~ .app .strip:not(.strip--tiers) .tile:not(.tile-sys) .tile-id::after,
-  #m-conf:checked ~ .app .substrip .tile .tile-id::after { content: " ·"; color: var(--muted); font-weight: 800; }
-  /* Ugemte ændringer vinder over "redigerer"-prikken (samme lag, derfor her). */
-  #m-conf:checked ~ .app .tile[data-dirty] .tile-id::after { content: ""; color: transparent; background: var(--warn); font-weight: 400; width: 6px; height: 6px; border-radius: 50%; }
 
   /* 6.4 Tema */
   @media (prefers-color-scheme: dark)  { #theme:checked ~ .app { color-scheme: light; } }
@@ -1960,14 +1864,7 @@
     --tile-h: 52px;
     & .content { padding-block: var(--space-4) var(--space-6); }
     & .view-head { padding-block: var(--space-1) var(--space-2); }
-    & .section-nav { padding-block: var(--space-1) var(--space-2); }
-    & .section-nav a { padding-inline: var(--space-3); }
-    & .section-h { margin-bottom: var(--space-2); min-height: 0; }
-    & .section ~ .section > .section-h { margin-top: var(--space-5); }
     & .mode label { padding-inline: var(--space-4); }
-    & .strip.strip--tiers :is(.tile-sys, .tile-manifold) { padding-block: var(--space-1); }
-    & .tile.tile-manifold { line-height: 1.2; }
-    & .tile.tile-manifold .mini { height: 18px; }
     & .tile-sys .temps { flex-direction: row; flex-wrap: wrap; align-items: baseline; column-gap: var(--space-2); }
 
     /* Indhold i paneler */
@@ -1986,8 +1883,6 @@
     & .switch input:checked::after { transform: translateX(16px); }
     /* En løs knap i et panel (fx «Genlær alle…») strækkes ikke. */
     & :is(.panel, .sub) > .btn { align-self: flex-start; justify-self: start; }
-    /* Live-aflæsninger i Konfiguration: mindre tal end på Dashboard. */
-    & .view[id^="v-conf-"] .metric dd { font-size: var(--fs-lg); }
   
   }
   }
@@ -2002,14 +1897,7 @@
     --tile-h: 52px;
     & .content { padding-block: var(--space-4) var(--space-6); }
     & .view-head { padding-block: var(--space-1) var(--space-2); }
-    & .section-nav { padding-block: var(--space-1) var(--space-2); }
-    & .section-nav a { padding-inline: var(--space-3); }
-    & .section-h { margin-bottom: var(--space-2); min-height: 0; }
-    & .section ~ .section > .section-h { margin-top: var(--space-5); }
     & .mode label { padding-inline: var(--space-4); }
-    & .strip.strip--tiers :is(.tile-sys, .tile-manifold) { padding-block: var(--space-1); }
-    & .tile.tile-manifold { line-height: 1.2; }
-    & .tile.tile-manifold .mini { height: 18px; }
     & .tile-sys .temps { flex-direction: row; flex-wrap: wrap; align-items: baseline; column-gap: var(--space-2); }
 
     /* Indhold i paneler */
@@ -2028,8 +1916,6 @@
     & .switch input:checked::after { transform: translateX(16px); }
     /* En løs knap i et panel (fx «Genlær alle…») strækkes ikke. */
     & :is(.panel, .sub) > .btn { align-self: flex-start; justify-self: start; }
-    /* Live-aflæsninger i Konfiguration: mindre tal end på Dashboard. */
-    & .view[id^="v-conf-"] .metric dd { font-size: var(--fs-lg); }
   
   }
   .muted { color: var(--muted); } .accent { color: var(--accent-ink); }

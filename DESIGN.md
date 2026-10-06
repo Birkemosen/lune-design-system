@@ -371,6 +371,8 @@ Regler:
 
 ### 5.2.1 Manifoldfelt og understrimmel
 
+> **Forældet i 2.2.** Touch bruger nu Hjem med varmekort (15.10). CSS'en ligger bag feature'n `tiers-strip` (`"features": ["tiers-strip"]` i config) og fjernes i en senere version.
+
 Touch bruger `.strip.strip--tiers` + `.substrip`:
 
 **Niveau 1** (altid synlig): hus-felt (`.tile-sys`) + ét `.tile.tile-manifold` pr. board (1–4).
@@ -695,6 +697,8 @@ Uden JS: knappen er altid primær, Fortryd er synlig og nulstiller felterne.
 3. **På tværs** — `.tile[for="s-…"]`, sektioner/sektionslinks og tilstandspillens «Konfiguration» får `data-dirty`, når der er ugemte ændringer i den tilhørende visning. `beforeunload` advarer ved navigation væk (`rt.leaveUnsaved`).
 
 Submit sender `lune:save` med `{key, data, form, auto}`. API-laget kalder `form.luneSaved(true|false, besked?)`. Scriptet er `js/lune-forms.js`.
+
+**Delvis gem = patch.** Når én ressource vises to steder (fx varmekildens forbindelse på System og dens adfærd i Varme-arket), har hver formular sin undernøgle — `data-save="heat_source.connection"` og `data-save="heat_source.behavior"` — og `data-patch`. `lune:save` får så `resource` (`heat_source`), `part` (`connection`), `method: "PATCH"` og `changed` (kun de ændrede felter). API-laget sender en PATCH til ressourcens endpoint med `changed`; felter, formularen ikke viser, røres ikke. Formularer uden `data-patch` sender hele formularen (`method: "POST"`).
 
 **Autogem (Hjem/Dashboard).** Måltemperaturen (`.climate`) gemmes 1,5 s efter sidste ændring — ingen gem-knap. Status under målet (`.autosave`): `rt.autoSaving` → `rt.autoSaved` → tom; ved fejl `rt.autoFailed` + `rt.retry`.
 
@@ -1283,3 +1287,14 @@ Ingen kontrol strækkes for at fylde rækken. På mobil (< 600 px) må en kontro
 ```
 
 **Deep links** (progressiv, `lune-forms.js`). `data-hash` på ark, faneradioer, `#m-sys` og kategoriradioer bestemmer adressen: `#z3` åbner arket, `#z3/indstillinger` på fanen, `#system/varmekilde` System på kategorien. Adressen opdateres ved navigation (`history.replaceState`). Skift væk fra System eller en kategori med ugemte ændringer advarer.
+
+### 15.10 Hjem: hovedsektion, termostat-ring, felter og varmekort
+
+Touch' Hjem (15.7) bygges af tre komponenter (`@only touch` i CSS'en):
+
+- **`.home-hero`**: én sætning om situationen (`<small>` hilsen, `h2` overskrift, `p` uddybning) og **`.thermo`**: husets temperatur og mål i en 270°-ring. Ringen har én farve (varme, 3.2.2): sporet er neutralt, buen er målet (`--v`, 0–100 % af skalaen), mærket er den aktuelle temperatur (`--now`). Målet ændres med − / + under ringen (`.climate .target`) og autogemmes. Ringen har `role="img"` med en aria-label, der siger temperatur og mål.
+- **`.home-tiles` › `button.home-tile`**: højst fire felter i en række (to på tablet, ét på mobil). Hvert felt er én ting og åbner tingens ark (`popovertarget`): `.chip-icon` + `b` titel + `.ht-status` (én linje) + `.ht-val` (ét hovedtal, evt. ét sekundært tal i `<small>`) + `.ht-viz` (én lille SVG). Valgfrit `.ht-price` til én ekstra linje, fx aktuel elpris med `.scale-chip[data-scale="1–5"]` (`scale-good-bad`). Uden data: `data-empty` skjuler visualiseringen, og tallet er «—».
+- **`.heatmap` › `.room-group`**: rum grupperet pr. styring. `button.room-group-head` (navn + `<small>` med M-id og fremløb → retur) åbner styringens ark; `.room-grid` har rummenes zonefelter (`button.tile`, 10-segment ventilbjælke + procent + afvigelses-chip, 5.2), som åbner rummets ark. Styring offline: `data-offline` dæmper de seneste værdier, og `.offline-note` siger «V6 er ikke tilgængelig · senest set …». En note (`.heatmap-note`) forklarer chip og bjælke.
+
+Rum-arket på Touch viser kun det, Touch ejer (medregn i hustemperaturen, vægt, vind, sol). V6' egne felter står som læseværdier i gruppen «Fra V6 (<styring>, Z<n>)» med «Redigér på V6 ›» (ny fane, `http://<v6>/#z<n>/indstillinger`); er V6'en offline, er gruppen dæmpet (`.setting-group[data-offline]`) med samme note.
+
