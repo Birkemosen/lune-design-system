@@ -1,5 +1,14 @@
 # Changelog — Lune Design System
 
+## 2.3.1
+
+Rettelser fra migreringen af produkterne (`lune` og `lune-coordinator`, gren `lds-2.3`).
+
+- `lune-forms.js`: `window.luneForms.bind(form)` / `.scan(rod)` til formularer, der tegnes efter indlæsning; `luneResnap()` og et vellykket gem gør formularens værdier til standardværdier, så Fortryd og «kassér» vender tilbage til enhedens værdier (DESIGN.md 6.1). En formular bindes kun én gang.
+- CSS: `.setting[data-show-when]` vises som flex; skillelinje også mellem rækker og undersider inde i `.gated-body`; `.setting-value` (læseværdi, 600-vægt).
+- DESIGN.md: Elpris i Touch' kategoriliste (15.4); «kun faner med indhold» (15.3); `lune-forms.js` som egen fil eller i produktets binder (9).
+- Touch-eksemplet: rørafstand og rørtype er fjernet fra «Fra V6» (findes ikke i Touch' API); eksempeltekster med indbyggede data er nu skabeloner (`tile.planVal`, `tile.price`, `heat.odinNowVal`, `hs.testOkBody`, `alert.motorFault`).
+
 ## 2.3.0
 
 Fase 3: Lune Touch på Hjem / ark / System.

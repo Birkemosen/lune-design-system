@@ -812,6 +812,7 @@
   :is(.note, p, .hint, details)[data-show-when] { --show-display: block; }
   dl[data-show-when] { --show-display: grid; }
   .actions[data-show-when] { --show-display: flex; }
+  .setting[data-show-when] { --show-display: flex; }
   [data-state="unpaired"] [data-show-when~="unpaired"],
   [data-state="approved"] [data-show-when~="approved"],
   [data-state="pending"]  [data-show-when~="pending"],
@@ -1313,7 +1314,7 @@
   .setting-list { border-radius: var(--r-tile); background: var(--raised); box-shadow: inset 0 1px 0 rgba(255,255,255,.05); overflow: hidden; }
   .setting { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-height: var(--setting-h); padding: 8px var(--space-4); }
   .setting + .setting, .setting + .gated-body > .setting:first-child, .gated-body > .setting + .setting,
-  .setting-list > :is(.setting, details) + details > summary.setting, .setting-list > details + .setting { border-top: 1px solid var(--border); }
+  :is(.setting-list, .gated-body) > :is(.setting, details) + details > summary.setting, :is(.setting-list, .gated-body) > details + .setting { border-top: 1px solid var(--border); }
   .setting-label { display: grid; gap: 2px; min-width: 0; }
   .setting-label > :first-child { font-size: var(--fs-md); font-weight: 500; }
   .setting-label small { font-size: var(--fs-xs); color: var(--muted); }
@@ -1326,6 +1327,9 @@
   .compass.inline .c { display: none; }
   .compass.inline span { width: 36px; height: 36px; border-radius: 50%; }
   .setting-group > .note { margin: 0 0 0 4px; font-size: var(--fs-xs); color: var(--faint); }
+  /* Læseværdi (15.5): værdien i 600-vægt, tid/kilde dæmpet bagefter. */
+  .setting-value { font-weight: 600; text-align: right; }
+  .setting-value small { font-weight: 400; color: var(--muted); }
   .setting.switch { cursor: pointer; }
   .setting-list .btn:not(.primary):not(.danger-solid) { background: var(--card); box-shadow: inset 0 0 0 1px var(--border); }
   /* Lang værdi (URL, variabel): kontrollen under labelen i fuld bredde */
