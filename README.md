@@ -34,6 +34,7 @@ python tools/build_docs.py                     # → docs/design-system.html
 python tools/lds_display.py                    # → dist/display/lune_theme.{h,yaml}
 python tools/lds_ha.py                         # → dist/home-assistant/themes/lune.yaml
 python examples/v6/build_ui.py --langs en,da   # → examples/v6/dist (sider + web_ui.h)
+python examples/v6/check_fields.py             # ingen gamle felter forsvundet, grænser for grupper
 python examples/touch/build_ui.py --langs en,da --preview --hs-type asgard
 ```
 

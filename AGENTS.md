@@ -31,6 +31,13 @@ Kopiér denne fil ind i projektets `CLAUDE.md` / `AGENTS.md`, eller henvis til d
 - Hjem / Ark / System. Indstillinger for én ting ligger i tingens ark (fane Indstillinger); enhedsindstillinger på System.
 - Indstillinger er grupperede lister (maks. 6 rækker pr. gruppe, 5 grupper pr. side), ikke kort. Kontrolbredder efter tabellen i 15.6.
 - Hjem: én hovedsektion, maks. 4 felter pr. række, ét hovedtal og én visualisering pr. felt.
+- Config: `"modes": ["home", "sys"]` + `systemCategories`. `dash`/`conf` er udfaset.
+- Ark: `div.sheet[popover]` med `.sheet-head` (ikonbrik, titel, én statuslinje, luk), åbnes med `popovertarget`. Ét ark pr. ting; aldrig ark i ark.
+- Faner: radioer `input.state.tab` (value `overview|history|settings`) først i arket + `.tabs`-labels + `.tab-panel[data-tab]`. Ingen JS til at skifte fane.
+- Gem-bjælke: én `.savebar` sidst i formularen pr. fane/kategori, med `.save-status`, Fortryd og Gem. Hjem autogemmer.
+- Sjældne indstillinger: `details.subpage` («Avanceret ›») i samme ark/kategori.
+- System: radioer `name="syscat"` (`c-{kategori}` + `c-none`) før `.sys`; `.sys-nav` + `.sys-cat[data-cat]`; `.sys-back` til mobil.
+- Deep links via `data-hash` (`#z3/indstillinger`, `#system/varmekilde`).
 
 ## Aldrig
 - Ingen kontrol der fylder halv panelbredde; brug naturlig bredde og `.w-*`.
