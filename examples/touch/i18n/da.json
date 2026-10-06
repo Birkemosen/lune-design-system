@@ -99,6 +99,7 @@
   "home.nowTitle": "Varme, plan og vejr",
   "thermo.aria": "Huset er {t} °C, målet er {g} °C",
   "thermo.house": "Huset nu",
+  "scopes.aria": "Hus og styringer",
   "thermo.outside": "ude {t}°",
   "climate.target": "Mål",
   "climate.targetAria": "husets mål",

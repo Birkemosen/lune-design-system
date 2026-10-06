@@ -96,6 +96,29 @@ def pts(vals, w, h, lo, hi):
     return " ".join(f"{round(k * w / (len(vals) - 1), 1)},{round(h - (v - lo) / (hi - lo) * h, 1)}" for k, v in enumerate(vals))
 
 
+def hero_waves():
+    """Højdekurver bag Hjems hovedsektion (DESIGN.md 15.10). Deterministisk, ingen tilfældighed."""
+    W, H, n = 1200, 420, 15
+    paths = []
+    for i in range(n):
+        y0 = 18 + i * (H - 36) / (n - 1)
+        pts = []
+        for k in range(9):
+            x = k * W / 8
+            # to langsomme bølger + en svag samling nederst til højre (kurverne løber sammen)
+            y = (y0 + 9 * math.sin(x / 210 + i * .55) + 6 * math.sin(x / 95 - i * .3)
+                 - (x / W) ** 3 * (y0 - H * .62) * .45)
+            pts.append((x, y))
+        d = f"M{pts[0][0]:.0f},{pts[0][1]:.0f}"
+        for k in range(len(pts) - 1):
+            p0 = pts[max(k - 1, 0)]; p1 = pts[k]; p2 = pts[k + 1]; p3 = pts[min(k + 2, len(pts) - 1)]
+            c1 = (p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6)
+            c2 = (p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6)
+            d += f"C{c1[0]:.0f} {c1[1]:.0f} {c2[0]:.0f} {c2[1]:.0f} {p2[0]:.0f} {p2[1]:.0f}"
+        paths.append(f'<path d="{d}"/>')
+    return f'<svg class="hero-waves" viewBox="0 0 {W} {H}" preserveAspectRatio="xMidYMid slice" aria-hidden="true">{"".join(paths)}</svg>'
+
+
 def ensure_css(path: pathlib.Path) -> str:
     if not path.is_file():
         subprocess.run([sys.executable, str(DS_ROOT / "tools" / "lds_build.py"), str(DS_ROOT / "config" / "touch.json")], cwd=DS_ROOT, check=True)
@@ -323,10 +346,23 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
     v = round((HOUSE_TARGET - THERMO_MIN) / (THERMO_MAX - THERMO_MIN) * 100)
     now = round((HOUSE_TEMP - THERMO_MIN) / (THERMO_MAX - THERMO_MIN) * 100)
     ta = T("climate.targetAria")
+
+    def scope_card(m):
+        bars = "".join(f'<i data-state="fault"></i>' if r[7] == "fault" else f'<i data-level="{level(r)}"></i>'
+                       for r in ROOMS if r[2] == m["n"])
+        off = "" if m["online"] else " data-offline"
+        note = "" if m["online"] else f' · <span>{T("status.offline")}</span>'
+        return (f'<button class="scope" type="button" popovertarget="sheet-m{m["n"]}"{off}><small>M{m["n"]}{note}</small><b>{m["name"]}</b>'
+                f'<span class="mini" aria-hidden="true">{bars}</span></button>')
+    scopes = (f'<div class="home-scopes" role="group" aria-label="{T("scopes.aria")}">'
+              f'<div class="scope" aria-current="page"><small>{T("scope.house")}</small><b>{T.num(HOUSE_TEMP)}°</b></div>'
+              + "".join(scope_card(m) for m in MANIFOLDS) + '</div>')
     home = f'''
       <section class="view" id="v-home-house" aria-labelledby="h-home">
         {alerts}
+        {scopes}
         <section class="home-hero">
+          {hero_waves()}
           <div class="hero-text">
             <small>{T("home.greeting")}</small>
             <h2 id="h-home">{T("home.headline")} <span class="sub">{T("home.headline2")}</span></h2>
@@ -338,7 +374,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
           </div>
           <form class="thermo" data-save="house-target">
             <div class="thermo-ring" style="--v:{v};--now:{now}" role="img" aria-label="{T("thermo.aria", t=T.num(HOUSE_TEMP), g=T.num(HOUSE_TARGET))}">
-              <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="44" pathLength="100"/><circle class="arc" cx="50" cy="50" r="44" pathLength="100"/><circle class="tg-edge" cx="50" cy="50" r="44" pathLength="100"/><circle class="tg" cx="50" cy="50" r="44" pathLength="100"/></svg>
+              <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="44" pathLength="100"/><circle class="arc" cx="50" cy="50" r="44" pathLength="100"/><circle class="knob" cx="50" cy="50" r="44" pathLength="100"/></svg>
               <div class="thermo-val"><span>{T("thermo.house")}</span><b data-bind="house.temp">{T.num(HOUSE_TEMP)}<small>°</small></b><span>{T("thermo.outside", t=T.num(8.4))}</span></div>
             </div>
             <div class="climate">

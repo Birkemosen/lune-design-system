@@ -99,6 +99,7 @@
   "home.nowTitle": "Heat, plan and weather",
   "thermo.aria": "The house is {t} °C, the target is {g} °C",
   "thermo.house": "House now",
+  "scopes.aria": "House and controllers",
   "thermo.outside": "outside {t}°",
   "climate.target": "Target",
   "climate.targetAria": "house target",
