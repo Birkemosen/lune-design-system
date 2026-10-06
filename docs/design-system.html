@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Lune Design System 2.3.3</title>
+<title>Lune Design System 2.3.4</title>
 <style>
 /* ==========================================================================
    LUNE DESIGN SYSTEM 2 — fælles stylesheet for Lune V6 og Lune Touch
@@ -1544,9 +1544,15 @@
      to genveje (varmekilde, næste varme) nederst — og hustemperatur + mål i ringen. */
   .home-hero {
     display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; gap: var(--space-6) var(--space-7);
+    position: relative; isolation: isolate; overflow: hidden;
     padding: var(--space-7) var(--space-7) var(--space-6);
     border-radius: var(--r-card); background: var(--card); box-shadow: var(--card-edge);
   }
+  /* Højdekurver bag hovedsektionen (inline-SVG fra builderen): tynde streger i varmefarven,
+     ingen flader. Den eneste tekstur i systemet; kun her. */
+  .hero-waves { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; }
+  .hero-waves path { fill: none; stroke-width: 1; vector-effect: non-scaling-stroke;
+    stroke: light-dark(color-mix(in srgb, var(--accent) 14%, transparent), color-mix(in srgb, var(--accent) 20%, transparent)); }
   .hero-text { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
   .hero-text > small { font-size: var(--fs-sm); font-weight: 500; color: var(--accent-ink); }
   .home-hero h2 { font-size: var(--fs-display); font-weight: 600; letter-spacing: -.04em; line-height: 1.05; text-wrap: balance; }
@@ -1581,16 +1587,14 @@
   }
 
   /* Termostat-ring: 270°-bue. Sporet er neutralt, buen er husets temperatur nu (varme, én farve,
-     3.2.2), mærket er målet. --now og --v = 0–100 % af skalaen. */
+     3.2.2) med et hvidt håndtag for enden. Målet står under ringen. --now = 0–100 % af skalaen. */
   .thermo { display: grid; justify-items: center; align-content: space-between; gap: var(--space-4); }
   .thermo-ring { position: relative; width: min(260px, 64vw); aspect-ratio: 1; }
   .thermo-ring svg { display: block; width: 100%; height: 100%; transform: rotate(135deg); }
   .thermo-ring circle { fill: none; stroke-linecap: round; }
   .thermo-ring .trk { stroke: var(--seg-off); stroke-width: 7; stroke-dasharray: 75 100; }
   .thermo-ring .arc { stroke: var(--accent); stroke-width: 7; stroke-dasharray: calc(var(--now, 0) * .75) 100; }
-  .thermo-ring :is(.tg, .tg-edge) { stroke-dasharray: .1 100; stroke-dashoffset: calc(var(--v, 0) * -.75); }
-  .thermo-ring .tg-edge { stroke: var(--card); stroke-width: 9; }
-  .thermo-ring .tg { stroke: var(--fg); stroke-width: 5; }
+  .thermo-ring .knob { stroke: var(--fg); stroke-width: 12; stroke-dasharray: .01 100; stroke-dashoffset: calc(var(--now, 0) * -.75 + .01); }
   .thermo-val { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: var(--space-1); text-align: center; }
   .thermo-val b { font-size: var(--fs-hero); font-weight: 600; letter-spacing: -.05em; line-height: .95; font-variant-numeric: tabular-nums; }
   .thermo-val b small { margin-left: .02em; font-size: .4em; color: var(--muted); letter-spacing: 0; vertical-align: .95em; }
@@ -1602,6 +1606,39 @@
   .climate .target .value:has(> .unit) > small { grid-column: 1 / -1; justify-self: center; }
   .climate .target .value > .unit { font-size: var(--fs-lg); font-weight: 600; color: var(--muted); line-height: 1.6; }
   .climate .target .value:has(> .unit) input { width: 4ch; text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* Omfang øverst på Hjem: huset (aktuelt, inverteret) + ét kort pr. styring (V6) med
+     én lodret søjle pr. zone = ventilåbning i 5 trin (mængde → tekstfarve, fejl rød).
+     Styringskortet åbner styringens ark. */
+  .home-scopes { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .scope {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; align-items: end; gap: 0 var(--space-4);
+    flex: 0 1 auto; min-width: 9rem; padding: var(--space-3) var(--space-4);
+    border: 0; border-radius: var(--r-tile); background: var(--card); box-shadow: var(--card-edge);
+    color: var(--fg); font: inherit; text-align: left;
+  }
+  button.scope { cursor: pointer; transition: background var(--dur) var(--ease); }
+  button.scope:hover { background: var(--raised); }
+  .scope[aria-current] { min-width: 12rem; background: var(--inv-bg); color: var(--inv-fg); box-shadow: none; }
+  .scope > small { grid-column: 1; font-size: var(--fs-xs); font-weight: 600; color: var(--muted); }
+  .scope[aria-current] > small { color: inherit; opacity: .7; }
+  .scope > b { grid-column: 1; font-size: var(--fs-lg); font-weight: 600; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .scope .mini { grid-column: 2; grid-row: 1 / 3; display: flex; align-items: flex-end; gap: var(--space-1); height: 28px; }
+  .scope .mini i { width: var(--space-2); height: var(--space-2); border-radius: 2px; background: var(--seg-off); }
+  .scope .mini i[data-level="1"] { height: 40%; background: currentColor; }
+  .scope .mini i[data-level="2"] { height: 55%; background: currentColor; }
+  .scope .mini i[data-level="3"] { height: 70%; background: currentColor; }
+  .scope .mini i[data-level="4"] { height: 85%; background: currentColor; }
+  .scope .mini i[data-level="5"] { height: 100%; background: currentColor; }
+  .scope .mini i[data-state="fault"] { height: 100%; background: var(--danger); }
+  .scope[data-offline] .mini { opacity: .45; }
+  .scope > small span { color: var(--warn); }
+  @media (max-width: 599.98px) {
+    .scope { flex: 1 1 40%; min-width: 0; padding: var(--space-2) var(--space-3); }
+    .scope[aria-current] { min-width: 0; }
+    .scope > b { font-size: var(--fs-md); }
+    .scope .mini { display: none; }
+  }
 
   /* Overskrift over en blok på Hjem: lille linje + titel. */
   .home-head { display: grid; gap: var(--space-1); margin-top: var(--space-4); }
@@ -2275,7 +2312,7 @@
 
   <div class="navbar-wrap wrap">
     <header class="header" style="grid-template-columns:1fr auto">
-      <div class="device"><summary style="pointer-events:none"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="var(--fg)"/><path d="M10 22V12M14 22V10M18 22V13M22 22V11" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/></svg><span class="name"><b>Lune Design System</b><small>v2.3.3</small></span></summary></div>
+      <div class="device"><summary style="pointer-events:none"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="var(--fg)"/><path d="M10 22V12M14 22V10M18 22V13M22 22V11" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/></svg><span class="name"><b>Lune Design System</b><small>v2.3.4</small></span></summary></div>
       <label class="icon-btn theme-btn" for="theme" title="Skift lyst/mørkt tema">
         <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg>
         <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
@@ -2286,7 +2323,7 @@
   <main class="content wrap">
     <div class="doc-layout"><nav class="doc-toc" aria-label="Indhold"><b>Grundlag</b><a href="#principper">Principper</a><a href="#arkitektur">Arkitektur</a><a href="#farver">Farver</a><a href="#grundelementer">Typografi og afstand</a><b>Komponenter</b><a href="#k-navigation">Navigation</a><a href="#k-hjem">Indhold på Hjem</a><a href="#k-indstillinger">Indstillinger</a><a href="#k-feedback">Feedback og handlinger</a><b>Mønstre</b><a href="#moenstre">Mønstre og indhold</a></nav>
     <div class="view"><span id="principper"></span>
-      <div class="view-head" style="grid-column:1/-1;padding-top:var(--space-4)"><h2 style="font-size:var(--fs-hero);line-height:1;letter-spacing:-.05em">Lune Design System</h2><p>v2.3.3 · Lune V6 og Lune Touch</p></div>
+      <div class="view-head" style="grid-column:1/-1;padding-top:var(--space-4)"><h2 style="font-size:var(--fs-hero);line-height:1;letter-spacing:-.05em">Lune Design System</h2><p>v2.3.4 · Lune V6 og Lune Touch</p></div>
       <p class="lead" style="grid-column:1/-1">Tokens, komponenter og regler til at bygge UI på ESP32: ren CSS og HTML, tilstand uden JavaScript, ingen eksterne ressourcer. Denne side bruger selve systemets CSS. Skift tema øverst til højre for at se begge temaer.</p>
       <section class="panel c4 principle"><h3>Et blik er nok</h3><p>Store tal, små labels under. Én hero-temperatur pr. visning.</p></section><section class="panel c4 principle"><h3>Farve betyder noget</h3><p>Neutralt, indtil der er noget at sige. Én betydning pr. farve.</p></section><section class="panel c4 principle"><h3>Samme sted, samme ting</h3><p>Zonestrimlen vælger hvad, tilstandspillen vælger hvordan.</p></section><section class="panel c4 principle"><h3>Få store paneler</h3><p>2–4 paneler pr. visning, altid åbne. Kun ekspert-tuning foldes.</p></section><section class="panel c4 principle"><h3>Tilstand uden JavaScript</h3><p>Radio, checkbox og details. JS kun til live-data.</p></section><section class="panel c4 principle"><h3>Tilgængelig fra start</h3><p>≥ 4,5:1 kontrast, ≥ 44 px trykflader, tastatur og fokus.</p></section>
       <header class="doc-h" id="arkitektur"><h2>Arkitektur</h2><p>Tre niveauer: Hjem (overblik og hverdagshandlinger), ark pr. ting (overblik, historik og tingens indstillinger) og System (det der gælder hele enheden). Erstatter Dashboard/Konfiguration. Fuld beskrivelse i DESIGN.md afsnit 15.</p></header>
