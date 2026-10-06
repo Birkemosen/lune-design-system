@@ -686,7 +686,7 @@ patterns = section("moenstre", "Mønstre og indhold", "Sådan sættes komponente
           <div><dt>Enheder</dt><dd>Mellemrum: 21,4 °C, 6 m/s — kort grad i felter: 21,4°</dd></div>
           <div><dt>i18n</dt><dd>Build-time, --langs en,da, alle aria-labels oversat</dd></div>
         </dl></section>
-      <section class="panel"><header class="panel-head"><h3>ESP32-budget</h3><span class="badge ok">58,7 kB · budget 60 kB</span></header>
+      <section class="panel"><header class="panel-head"><h3>ESP32-budget</h3><span class="badge ok">58,7 kB · budget 69 kB</span></header>
         <dl class="metrics">
           <div class="metric"><dt>CSS</dt><dd>21,0 <small>kB gzip</small></dd></div>
           <div class="metric"><dt>Side pr. sprog</dt><dd>16,8 <small>kB gzip uden grafpunkter (25,2 med)</small></dd></div>

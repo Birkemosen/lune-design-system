@@ -1,5 +1,9 @@
 # Changelog — Lune Design System
 
+## 2.3.2
+
+- Budget (DESIGN.md 9) hævet ud fra målinger på V6 (8 MB flash, app-partition 3,93 MB, web-UI 117 kB, 2,3 MB fri): CSS ≤ 24 kB, `lune-forms.js` ≤ 5 kB, ≤ 20 kB pr. sprogside uden grafpunkter, binder ≤ 70 kB, hele web-UI'et ≤ 160 kB gzip.
+
 ## 2.3.1
 
 Rettelser fra migreringen af produkterne (`lune` og `lune-coordinator`, gren `lds-2.3`).
