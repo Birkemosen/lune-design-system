@@ -16,7 +16,9 @@ esc = html.escape
 C = L.flat_colors()
 
 # Referencesiden viser alle komponenter, også de projektspecifikke (@only-blokke).
-CSS = L.build_css(json.loads((ROOT/"config/v6.json").read_text(encoding="utf-8")), project_id=None)
+DOC_CFG = json.loads((ROOT/"config/v6.json").read_text(encoding="utf-8"))
+DOC_CFG.update(modes=["home", "sys"], systemCategories=["device", "network", "service"])  # demo af System-siden
+CSS = L.build_css(DOC_CFG, project_id=None)
 
 DOC_CSS = """
 /* Kun til dokumentationssiden */
@@ -480,10 +482,123 @@ _items = ([
 def grp(id_, title, intro):
     return f'<header class="doc-h2" id="{id_}"><h3>{title}</h3><p>{intro}</p></header>'
 _I=_items; _M=_items_main
+
+# ---- Ark, faner, gem-bjælke, underside og System (DESIGN.md 15) ----
+ICON_ROOM = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg>'
+def srow(label, control, hint="", cls=""):
+    h = f"<small>{hint}</small>" if hint else ""
+    return f'<div class="setting{(" " + cls) if cls else ""}"><div class="setting-label">{label}{h}</div><div class="setting-control">{control}</div></div>'
+def sstep(id_, val, unit, label):
+    return f'<div class="stepper"><button type="button" data-step="-1" aria-label="Sænk {label}">−</button><span class="value"><input type="number" id="{id_}" name="{id_}" value="{val}" step="0.5"><span class="unit">{unit}</span></span><button type="button" data-step="1" aria-label="Hæv {label}">+</button></div>'
+def ssub(label, value, body):
+    return (f'<details class="subpage"><summary class="setting"><span class="sub-back">Tilbage</span><span class="setting-label"><span>{label}</span></span>'
+            f'<span class="setting-control"><span class="muted">{value}</span></span></summary><div class="subpage-body">{body}</div></details>')
+def sgroup(title, rows, extra=""):
+    return f'<section class="setting-group"><h4>{title}</h4><div class="setting-list">{rows}</div>{extra}</section>'
+
+_z1_settings = "".join([
+  sgroup("Komfort", srow('<label for="z1-target">Mål</label>', sstep("z1-target", "22.0", "°C", "mål"), "Gemmes også fra overblikket"),
+         '<div class="setting-list gated">'
+         '<label class="setting switch"><span class="setting-label"><b style="font-weight:500">Natsænkning</b><small>22–06</small></span><input type="checkbox" role="switch" name="z1-night" checked></label>'
+         '<div class="gated-body">' + srow('<label for="z1-setback">Sænk med</label>', sstep("z1-setback", "1.0", "°C", "sænkning")) + '</div></div>'),
+  sgroup("Rum", srow('<label for="z1-area">Areal</label>', sstep("z1-area", "12.0", "m²", "areal")) +
+         srow('<label for="z1-sensor">Temperaturføler</label>', '<select class="select" id="z1-sensor" name="z1-sensor" style="width:200px"><option>BLE · Shelly H&amp;T</option><option>Probe 3</option></select>')),
+  sgroup("Gulv", srow('<label for="z1-cc">Rørafstand</label>', sstep("z1-cc", "150", "mm", "rørafstand"), "C-C") +
+         srow('<label for="z1-pipe">Rørtype</label>', '<select class="select" id="z1-pipe" name="z1-pipe" style="width:180px"><option>PEX 16 mm</option><option>ALUPEX 16 mm</option></select>')),
+  sgroup("Avanceret",
+         ssub("Motor og kalibrering", "Lært", sgroup("Motor", srow('<label for="z1-endstop">Endestop-timeout</label>', sstep("z1-endstop", "45", "s", "timeout")))) +
+         ssub("Gruppering", "Ingen", sgroup("Gruppe", srow('<label for="z1-group">Primær zone</label>', '<select class="select" id="z1-group" name="z1-group" style="width:160px"><option>Ingen</option><option>Z4</option></select>'))),
+         '<p class="note">Sjældne indstillinger åbner i samme ark.</p>'),
+  '<div class="actions"><button class="btn danger" type="button" popovertarget="doc-cf-z1">Nulstil og genlær Z1…</button></div>',
+  '<div id="doc-cf-z1" popover class="confirm-pop" role="alertdialog" aria-labelledby="doc-cf-z1-t"><h4 id="doc-cf-z1-t">Nulstil og genlær Z1?</h4><p>Motoren kører til endestop og lærer forfra. Zonen varmer ikke imens.</p>'
+  '<div class="actions"><button class="btn" type="button" popovertarget="doc-cf-z1" popovertargetaction="hide" autofocus>Annullér</button><button class="btn danger-solid" type="button" popovertarget="doc-cf-z1" popovertargetaction="hide">Nulstil</button></div></div>',
+  '<footer class="savebar"><span class="save-status" id="ss-doc-z1" aria-live="polite"></span><button type="reset" class="btn">Fortryd</button><button class="btn primary" type="submit">Gem</button></footer>',
+])
+
+sheet_demo = (
+  '<div class="actions"><button class="btn" type="button" popovertarget="sheet-z1">Åbn Josephine</button>'
+  '<button class="btn" type="button" popovertarget="sheet-z1" data-tab="settings">Indstillinger for Josephine</button></div>'
+  '<div id="sheet-z1" popover class="sheet" role="dialog" aria-labelledby="sheet-z1-t" data-hash="z1">'
+  '<input class="state tab" type="radio" name="tab-z1" id="tab-z1-o" value="overview" data-hash="overblik" checked aria-label="Overblik">'
+  '<input class="state tab" type="radio" name="tab-z1" id="tab-z1-h" value="history" data-hash="historik" aria-label="Historik">'
+  '<input class="state tab" type="radio" name="tab-z1" id="tab-z1-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">'
+  '<header class="sheet-head">'
+  f'<span class="chip-icon" aria-hidden="true">{ICON_ROOM}</span>'
+  '<div><h2 id="sheet-z1-t">Josephine</h2><p>1. sal · Z1 · 22,9° · 62 % åben</p></div>'
+  '<button class="sheet-close" type="button" popovertarget="sheet-z1" popovertargetaction="hide" aria-label="Luk">×</button>'
+  '<nav class="tabs" aria-label="Faner"><label for="tab-z1-o" data-tab="overview">Overblik</label><label for="tab-z1-h" data-tab="history">Historik</label><label for="tab-z1-s" data-tab="settings">Indstillinger</label></nav>'
+  '</header><div class="sheet-body">'
+  f'<section class="tab-panel" data-tab="overview">{climate_demo}'
+  '<dl class="kv"><div><dt>Ventil</dt><dd>62 % åben</dd></div><div><dt>Retur</dt><dd class="c-info">27,4 °C</dd></div><div><dt>Status</dt><dd>Kalder på varme</dd></div></dl></section>'
+  f'<section class="tab-panel" data-tab="history">{trend_demo}</section>'
+  f'<section class="tab-panel" data-tab="settings"><form data-save="doc-z1">{_z1_settings}</form></section>'
+  '</div></div>')
+
+sheet_code = """<div id="sheet-z1" popover class="sheet" role="dialog" aria-labelledby="sheet-z1-t" data-hash="z1">
+  <input class="state tab" type="radio" name="tab-z1" id="tab-z1-o" value="overview" data-hash="overblik" checked>
+  <input class="state tab" type="radio" name="tab-z1" id="tab-z1-h" value="history" data-hash="historik">
+  <input class="state tab" type="radio" name="tab-z1" id="tab-z1-s" value="settings" data-hash="indstillinger">
+  <header class="sheet-head">
+    <span class="chip-icon" aria-hidden="true"><svg …/></span>
+    <div><h2 id="sheet-z1-t">Josephine</h2><p>1. sal · Z1 · 22,9° · 62 % åben</p></div>
+    <button class="sheet-close" type="button" popovertarget="sheet-z1" popovertargetaction="hide" aria-label="Luk">×</button>
+    <nav class="tabs"><label for="tab-z1-o" data-tab="overview">Overblik</label>…</nav>
+  </header>
+  <div class="sheet-body">
+    <section class="tab-panel" data-tab="overview">…</section>
+    <section class="tab-panel" data-tab="history">…</section>
+    <section class="tab-panel" data-tab="settings">
+      <form data-save="z1">
+        <section class="setting-group">…</section>              <!-- maks. 5 grupper -->
+        <details class="subpage"><summary class="setting">…</summary><div class="subpage-body">…</div></details>
+        <button class="btn danger" popovertarget="cf-z1">Nulstil og genlær Z1…</button>   <!-- altid sidst -->
+        <footer class="savebar"><span class="save-status" aria-live="polite"></span>
+          <button type="reset" class="btn">Fortryd</button><button class="btn primary" type="submit">Gem</button></footer>
+      </form>
+    </section>
+  </div>
+</div>
+<button popovertarget="sheet-z1" data-tab="settings">…</button>   <!-- åbner på Indstillinger (JS) -->"""
+
+def syscat(cat, title, body, badge=""):
+    b = f'<span class="badge ok">{badge}</span>' if badge else ""
+    return (f'<section class="sys-cat" data-cat="{cat}"><label class="sys-back" for="c-none">System</label><header><div><small>System</small><h2>{title}</h2></div>{b}</header>'
+            f'<form data-save="doc-sys-{cat}">{body}<footer class="savebar"><span class="save-status" aria-live="polite"></span><button type="reset" class="btn">Fortryd</button><button class="btn primary" type="submit">Gem</button></footer></form></section>')
+sys_demo = ('<input class="state" type="radio" name="syscat" id="c-none" checked aria-label="Kategorier">'
+  '<input class="state" type="radio" name="syscat" id="c-device" data-hash="enhed" aria-label="Enhed">'
+  '<input class="state" type="radio" name="syscat" id="c-network" data-hash="netvaerk" aria-label="Netværk">'
+  '<input class="state" type="radio" name="syscat" id="c-service" data-hash="service" aria-label="Service">'
+  '<div class="sys"><nav class="sys-nav" aria-label="Kategorier"><label for="c-device">Enhed</label><label for="c-network">Netværk</label><label for="c-service">Service</label></nav><div class="sys-main">'
+  + syscat("device", "Enhed", sgroup("Identitet", srow('<label for="sd-name">Navn</label>', '<input class="input w-sm" id="sd-name" name="sd-name" value="Stueetage">') + srow('<label for="sd-loc">Placering</label>', '<input class="input w-sm" id="sd-loc" name="sd-loc" value="Bryggers">')))
+  + syscat("network", "Netværk", sgroup("Forbindelse", srow('<label for="sn-host">Host</label>', '<input class="input w-md" id="sn-host" name="sn-host" value="lune-v6.local">') + srow('<label for="sn-port">Port</label>', '<input class="input w-xs" id="sn-port" name="sn-port" type="number" value="80">')), "Online")
+  + syscat("service", "Service", sgroup("Diagnostik", srow('<span>Oppetid</span>', '<span>3 d 4 t</span>')))
+  + '</div></div>')
+sys_code = """<input class="state" type="radio" name="syscat" id="c-none" checked>
+<input class="state" type="radio" name="syscat" id="c-device" data-hash="enhed">
+…
+<div class="sys">
+  <nav class="sys-nav"><label for="c-device"><svg …/>Enhed</label>…</nav>
+  <div class="sys-main">
+    <section class="sys-cat" data-cat="device">
+      <label class="sys-back" for="c-none">System</label>      <!-- kun mobil -->
+      <header><div><small>System</small><h2>Enhed</h2></div></header>
+      <form data-save="device">…grupper… <footer class="savebar">…</footer></form>
+    </section>
+  </div>
+</div>
+<!-- config: "modes": ["home","sys"], "systemCategories": ["device", …] -->"""
+
+_S = [
+  comp("Ark med faner og gem-bjælke", "Alt om én ting: Overblik · Historik · Indstillinger. Native popover (Esc og klik udenfor lukker); højre side på desktop, fra bunden på mobil. Fanerne er radioer; Indstillinger er grupperede lister med én gem-bjælke. «Avanceret ›» åbner en underside i samme ark. Deep link: #z1/indstillinger.", sheet_demo, sheet_code,
+       ["Ét ark pr. ting; åbnes fra tingen", "Maks. 5 grupper og 6 rækker pr. gruppe", "Farlig handling sidst, med .confirm-pop", "Gem-bjælke: clean = neutral, ingen Fortryd"],
+       ["Ark i ark", "Indstillinger der gælder hele enheden (de hører på System)", "Gem-knap pr. gruppe"]),
+  comp("System-side", "Kategoriliste (240 px, klæber) og indhold (maks. 640 px). Én kategori ad gangen, én gem-bjælke pr. kategori. Mobil: listen er en skærm; en kategori har «‹ System» øverst. Virker uden JS. Deep link: #system/netvaerk (kræver #m-sys på en rigtig side).", sys_demo, sys_code,
+       ["Kategorier fra systemCategories i config", "Én formular pr. kategori"], ["Indstillinger for én ting i huset (de hører i dens ark)", "Kort/paneler til indstillinger"]),
+]
 components = section("komponenter", "Komponenter", "Levende eksempler med den rigtige CSS, grupperet efter hvor de bruges. Fold Markup ud for koden. Fuld beskrivelse i DESIGN.md afsnit 5 og 15.", "".join([
-  grp("k-navigation","Navigation","Navbar og zonestrimmel: hvor man er, og hvad man ser på."), _I[1], _I[0], _M[0], _M[1],
+  grp("k-navigation","Navigation","Navbar, zonestrimmel og ark: hvor man er, og hvad man ser på."), _I[1], _I[0], _M[0], _M[1], _S[0],
   grp("k-hjem","Indhold på Hjem","Overblik og hverdagshandlinger. Kort bruges her, fordi indholdet er kort."), _I[2], _I[6], _I[4], _I[7], _I[8], _M[2], _M[9], _M[3], _I[12],
-  grp("k-indstillinger","Indstillinger","I ark og på System. Altid grupperede lister, aldrig kort. Sektioner bruges i V6/Touch' konfiguration indtil migreringen."), _I[9], _M[4], _I[10], _M[5],
+  grp("k-indstillinger","Indstillinger","I ark og på System. Altid grupperede lister, aldrig kort. Sektioner bruges i V6/Touch' konfiguration indtil migreringen."), _I[9], _S[1], _M[4], _I[10], _M[5],
   grp("k-feedback","Feedback og handlinger","Status, beskeder, knapper og bekræftelser."), _I[3], _I[5], _I[11], _M[6], _M[7], _M[8],
 ]))
 
@@ -519,10 +634,10 @@ patterns = section("moenstre", "Mønstre og indhold", "Sådan sættes komponente
           <div><dt>Enheder</dt><dd>Mellemrum: 21,4 °C, 6 m/s — kort grad i felter: 21,4°</dd></div>
           <div><dt>i18n</dt><dd>Build-time, --langs en,da, alle aria-labels oversat</dd></div>
         </dl></section>
-      <section class="panel"><header class="panel-head"><h3>ESP32-budget</h3><span class="badge warn">62,6 kB · budget 48 kB</span></header>
+      <section class="panel"><header class="panel-head"><h3>ESP32-budget</h3><span class="badge ok">58,7 kB · budget 60 kB</span></header>
         <dl class="metrics">
-          <div class="metric"><dt>CSS</dt><dd>19,6 <small>kB gzip</small></dd></div>
-          <div class="metric"><dt>Side pr. sprog</dt><dd>21,5 <small>kB gzip (13,9 uden indlejrede grafpunkter)</small></dd></div>
+          <div class="metric"><dt>CSS</dt><dd>21,0 <small>kB gzip</small></dd></div>
+          <div class="metric"><dt>Side pr. sprog</dt><dd>16,8 <small>kB gzip uden grafpunkter (25,2 med)</small></dd></div>
           <div class="metric"><dt>Eksterne requests</dt><dd>0</dd></div>
           <div class="metric"><dt>JS til tilstand</dt><dd>0 <small>linjer</small></dd></div>
         </dl></section>''')

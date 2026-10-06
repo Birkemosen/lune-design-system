@@ -1,5 +1,36 @@
 # Changelog — Lune Design System
 
+## 2.2.0
+
+Byggeklodserne til Hjem / ark / System (DESIGN.md 15.9). Produkterne migreres i separate trin.
+
+### Nyt
+- `.sheet`: ark som native popover; højre side på desktop (520 px), fra bunden på mobil. `.sheet-head`, `.sheet-close`, `.chip-icon` (ikonbrik med `data-tone`).
+- `.tabs`: faner som radioer + søskende-selektorer ud fra `value` (`overview|history|settings`); ingen CSS pr. ark.
+- `.savebar`: klæbende gem-bjælke med dirty-mønstret; `lune-forms.js` håndterer nu alle `form[data-save]` (ikke kun `form.panel`) og `.setting`-rækker.
+- `details.subpage`: «Avanceret ›»-underside i samme ark/kategori, uden JS.
+- `.sys`: System-side med kategoriliste og indhold; mobil som liste → kategori med «‹ System».
+- `lds_build.py`: `modes: ["home","sys"]` (`#v-home-{omfang}`, én `#v-sys`, strimlen skjult på System), `systemCategories` → kategoriregler. `dash`/`conf` bygger stadig med advarsel.
+- `lune-forms.js`: `data-tab` på triggere, advarsel ved lukning af ark med ugemte ændringer og ved skift væk fra System/kategori, deep links (`#z3`, `#z3/indstillinger`, `#system/varmekilde`) med `history.replaceState`.
+- Tokens: `--r-sheet`, `--sheet-w`, `--sheet-inset`, `--sys-nav-w`, `--sys-main-w`, `--setting-h`, `--float`.
+
+### V6-eksemplet (fase 2)
+- Hjem | System i stedet for Dashboard | Konfiguration. Hjem: statuslinje, fejlpanel, Varme nu, komfort pr. zone, vejrudsigt; ingen gem-knapper (målet autogemmes i zonens ark).
+- Zone-ark (Overblik · Historik · Indstillinger) og manifold-ark; åbnes fra zonefelt, komfortrække, manifold-feltet og Varme nu.
+- System: Enhed · Manifold og motorer · Forbindelser · Firmware og backup · Service (+ Motorlab med `--dev`).
+- `examples/v6/MAPPING.md` (gammel → ny placering) og `examples/v6/check_fields.py` (alle 128 gamle felter/handlinger findes; maks. 6 rækker og 5 grupper).
+- Varmetilstand og varmepumpegrænser (`heat_mode`, `heat_min_open`, `hp_*`) fra produktet er med i manifold-arket.
+- Nyt i CSS: `button.tile` og `.comfort > button` (åbner ark), `.compass.inline`, selectbredde 160–220 px i grupperede lister, `.hp-limits` virker i enhver formular med `heat_mode`.
+
+### Budget og projektspecifik CSS
+- `features` i config: `@only legacy`-blokke (Dashboard/Konfiguration: sektioner, Konfigurationens spalter, «redigerer»-prikken) kommer kun med, når `"features": ["legacy"]` er sat. V6 slipper dem (gzip 22,1 → 21,0 kB); Touch beholder dem indtil fase 3.
+- V6-eksemplet: `lune-forms.js` er en egen fil (`/lune-forms.js`, `LUNE_UI_JS_GZ` i `web_ui.h`), fælles for begge sprog. Preview-filerne har den stadig inline.
+- Bevidst budget V6 ≤ 60 kB gzip for to sprog (DESIGN.md 9): arkene skal ligge i siden for at virke uden JS. Målt uden indlejrede grafpunkter: 58,7 kB.
+
+### Ændret
+- `.setting` på mobil: kontrollen bliver på rækken, når den kan være der; ellers brydes den under labelen (`.setting.stack` fylder altid bredden).
+- `.confirm-pop` bruger `--float`.
+
 ## 2.1.1
 
 2.1 flettet ind i repoet. 2.1 er udgangspunktet; det, 2.1 ikke dækkede, er genindført fra main og tilpasset 2.1's farveregler.

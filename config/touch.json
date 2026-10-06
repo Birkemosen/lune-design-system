@@ -3,6 +3,7 @@
   "id": "touch",
   "note": "Koordinator for 1–4 V6-boards. Hierarki: hus → manifold → zone. Delte visninger (house/manifold/zone). Varmekildetyper sættes ved build; første er standard. Type-id'er matcher UI/CSS; API bruger generic_http for http.",
   "modes": ["dash", "conf"],
+  "features": ["legacy"],
   "tiers": true,
   "shared_views": true,
   "heat_source_types": ["http", "asgard"],

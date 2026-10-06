@@ -4,13 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Lune Design System 2.1.1</title>
+<title>Lune Design System 2.2.0</title>
 <style>
 /* ==========================================================================
    LUNE DESIGN SYSTEM 2 — fælles stylesheet for Lune V6 og Lune Touch
    Bygget til Lune V6 af tools/lds_build.py — redigér css/lune-ui.src.css, ikke denne fil.
    Regler og komponentbeskrivelser: DESIGN.md
-   Projektspecifikke blokke markeres med en @only-kommentar (touch eller v6)
+   Projektspecifikke blokke markeres med en @only-kommentar (touch, v6 eller en
+   feature som legacy = Dashboard/Konfiguration-modellen, DESIGN.md 12)
    og en @end-kommentar; lds_build.py fjerner dem fra de andre projekters CSS.
    Blokkene indlejres ikke. Se DESIGN.md 12.
    --------------------------------------------------------------------------
@@ -136,6 +137,7 @@
     --space-7: 48px;
     /* radius */
     --r-card: 16px;
+    --r-sheet: 24px;
     --r-tile: 14px;
     --r-field: 12px;
     --r-pill: 999px;
@@ -147,8 +149,14 @@
     --row-h: 40px;
     --tile-h: auto;
     --container: 1200px;
+    --sheet-w: 520px;
+    --sheet-inset: 12px;
+    --sys-nav-w: 240px;
+    --sys-main-w: 640px;
+    --setting-h: 52px;
     /* shadow */
     --card-edge: 0 0 0 1px var(--card-edge-c);
+    --float: inset 0 1px 0 rgba(255,255,255,.07), 0 0 0 1px var(--border), 0 30px 80px rgba(0,0,0,.5);
     /* motion */
     --ease: cubic-bezier(.4,0,.2,1);
     --dur: 200ms;
@@ -647,6 +655,9 @@
     transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
   }
   .tile:hover { background: var(--raised); }
+  /* Felter og rækker der åbner et ark (DESIGN.md 15) er knapper med popovertarget. */
+  button:is(.tile, .comfort > *) { width: 100%; border: 0; font: inherit; text-align: inherit; }
+  .comfort > button { background: none; color: inherit; }
   .tile-id   { grid-area: id; font-size: var(--fs-xs); font-weight: 600; color: var(--muted); }
   .tile-name { grid-area: name; font-size: var(--fs-sm); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .tile-val  { grid-area: val; font-size: var(--fs-lg); font-weight: 600; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; }
@@ -988,7 +999,7 @@
      skriver blot nye "points"-strenge — ingen chart-bibliotek.
      Smalt panel: grafen under navnet. Bredt panel: på samme række. */
   .comfort { display: grid; }
-  .comfort label {
+  .comfort > :is(label, button) {
     display: grid;
     grid-template-columns: 40px minmax(0, 1fr) auto;
     grid-template-areas: "id name val" "id spark spark";
@@ -1000,9 +1011,9 @@
     border-radius: var(--r-field);
     cursor: pointer;
   }
-  .comfort label + label { border-top: 1px solid var(--border); }
-  .comfort label:hover { background: var(--raised); border-color: transparent; }
-  .comfort label:hover + label { border-color: transparent; }
+  .comfort > :is(label, button) + :is(label, button) { border-top: 1px solid var(--border); }
+  .comfort > :is(label, button):hover { background: var(--raised); border-color: transparent; }
+  .comfort > :is(label, button):hover + :is(label, button) { border-color: transparent; }
   .comfort .id    { grid-area: id; font-size: var(--fs-xs); font-weight: 600; color: var(--muted); }
   .comfort .name  { grid-area: name; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .comfort .val   { grid-area: val; font-size: var(--fs-sm); color: var(--muted); white-space: nowrap; text-align: right; }
@@ -1013,7 +1024,7 @@
   .comfort [data-state="learning"] :is(.id, .val) { color: var(--violet); }
 
   @container (min-width: 560px) {
-    .comfort label {
+    .comfort > :is(label, button) {
       grid-template-columns: 40px minmax(90px, 140px) minmax(0, 1fr) 112px;  /* fast værdikolonne → graferne flugter */
       grid-template-areas: "id name spark val";
     }
@@ -1407,14 +1418,20 @@
   .setting-group { display: grid; gap: var(--space-2); }
   .setting-group > h4 { margin: 0 0 0 4px; font-size: var(--fs-sm); font-weight: 500; color: var(--muted); }
   .setting-list { border-radius: var(--r-tile); background: var(--raised); box-shadow: inset 0 1px 0 rgba(255,255,255,.05); overflow: hidden; }
-  .setting { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-height: 52px; padding: 8px var(--space-4); }
-  .setting + .setting, .setting + .gated-body > .setting:first-child, .gated-body > .setting + .setting { border-top: 1px solid var(--border); }
+  .setting { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-height: var(--setting-h); padding: 8px var(--space-4); }
+  .setting + .setting, .setting + .gated-body > .setting:first-child, .gated-body > .setting + .setting,
+  .setting-list > :is(.setting, details) + details > summary.setting, .setting-list > details + .setting { border-top: 1px solid var(--border); }
   .setting-label { display: grid; gap: 2px; min-width: 0; }
   .setting-label > :first-child { font-size: var(--fs-md); font-weight: 500; }
   .setting-label small { font-size: var(--fs-xs); color: var(--muted); }
   .setting-control { flex: none; display: flex; align-items: center; gap: var(--space-2); }
   .setting-control > .input, .setting-control > .select { min-height: 36px; }
   .setting-control > .stepper { width: 140px; min-height: 36px; }
+  .setting-control > .select { width: auto; min-width: 160px; max-width: 220px; }
+  /* Kompas i en række: fire runde vægge (N Ø S V) uden hus. */
+  .compass.inline { display: flex; gap: var(--space-2); }
+  .compass.inline .c { display: none; }
+  .compass.inline span { width: 36px; height: 36px; border-radius: 50%; }
   .setting-group > .note { margin: 0 0 0 4px; font-size: var(--fs-xs); color: var(--faint); }
   .setting.switch { cursor: pointer; }
   .setting-list .btn:not(.primary):not(.danger-solid) { background: var(--card); box-shadow: inset 0 0 0 1px var(--border); }
@@ -1422,8 +1439,178 @@
   .setting.stack { flex-direction: column; align-items: stretch; gap: var(--space-2); padding-block: var(--space-3); }
   .setting.stack .setting-control > * { width: 100%; }
   @media (max-width: 599.98px) {
+    /* Kontrollen bliver på rækken, når den kan; ellers brydes den under labelen. */
     .setting { flex-wrap: wrap; }
-    .setting-control { width: 100%; justify-content: flex-start; }
+    .setting-control { margin-left: auto; max-width: 100%; }
+    .setting.stack .setting-control { margin-left: 0; width: 100%; }
+  }
+
+  /* Avanceret: række med › der åbner en underside i samme ark/kategori (15.3).
+     details.subpage — uden JS. Når den er åben, skjules resten af fanen/kategorien,
+     og summary bliver til «‹ Tilbage». */
+  details.subpage > summary { list-style: none; cursor: pointer; }
+  details.subpage > summary::-webkit-details-marker { display: none; }
+  details.subpage > summary .setting-control::after { content: "›"; font-size: var(--fs-lg); color: var(--muted); }
+  details.subpage > summary .sub-back { display: none; }
+  details.subpage[open] > summary { min-height: var(--hit); padding-inline: 0; border-radius: 0; background: none; }
+  details.subpage[open] > summary :is(.setting-label, .setting-control) { display: none; }
+  details.subpage[open] > summary .sub-back { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--fs-sm); font-weight: 500; color: var(--muted); }
+  details.subpage[open] > summary .sub-back::before { content: "‹"; font-size: var(--fs-lg); }
+  details.subpage > .subpage-body { display: grid; gap: var(--space-5); padding-top: var(--space-2); }
+  /* Åben underside: kun den står tilbage i fanen/kategorien. */
+  :is(.tab-panel, .sys-cat, .subpage-host):has(details.subpage[open]) .setting-group:not(:has(details.subpage[open])):not(.subpage-body .setting-group),
+  :is(.tab-panel, .sys-cat, .subpage-host):has(details.subpage[open]) > :not(.setting-group, form, .savebar),
+  :is(.tab-panel, .sys-cat, .subpage-host) form:has(details.subpage[open]) > :not(.setting-group, .savebar),
+  .setting-group:has(details.subpage[open]) > :not(.setting-list),
+  .setting-list:has(> details.subpage[open]) > :not(details.subpage[open]) { display: none; }
+  .setting-list:has(> details.subpage[open]) { background: none; box-shadow: none; overflow: visible; }
+
+  /* ---- Ark (.sheet, DESIGN.md 15.3) ------------------------------------
+     Native popover: Esc og klik udenfor lukker. Desktop: fast i højre side.
+     Mobil: ark fra bunden. Arket selv scroller; hoved og gem-bjælke klæber. */
+  .sheet {
+    position: fixed;
+    inset: var(--sheet-inset) var(--sheet-inset) var(--sheet-inset) auto;
+    width: min(var(--sheet-w), calc(100vw - 2 * var(--sheet-inset)));
+    height: auto;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--r-sheet);
+    background: var(--card);
+    color: var(--fg);
+    box-shadow: var(--float);
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .sheet:popover-open { display: flex; flex-direction: column; }
+  .sheet::backdrop { background: rgb(0 0 0 / 35%); }
+  .sheet-head {
+    position: sticky; top: 0; z-index: 2;
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--space-2) var(--space-3);
+    padding: var(--space-5) var(--space-5) var(--space-3);
+    background: var(--card);
+  }
+  .sheet-head h2 { font-size: var(--fs-xl); font-weight: 600; letter-spacing: -.02em; line-height: 1.15; }
+  .sheet-head p { font-size: var(--fs-sm); color: var(--muted); }
+  .sheet-head .tabs { grid-column: 1 / -1; margin-top: var(--space-2); }
+  .sheet-close {
+    align-self: start;
+    display: grid; place-items: center;
+    width: var(--hit); height: var(--hit);
+    border: 0; border-radius: 50%;
+    background: var(--raised); color: var(--fg);
+    font-size: var(--fs-lg); line-height: 1; cursor: pointer;
+  }
+  .sheet-close:hover { background: var(--inv-bg); color: var(--inv-fg); }
+  .sheet-body { flex: 1 1 auto; display: grid; align-content: start; gap: var(--space-5); padding: var(--space-2) var(--space-5) var(--space-5); }
+  .sheet-body > .tab-panel { display: none; gap: var(--space-5); align-content: start; }
+  .sheet form { display: grid; gap: var(--space-5); }
+  @media (max-width: 599.98px) {
+    .sheet {
+      inset: auto 0 0 0;
+      width: 100%;
+      max-height: 92vh;
+      border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+    }
+    .sheet-head { padding: var(--space-4) var(--space-4) var(--space-3); }
+    .sheet-body { padding: var(--space-2) var(--space-4) max(var(--space-5), env(safe-area-inset-bottom)); }
+  }
+
+  /* Ikonbrik: dyb fyld-tone + hvid glyf (3.2.2). data-tone vælger domæne/status. */
+  .chip-icon {
+    display: grid; place-items: center; flex: none;
+    width: var(--hit); height: var(--hit);
+    border-radius: var(--r-field);
+    background: var(--heat-fill); color: var(--on-fill);
+  }
+  .chip-icon svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .chip-icon[data-tone="info"]   { background: var(--info-fill); }
+  .chip-icon[data-tone="ok"]     { background: var(--ok-fill); }
+  .chip-icon[data-tone="violet"] { background: var(--violet-fill); }
+  .chip-icon[data-tone="warn"]   { background: var(--warn-fill); color: var(--on-warn-fill); }
+  .chip-icon[data-tone="danger"] { background: var(--danger-fill); }
+  .chip-icon[data-tone="neutral"]{ background: var(--raised); color: var(--fg); }
+
+  /* ---- Faner (.tabs) ----------------------------------------------------
+     Radioer (class="state", name="tab-{id}", value=overview|history|settings)
+     står først i arket; fanerne er labels; panelerne vises med søskende-selektorer
+     ud fra radioens value — ingen genereret CSS pr. ark. */
+  .tabs { display: inline-flex; justify-self: start; width: fit-content; max-width: 100%; padding: 4px; border-radius: var(--r-pill); background: var(--raised); }
+  .tabs label { display: grid; place-items: center; min-height: calc(var(--hit) - 8px); padding: 0 var(--space-4); border-radius: var(--r-pill);
+    font-size: var(--fs-sm); font-weight: 500; color: var(--muted); white-space: nowrap; cursor: pointer; }
+  .tabs label:hover { color: var(--fg); }
+  input.tab[value="overview"]:checked ~ .sheet-head .tabs label[data-tab="overview"],
+  input.tab[value="history"]:checked  ~ .sheet-head .tabs label[data-tab="history"],
+  input.tab[value="settings"]:checked ~ .sheet-head .tabs label[data-tab="settings"] { background: var(--inv-bg); color: var(--inv-fg); }
+  input.tab[value="overview"]:focus-visible ~ .sheet-head .tabs label[data-tab="overview"],
+  input.tab[value="history"]:focus-visible  ~ .sheet-head .tabs label[data-tab="history"],
+  input.tab[value="settings"]:focus-visible ~ .sheet-head .tabs label[data-tab="settings"] { outline: 2px solid var(--focus); outline-offset: 2px; }
+  input.tab[value="overview"]:checked ~ .sheet-body > .tab-panel[data-tab="overview"],
+  input.tab[value="history"]:checked  ~ .sheet-body > .tab-panel[data-tab="history"],
+  input.tab[value="settings"]:checked ~ .sheet-body > .tab-panel[data-tab="settings"] { display: grid; }
+
+  /* ---- Gem-bjælke (.savebar) -------------------------------------------
+     Én pr. fane/kategori, sidst i formularen. Klæber nederst. Dirty-mønstret
+     (6.1): clean = neutral knap med aria-disabled og ingen Fortryd. */
+  .savebar {
+    position: sticky; bottom: 0; z-index: 2;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-2);
+    margin-inline: calc(-1 * var(--space-5));
+    padding: var(--space-3) var(--space-5) max(var(--space-3), env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border);
+    background: var(--card);
+  }
+  .sys .savebar { margin-inline: 0; padding-inline: 0; background: var(--bg); }
+  .savebar .save-status { margin-right: auto; font-size: var(--fs-sm); color: var(--warn); }
+  .savebar .save-status:not(:empty)::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: var(--space-2); border-radius: 50%; background: currentColor; vertical-align: middle; }
+  .savebar .save-status:empty { display: none; }
+  form[data-state="error"] .savebar .save-status { color: var(--danger); }
+  form[data-js]:not([data-dirty]):not([data-state="saving"]):not([data-state="saved"]) .savebar > .btn.primary,
+  form[data-js]:not([data-dirty]):not([data-state="saving"]):not([data-state="saved"]) .savebar > .btn.primary:hover { background: var(--raised); color: var(--muted); }
+  form[data-js]:not([data-dirty]) .savebar > button[type="reset"] { display: none; }
+  @media (max-width: 599.98px) {
+    .savebar { margin-inline: calc(-1 * var(--space-4)); padding-inline: var(--space-4); }
+    /* System på mobil: over den svævende tilstandspille. */
+    .sys .savebar { bottom: calc(var(--hit) + var(--space-6) + env(safe-area-inset-bottom)); padding-inline: 0; }
+  }
+
+  /* ---- System-side (.sys, DESIGN.md 15.4) ------------------------------
+     Kategorier = radioer (class="state", name="syscat", id="c-{kategori}" og
+     "c-none") lige før .sys (eller før .app). Visning af kategorier genereres af
+     lds_build.py ud fra systemCategories. c-none: desktop viser første kategori,
+     mobil viser listen. */
+  .sys { display: grid; grid-template-columns: var(--sys-nav-w) minmax(0, var(--sys-main-w)); gap: var(--space-7); align-items: start; padding-block: var(--space-4) var(--space-7); }
+  .sys-nav { position: sticky; top: calc(var(--hit) + var(--space-7)); display: grid; gap: 2px; }
+  .sys-nav label {
+    display: flex; align-items: center; gap: var(--space-3);
+    min-height: var(--hit); padding: 0 var(--space-3);
+    border-radius: var(--r-field);
+    font-size: var(--fs-md); font-weight: 500; color: var(--muted); cursor: pointer;
+  }
+  .sys-nav label:hover { background: var(--card); color: var(--fg); }
+  .sys-nav label svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; }
+  .sys-nav label[data-dirty]::after { content: ""; width: 6px; height: 6px; margin-left: auto; border-radius: 50%; background: var(--warn); }
+  .sys-main { min-width: 0; }
+  .sys-cat { display: none; gap: var(--space-5); align-content: start; }
+  .sys-cat > header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-2) var(--space-4); }
+  .sys-cat > header small { display: block; font-size: var(--fs-sm); color: var(--muted); }
+  .sys-cat > header h2 { font-size: var(--fs-view); letter-spacing: -.03em; line-height: 1.1; }
+  .sys-cat form { display: grid; gap: var(--space-5); }
+  .sys-back { display: none; }
+  @media (max-width: 899.98px) { .sys { grid-template-columns: calc(var(--sys-nav-w) * .8) minmax(0, 1fr); gap: var(--space-5); } }
+  @media (max-width: 599.98px) {
+    .sys { grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
+    .sys-nav { position: static; padding: var(--space-2); border-radius: var(--r-tile); background: var(--card); }
+    .sys-nav label { min-height: var(--setting-h); color: var(--fg); }
+    .sys-nav label::after { content: "›"; margin-left: auto; color: var(--muted); }
+    #c-none:not(:checked) ~ :is(.app, .sys) .sys-nav { display: none; }
+    #c-none:not(:checked) ~ :is(.app, .sys) .sys-back {
+      display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--hit);
+      font-size: var(--fs-sm); font-weight: 500; color: var(--muted); cursor: pointer;
+    }
+    .sys-back::before { content: "‹"; font-size: var(--fs-lg); }
   }
 
   /* Stepper — pille */
@@ -1472,7 +1659,7 @@
   .gated:has(> .switch input:not(:checked)) > .gated-body { opacity: .4; pointer-events: none; }
 
   /* V6: varmepumpe-grænser gælder kun i varmepumpe-tilstand (seg-radioer i formularen). */
-  form[data-save="heating"]:not(:has(input[name="heat_mode"][value="heat_pump"]:checked)) .hp-limits { opacity: .4; pointer-events: none; }
+  form:has(input[name="heat_mode"]):not(:has(input[name="heat_mode"][value="heat_pump"]:checked)) .hp-limits { opacity: .4; pointer-events: none; }
 
   /* V6 med 2 prober: kun manifold frem/retur — skjul zone-returfelter og ekstra prober. */
   .app[data-probe-layout="2"] .zone-ret { display: none; }
@@ -1484,7 +1671,7 @@
   .seg span { padding: 0 var(--space-4) !important; }
   @media (max-width: 599.98px) { .seg { display: flex; width: auto; } .seg label { flex: 1; } }
   .seg input { position: absolute; opacity: 0; pointer-events: none; }
-  .seg span { display: grid; place-items: center; padding: 0 var(--space-3); border-radius: var(--r-pill); font-size: var(--fs-sm); font-weight: 500; color: var(--muted); cursor: pointer; text-align: center; }
+  .seg span { display: grid; place-items: center; white-space: nowrap; padding: 0 var(--space-3); border-radius: var(--r-pill); font-size: var(--fs-sm); font-weight: 500; color: var(--muted); cursor: pointer; text-align: center; }
   .seg input:checked + span { background: var(--inv-bg); color: var(--inv-fg); }
   .seg input:focus-visible + span { outline: 2px solid var(--focus); }
   /* .seg med eksterne .state-radioer + label[for] (typeafhængige felter, 5.18):
@@ -1586,7 +1773,7 @@
     width: min(400px, calc(100% - 32px)); margin: auto; padding: var(--space-5);
     max-block-size: calc(100dvh - var(--space-7)); overflow: auto;
     border: 0; border-radius: var(--r-card); background: var(--card); color: var(--fg);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 0 0 1px var(--border), 0 30px 80px rgba(0,0,0,.5);
+    box-shadow: var(--float);
   }
   .confirm-pop::backdrop { background: rgb(0 0 0 / .5); }
   @supports (anchor-name: --x) {
@@ -1634,26 +1821,38 @@
      (liste af omfang). Indeholder: synlig visning pr. tilstand × omfang,
      aktiv tilstands-pille og valgt zonefelt. Redigér ikke her. */
   /* Aktiv tilstand: inverteret pille */
-  #m-dash:checked ~ .app .mode label[for="m-dash"],
-  #m-conf:checked ~ .app .mode label[for="m-conf"] { background: var(--inv-bg); color: var(--inv-fg); }
-  #m-dash:focus-visible ~ .app .mode label[for="m-dash"],
-  #m-conf:focus-visible ~ .app .mode label[for="m-conf"] { outline: 2px solid var(--focus); outline-offset: 2px; }
+  #m-home:checked ~ .app .mode label[for="m-home"],
+  #m-sys:checked ~ .app .mode label[for="m-sys"] { background: var(--inv-bg); color: var(--inv-fg); }
+  #m-home:focus-visible ~ .app .mode label[for="m-home"],
+  #m-sys:focus-visible ~ .app .mode label[for="m-sys"] { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  /* System: én visning; strimlen hører til Hjem */
+  #m-sys:checked ~ .app #v-sys { display: block; }
+  #m-sys:checked ~ .app :is(.strip, .substrip, .boards) { display: none; }
+  /* System: valgt kategori (radioer lige før .sys eller før .app) */
+  #c-device:checked ~ :is(.app, .sys) .sys-cat[data-cat="device"],
+  #c-network:checked ~ :is(.app, .sys) .sys-cat[data-cat="network"],
+  #c-service:checked ~ :is(.app, .sys) .sys-cat[data-cat="service"] { display: grid; }
+  #c-device:checked ~ :is(.app, .sys) .sys-nav label[for="c-device"],
+  #c-network:checked ~ :is(.app, .sys) .sys-nav label[for="c-network"],
+  #c-service:checked ~ :is(.app, .sys) .sys-nav label[for="c-service"] { background: var(--card); color: var(--fg); }
+  #c-device:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-device"],
+  #c-network:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-network"],
+  #c-service:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-service"] { outline: 2px solid var(--focus); outline-offset: 2px; }
+  /* Ingen kategori valgt: desktop viser den første, mobil viser listen */
+  @media (min-width: 600px) {
+    #c-none:checked ~ :is(.app, .sys) .sys-cat[data-cat="device"] { display: grid; }
+    #c-none:checked ~ :is(.app, .sys) .sys-nav label[for="c-device"] { background: var(--card); color: var(--fg); }
+  }
 
   /* Synlig visning: præcis én pr. (tilstand × omfang) */
-  #m-dash:checked ~ #s-sys:checked ~ .app #v-dash-sys,
-  #m-dash:checked ~ #s-z1:checked ~ .app #v-dash-z1,
-  #m-dash:checked ~ #s-z2:checked ~ .app #v-dash-z2,
-  #m-dash:checked ~ #s-z3:checked ~ .app #v-dash-z3,
-  #m-dash:checked ~ #s-z4:checked ~ .app #v-dash-z4,
-  #m-dash:checked ~ #s-z5:checked ~ .app #v-dash-z5,
-  #m-dash:checked ~ #s-z6:checked ~ .app #v-dash-z6,
-  #m-conf:checked ~ #s-sys:checked ~ .app #v-conf-sys,
-  #m-conf:checked ~ #s-z1:checked ~ .app #v-conf-z1,
-  #m-conf:checked ~ #s-z2:checked ~ .app #v-conf-z2,
-  #m-conf:checked ~ #s-z3:checked ~ .app #v-conf-z3,
-  #m-conf:checked ~ #s-z4:checked ~ .app #v-conf-z4,
-  #m-conf:checked ~ #s-z5:checked ~ .app #v-conf-z5,
-  #m-conf:checked ~ #s-z6:checked ~ .app #v-conf-z6 { display: grid; }
+  #m-home:checked ~ #s-sys:checked ~ .app #v-home-sys,
+  #m-home:checked ~ #s-z1:checked ~ .app #v-home-z1,
+  #m-home:checked ~ #s-z2:checked ~ .app #v-home-z2,
+  #m-home:checked ~ #s-z3:checked ~ .app #v-home-z3,
+  #m-home:checked ~ #s-z4:checked ~ .app #v-home-z4,
+  #m-home:checked ~ #s-z5:checked ~ .app #v-home-z5,
+  #m-home:checked ~ #s-z6:checked ~ .app #v-home-z6 { display: grid; }
 
   /* Valgt omfang: inverteret zonefelt */
   #s-sys:checked ~ .app .tile[for="s-sys"],
@@ -1740,7 +1939,7 @@
     & .subs { gap: var(--space-4) var(--space-5); }
     & .msg { padding: var(--space-2) var(--space-3); }
     & .metrics { gap: var(--space-4) var(--space-3); }
-    & .comfort label { padding-block: 6px; }
+    & .comfort > :is(label, button) { padding-block: 6px; }
     & .btn { padding-inline: var(--space-4); }
     & .file-pick { min-height: calc(var(--hit) - 2 * var(--space-1)); }
 
@@ -1782,7 +1981,7 @@
     & .subs { gap: var(--space-4) var(--space-5); }
     & .msg { padding: var(--space-2) var(--space-3); }
     & .metrics { gap: var(--space-4) var(--space-3); }
-    & .comfort label { padding-block: 6px; }
+    & .comfort > :is(label, button) { padding-block: 6px; }
     & .btn { padding-inline: var(--space-4); }
     & .file-pick { min-height: calc(var(--hit) - 2 * var(--space-1)); }
 
@@ -1886,7 +2085,7 @@
 
   <div class="navbar-wrap wrap">
     <header class="header" style="grid-template-columns:1fr auto">
-      <div class="device"><summary style="pointer-events:none"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="var(--fg)"/><path d="M10 22V12M14 22V10M18 22V13M22 22V11" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/></svg><span class="name"><b>Lune Design System</b><small>v2.1.1</small></span></summary></div>
+      <div class="device"><summary style="pointer-events:none"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="var(--fg)"/><path d="M10 22V12M14 22V10M18 22V13M22 22V11" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/></svg><span class="name"><b>Lune Design System</b><small>v2.2.0</small></span></summary></div>
       <label class="icon-btn theme-btn" for="theme" title="Skift lyst/mørkt tema">
         <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg>
         <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
@@ -1897,7 +2096,7 @@
   <main class="content wrap">
     <div class="doc-layout"><nav class="doc-toc" aria-label="Indhold"><b>Grundlag</b><a href="#principper">Principper</a><a href="#arkitektur">Arkitektur</a><a href="#farver">Farver</a><a href="#grundelementer">Typografi og afstand</a><b>Komponenter</b><a href="#k-navigation">Navigation</a><a href="#k-hjem">Indhold på Hjem</a><a href="#k-indstillinger">Indstillinger</a><a href="#k-feedback">Feedback og handlinger</a><b>Mønstre</b><a href="#moenstre">Mønstre og indhold</a></nav>
     <div class="view"><span id="principper"></span>
-      <div class="view-head" style="grid-column:1/-1;padding-top:var(--space-4)"><h2 style="font-size:var(--fs-hero);line-height:1;letter-spacing:-.05em">Lune Design System</h2><p>v2.1.1 · Lune V6 og Lune Touch</p></div>
+      <div class="view-head" style="grid-column:1/-1;padding-top:var(--space-4)"><h2 style="font-size:var(--fs-hero);line-height:1;letter-spacing:-.05em">Lune Design System</h2><p>v2.2.0 · Lune V6 og Lune Touch</p></div>
       <p class="lead" style="grid-column:1/-1">Tokens, komponenter og regler til at bygge UI på ESP32: ren CSS og HTML, tilstand uden JavaScript, ingen eksterne ressourcer. Denne side bruger selve systemets CSS. Skift tema øverst til højre for at se begge temaer.</p>
       <section class="panel c4 principle"><h3>Et blik er nok</h3><p>Store tal, små labels under. Én hero-temperatur pr. visning.</p></section><section class="panel c4 principle"><h3>Farve betyder noget</h3><p>Neutralt, indtil der er noget at sige. Én betydning pr. farve.</p></section><section class="panel c4 principle"><h3>Samme sted, samme ting</h3><p>Zonestrimlen vælger hvad, tilstandspillen vælger hvordan.</p></section><section class="panel c4 principle"><h3>Få store paneler</h3><p>2–4 paneler pr. visning, altid åbne. Kun ekspert-tuning foldes.</p></section><section class="panel c4 principle"><h3>Tilstand uden JavaScript</h3><p>Radio, checkbox og details. JS kun til live-data.</p></section><section class="panel c4 principle"><h3>Tilgængelig fra start</h3><p>≥ 4,5:1 kontrast, ≥ 44 px trykflader, tastatur og fokus.</p></section>
       <header class="doc-h" id="arkitektur"><h2>Arkitektur</h2><p>Tre niveauer: Hjem (overblik og hverdagshandlinger), ark pr. ting (overblik, historik og tingens indstillinger) og System (det der gælder hele enheden). Erstatter Dashboard/Konfiguration. Fuld beskrivelse i DESIGN.md afsnit 15.</p></header>
@@ -2015,11 +2214,11 @@
       
       <section class="panel c7"><header class="panel-head"><h3>Typeskala</h3></header><div><div class="type-row"><div><b class="tok">--fs-xs</b><small class="note" style="display:block">11 px</small></div><div style="font-size:var(--fs-xs);font-weight:400;letter-spacing:0;line-height:1.15">Fremløb og retur <small class="note" style="font-size:var(--fs-xs);letter-spacing:0">Zone-ID, akser, badges, hints.</small></div></div><div class="type-row"><div><b class="tok">--fs-sm</b><small class="note" style="display:block">13 px</small></div><div style="font-size:var(--fs-sm);font-weight:400;letter-spacing:0;line-height:1.15">Fremløb og retur <small class="note" style="font-size:var(--fs-xs);letter-spacing:0">Labels, knapper, tabeller, undertitler.</small></div></div><div class="type-row"><div><b class="tok">--fs-md</b><small class="note" style="display:block">15 px</small></div><div style="font-size:var(--fs-md);font-weight:400;letter-spacing:0;line-height:1.15">Fremløb og retur <small class="note" style="font-size:var(--fs-xs);letter-spacing:0">Brødtekst og feltværdier.</small></div></div><div class="type-row"><div><b class="tok">--fs-lg</b><small class="note" style="display:block">18 px</small></div><div style="font-size:var(--fs-lg);font-weight:600;letter-spacing:0;line-height:1.15">Fremløb og retur <small class="note" style="font-size:var(--fs-xs);letter-spacing:0">Paneltitler, værdier i zonefelter.</small></div></div><div class="type-row"><div><b class="tok">--fs-xl</b><small class="note" style="display:block">24 px</small></div><div style="font-size:var(--fs-xl);font-weight:600;letter-spacing:-.03em;line-height:1.15">Fremløb og retur <small class="note" style="font-size:var(--fs-xs);letter-spacing:0">Nøgletal (metric).</small></div></div><div class="type-row"><div><b class="tok">--fs-2xl</b><small class="note" style="display:block">32 px</small></div><div style="font-size:var(--fs-2xl);font-weight:600;letter-spacing:-.03em;line-height:1.15">21,4 °C <small class="note" style="font-size:var(--fs-xs);letter-spacing:0">Visningstitel (h2), målet i klima-kontrollen.</small></div></div><div class="type-row"><div><b class="tok">--fs-hero</b><small class="note" style="display:block">64 px</small></div><div style="font-size:var(--fs-hero);font-weight:600;letter-spacing:-.03em;line-height:1.15">21,4 °C <small class="note" style="font-size:var(--fs-xs);letter-spacing:0">Én aktuel temperatur pr. visning.</small></div></div><div class="type-row"><div><b class="tok">--fs-panel</b><small class="note" style="display:block">18 px</small></div><div style="font-size:var(--fs-panel);font-weight:600;letter-spacing:0;line-height:1.15">Fremløb og retur <small class="note" style="font-size:var(--fs-xs);letter-spacing:0">Paneltitel (h3). Kompakt: 15 px.</small></div></div><div class="type-row"><div><b class="tok">--fs-view</b><small class="note" style="display:block">32 px</small></div><div style="font-size:var(--fs-view);font-weight:600;letter-spacing:-.03em;line-height:1.15">21,4 °C <small class="note" style="font-size:var(--fs-xs);letter-spacing:0">Visningstitel (h2). Mobil: --fs-lg. Kompakt: 26 px.</small></div></div></div></section>
       <section class="panel c5"><header class="panel-head"><h3>Afstand</h3><p>8-punkts skala</p></header><div><div class="space-row"><span class="tok">--space-1</span><span>4px</span><i style="width:4px"></i></div><div class="space-row"><span class="tok">--space-2</span><span>8px</span><i style="width:8px"></i></div><div class="space-row"><span class="tok">--space-3</span><span>12px</span><i style="width:12px"></i></div><div class="space-row"><span class="tok">--space-4</span><span>16px</span><i style="width:16px"></i></div><div class="space-row"><span class="tok">--space-5</span><span>24px</span><i style="width:24px"></i></div><div class="space-row"><span class="tok">--space-6</span><span>32px</span><i style="width:32px"></i></div><div class="space-row"><span class="tok">--space-7</span><span>48px</span><i style="width:48px"></i></div></div>
-        <div class="sub"><h4>Radier — jo større flade, jo større radius</h4><div class="radius-demo"><div style="border-radius:16px">--r-card<br>16px</div><div style="border-radius:14px">--r-tile<br>14px</div><div style="border-radius:12px">--r-field<br>12px</div><div style="border-radius:32px">--r-pill<br>999px</div></div></div>
+        <div class="sub"><h4>Radier — jo større flade, jo større radius</h4><div class="radius-demo"><div style="border-radius:16px">--r-card<br>16px</div><div style="border-radius:24px">--r-sheet<br>24px</div><div style="border-radius:14px">--r-tile<br>14px</div><div style="border-radius:12px">--r-field<br>12px</div><div style="border-radius:32px">--r-pill<br>999px</div></div></div>
         <p class="msg info"><span><b>Dybde uden skygger.</b> Kort er <span class="tok">--card</span> på <span class="tok">--bg</span> + <span class="tok">--card-edge</span>. Skygge kun på svævende elementer.</span></p>
       </section>
       <header class="doc-h" id="komponenter"><h2>Komponenter</h2><p>Levende eksempler med den rigtige CSS, grupperet efter hvor de bruges. Fold Markup ud for koden. Fuld beskrivelse i DESIGN.md afsnit 5 og 15.</p></header>
-      <header class="doc-h2" id="k-navigation"><h3>Navigation</h3><p>Navbar og zonestrimmel: hvor man er, og hvad man ser på.</p></header>
+      <header class="doc-h2" id="k-navigation"><h3>Navigation</h3><p>Navbar, zonestrimmel og ark: hvor man er, og hvad man ser på.</p></header>
       <article class="doc-comp " id="k-navbar-navigation-og-sprog">
         <h3>Navbar: navigation og sprog</h3>
         <p class="doc-desc">Midten har altid Hjem og System (tidligere Dashboard/Konfiguration). Sprogvælgeren vises kun, når buildet har flere sprog.</p>
@@ -2083,6 +2282,39 @@
         <div class="rules"><div class="do"><h4>Brug</h4><ul><li>Max 5 felter på niveau 1 (hus + 4)</li><li>Understrimmel = V6-zonefelter</li><li>Forælder-valgt: inset ring, ikke inverteret</li></ul></div><div class="dont"><h4>Undgå</h4><ul><li>Flad liste med 8+ zoner</li><li>Vandret scroll, wrap eller overlay-menu</li></ul></div></div>
         <details class="more"><summary>Markup</summary><pre class="code">&lt;nav class=&quot;strip strip--tiers&quot;&gt;…tile-sys + tile-manifold…&lt;/nav&gt;
 &lt;nav class=&quot;substrip&quot; data-m=&quot;1&quot; style=&quot;--sub-n:6&quot;&gt;…zonefelter…&lt;/nav&gt;</pre></details>
+      </article>
+      <article class="doc-comp " id="k-ark-med-faner-og-gem-bjaelke">
+        <h3>Ark med faner og gem-bjælke</h3>
+        <p class="doc-desc">Alt om én ting: Overblik · Historik · Indstillinger. Native popover (Esc og klik udenfor lukker); højre side på desktop, fra bunden på mobil. Fanerne er radioer; Indstillinger er grupperede lister med én gem-bjælke. «Avanceret ›» åbner en underside i samme ark. Deep link: #z1/indstillinger.</p>
+        <div class="stage "><div class="actions"><button class="btn" type="button" popovertarget="sheet-z1">Åbn Josephine</button><button class="btn" type="button" popovertarget="sheet-z1" data-tab="settings">Indstillinger for Josephine</button></div><div id="sheet-z1" popover class="sheet" role="dialog" aria-labelledby="sheet-z1-t" data-hash="z1"><input class="state tab" type="radio" name="tab-z1" id="tab-z1-o" value="overview" data-hash="overblik" checked aria-label="Overblik"><input class="state tab" type="radio" name="tab-z1" id="tab-z1-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-z1" id="tab-z1-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger"><header class="sheet-head"><span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span><div><h2 id="sheet-z1-t">Josephine</h2><p>1. sal · Z1 · 22,9° · 62 % åben</p></div><button class="sheet-close" type="button" popovertarget="sheet-z1" popovertargetaction="hide" aria-label="Luk">×</button><nav class="tabs" aria-label="Faner"><label for="tab-z1-o" data-tab="overview">Overblik</label><label for="tab-z1-h" data-tab="history">Historik</label><label for="tab-z1-s" data-tab="settings">Indstillinger</label></nav></header><div class="sheet-body"><section class="tab-panel" data-tab="overview"><div class="climate"><div class="now">21,4<small>°C</small></div><div class="target"><button type="button" data-step="-1" aria-label="Sænk måltemperatur"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button><label class="value"><small>Mål °C</small><input type="number" value="22.0" min="16" max="28" step="0.5"></label><button type="button" data-step="1" aria-label="Hæv måltemperatur"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div></div><dl class="kv"><div><dt>Ventil</dt><dd>62 % åben</dd></div><div><dt>Retur</dt><dd class="c-info">27,4 °C</dd></div><div><dt>Status</dt><dd>Kalder på varme</dd></div></dl></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap" style="margin:0"><h4>Sidste 24 timer <span class="legend"><i class="lf"></i>Fremløb<i class="lr"></i>Retur</span></h4>
+<svg class="trend" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="Fremløb og retur, sidste 24 timer"><polygon class="dt" points="0,40 40,38 80,37 120,36 150,24 180,18 210,20 240,30 240,62 210,56 180,54 150,56 120,64 80,65 40,64 0,65"/><polyline class="f" points="0,40 40,38 80,37 120,36 150,24 180,18 210,20 240,30"/><polyline class="r" points="0,65 40,64 80,65 120,64 150,56 180,54 210,56 240,62"/></svg>
+<div class="axis" aria-hidden="true"><span>−24 t</span><span>−12 t</span><span>nu</span></div></div></section><section class="tab-panel" data-tab="settings"><form data-save="doc-z1"><section class="setting-group"><h4>Komfort</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="z1-target">Mål</label><small>Gemmes også fra overblikket</small></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk mål">−</button><span class="value"><input type="number" id="z1-target" name="z1-target" value="22.0" step="0.5"><span class="unit">°C</span></span><button type="button" data-step="1" aria-label="Hæv mål">+</button></div></div></div></div><div class="setting-list gated"><label class="setting switch"><span class="setting-label"><b style="font-weight:500">Natsænkning</b><small>22–06</small></span><input type="checkbox" role="switch" name="z1-night" checked></label><div class="gated-body"><div class="setting"><div class="setting-label"><label for="z1-setback">Sænk med</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk sænkning">−</button><span class="value"><input type="number" id="z1-setback" name="z1-setback" value="1.0" step="0.5"><span class="unit">°C</span></span><button type="button" data-step="1" aria-label="Hæv sænkning">+</button></div></div></div></div></div></section><section class="setting-group"><h4>Rum</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="z1-area">Areal</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk areal">−</button><span class="value"><input type="number" id="z1-area" name="z1-area" value="12.0" step="0.5"><span class="unit">m²</span></span><button type="button" data-step="1" aria-label="Hæv areal">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="z1-sensor">Temperaturføler</label></div><div class="setting-control"><select class="select" id="z1-sensor" name="z1-sensor" style="width:200px"><option>BLE · Shelly H&amp;T</option><option>Probe 3</option></select></div></div></div></section><section class="setting-group"><h4>Gulv</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="z1-cc">Rørafstand</label><small>C-C</small></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk rørafstand">−</button><span class="value"><input type="number" id="z1-cc" name="z1-cc" value="150" step="0.5"><span class="unit">mm</span></span><button type="button" data-step="1" aria-label="Hæv rørafstand">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="z1-pipe">Rørtype</label></div><div class="setting-control"><select class="select" id="z1-pipe" name="z1-pipe" style="width:180px"><option>PEX 16 mm</option><option>ALUPEX 16 mm</option></select></div></div></div></section><section class="setting-group"><h4>Avanceret</h4><div class="setting-list"><details class="subpage"><summary class="setting"><span class="sub-back">Tilbage</span><span class="setting-label"><span>Motor og kalibrering</span></span><span class="setting-control"><span class="muted">Lært</span></span></summary><div class="subpage-body"><section class="setting-group"><h4>Motor</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="z1-endstop">Endestop-timeout</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk timeout">−</button><span class="value"><input type="number" id="z1-endstop" name="z1-endstop" value="45" step="0.5"><span class="unit">s</span></span><button type="button" data-step="1" aria-label="Hæv timeout">+</button></div></div></div></div></section></div></details><details class="subpage"><summary class="setting"><span class="sub-back">Tilbage</span><span class="setting-label"><span>Gruppering</span></span><span class="setting-control"><span class="muted">Ingen</span></span></summary><div class="subpage-body"><section class="setting-group"><h4>Gruppe</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="z1-group">Primær zone</label></div><div class="setting-control"><select class="select" id="z1-group" name="z1-group" style="width:160px"><option>Ingen</option><option>Z4</option></select></div></div></div></section></div></details></div><p class="note">Sjældne indstillinger åbner i samme ark.</p></section><div class="actions"><button class="btn danger" type="button" popovertarget="doc-cf-z1">Nulstil og genlær Z1…</button></div><div id="doc-cf-z1" popover class="confirm-pop" role="alertdialog" aria-labelledby="doc-cf-z1-t"><h4 id="doc-cf-z1-t">Nulstil og genlær Z1?</h4><p>Motoren kører til endestop og lærer forfra. Zonen varmer ikke imens.</p><div class="actions"><button class="btn" type="button" popovertarget="doc-cf-z1" popovertargetaction="hide" autofocus>Annullér</button><button class="btn danger-solid" type="button" popovertarget="doc-cf-z1" popovertargetaction="hide">Nulstil</button></div></div><footer class="savebar"><span class="save-status" id="ss-doc-z1" aria-live="polite"></span><button type="reset" class="btn">Fortryd</button><button class="btn primary" type="submit">Gem</button></footer></form></section></div></div></div>
+        <div class="rules"><div class="do"><h4>Brug</h4><ul><li>Ét ark pr. ting; åbnes fra tingen</li><li>Maks. 5 grupper og 6 rækker pr. gruppe</li><li>Farlig handling sidst, med .confirm-pop</li><li>Gem-bjælke: clean = neutral, ingen Fortryd</li></ul></div><div class="dont"><h4>Undgå</h4><ul><li>Ark i ark</li><li>Indstillinger der gælder hele enheden (de hører på System)</li><li>Gem-knap pr. gruppe</li></ul></div></div>
+        <details class="more"><summary>Markup</summary><pre class="code">&lt;div id=&quot;sheet-z1&quot; popover class=&quot;sheet&quot; role=&quot;dialog&quot; aria-labelledby=&quot;sheet-z1-t&quot; data-hash=&quot;z1&quot;&gt;
+  &lt;input class=&quot;state tab&quot; type=&quot;radio&quot; name=&quot;tab-z1&quot; id=&quot;tab-z1-o&quot; value=&quot;overview&quot; data-hash=&quot;overblik&quot; checked&gt;
+  &lt;input class=&quot;state tab&quot; type=&quot;radio&quot; name=&quot;tab-z1&quot; id=&quot;tab-z1-h&quot; value=&quot;history&quot; data-hash=&quot;historik&quot;&gt;
+  &lt;input class=&quot;state tab&quot; type=&quot;radio&quot; name=&quot;tab-z1&quot; id=&quot;tab-z1-s&quot; value=&quot;settings&quot; data-hash=&quot;indstillinger&quot;&gt;
+  &lt;header class=&quot;sheet-head&quot;&gt;
+    &lt;span class=&quot;chip-icon&quot; aria-hidden=&quot;true&quot;&gt;&lt;svg …/&gt;&lt;/span&gt;
+    &lt;div&gt;&lt;h2 id=&quot;sheet-z1-t&quot;&gt;Josephine&lt;/h2&gt;&lt;p&gt;1. sal · Z1 · 22,9° · 62 % åben&lt;/p&gt;&lt;/div&gt;
+    &lt;button class=&quot;sheet-close&quot; type=&quot;button&quot; popovertarget=&quot;sheet-z1&quot; popovertargetaction=&quot;hide&quot; aria-label=&quot;Luk&quot;&gt;×&lt;/button&gt;
+    &lt;nav class=&quot;tabs&quot;&gt;&lt;label for=&quot;tab-z1-o&quot; data-tab=&quot;overview&quot;&gt;Overblik&lt;/label&gt;…&lt;/nav&gt;
+  &lt;/header&gt;
+  &lt;div class=&quot;sheet-body&quot;&gt;
+    &lt;section class=&quot;tab-panel&quot; data-tab=&quot;overview&quot;&gt;…&lt;/section&gt;
+    &lt;section class=&quot;tab-panel&quot; data-tab=&quot;history&quot;&gt;…&lt;/section&gt;
+    &lt;section class=&quot;tab-panel&quot; data-tab=&quot;settings&quot;&gt;
+      &lt;form data-save=&quot;z1&quot;&gt;
+        &lt;section class=&quot;setting-group&quot;&gt;…&lt;/section&gt;              &lt;!-- maks. 5 grupper --&gt;
+        &lt;details class=&quot;subpage&quot;&gt;&lt;summary class=&quot;setting&quot;&gt;…&lt;/summary&gt;&lt;div class=&quot;subpage-body&quot;&gt;…&lt;/div&gt;&lt;/details&gt;
+        &lt;button class=&quot;btn danger&quot; popovertarget=&quot;cf-z1&quot;&gt;Nulstil og genlær Z1…&lt;/button&gt;   &lt;!-- altid sidst --&gt;
+        &lt;footer class=&quot;savebar&quot;&gt;&lt;span class=&quot;save-status&quot; aria-live=&quot;polite&quot;&gt;&lt;/span&gt;
+          &lt;button type=&quot;reset&quot; class=&quot;btn&quot;&gt;Fortryd&lt;/button&gt;&lt;button class=&quot;btn primary&quot; type=&quot;submit&quot;&gt;Gem&lt;/button&gt;&lt;/footer&gt;
+      &lt;/form&gt;
+    &lt;/section&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;button popovertarget=&quot;sheet-z1&quot; data-tab=&quot;settings&quot;&gt;…&lt;/button&gt;   &lt;!-- åbner på Indstillinger (JS) --&gt;</pre></details>
       </article><header class="doc-h2" id="k-hjem"><h3>Indhold på Hjem</h3><p>Overblik og hverdagshandlinger. Kort bruges her, fordi indholdet er kort.</p></header>
       <article class="doc-comp " id="k-panel">
         <h3>Panel</h3>
@@ -2207,6 +2439,26 @@
   &lt;label class=&quot;setting switch&quot;&gt;&lt;span class=&quot;setting-label&quot;&gt;&lt;b&gt;Opsug overskudsvarme&lt;/b&gt;&lt;/span&gt;&lt;input type=&quot;checkbox&quot; role=&quot;switch&quot;&gt;&lt;/label&gt;
   &lt;div class=&quot;gated-body&quot;&gt;&lt;div class=&quot;setting&quot;&gt;…&lt;/div&gt;&lt;/div&gt;
 &lt;/div&gt;</pre></details>
+      </article>
+      <article class="doc-comp " id="k-system-side">
+        <h3>System-side</h3>
+        <p class="doc-desc">Kategoriliste (240 px, klæber) og indhold (maks. 640 px). Én kategori ad gangen, én gem-bjælke pr. kategori. Mobil: listen er en skærm; en kategori har «‹ System» øverst. Virker uden JS. Deep link: #system/netvaerk (kræver #m-sys på en rigtig side).</p>
+        <div class="stage "><input class="state" type="radio" name="syscat" id="c-none" checked aria-label="Kategorier"><input class="state" type="radio" name="syscat" id="c-device" data-hash="enhed" aria-label="Enhed"><input class="state" type="radio" name="syscat" id="c-network" data-hash="netvaerk" aria-label="Netværk"><input class="state" type="radio" name="syscat" id="c-service" data-hash="service" aria-label="Service"><div class="sys"><nav class="sys-nav" aria-label="Kategorier"><label for="c-device">Enhed</label><label for="c-network">Netværk</label><label for="c-service">Service</label></nav><div class="sys-main"><section class="sys-cat" data-cat="device"><label class="sys-back" for="c-none">System</label><header><div><small>System</small><h2>Enhed</h2></div></header><form data-save="doc-sys-device"><section class="setting-group"><h4>Identitet</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="sd-name">Navn</label></div><div class="setting-control"><input class="input w-sm" id="sd-name" name="sd-name" value="Stueetage"></div></div><div class="setting"><div class="setting-label"><label for="sd-loc">Placering</label></div><div class="setting-control"><input class="input w-sm" id="sd-loc" name="sd-loc" value="Bryggers"></div></div></div></section><footer class="savebar"><span class="save-status" aria-live="polite"></span><button type="reset" class="btn">Fortryd</button><button class="btn primary" type="submit">Gem</button></footer></form></section><section class="sys-cat" data-cat="network"><label class="sys-back" for="c-none">System</label><header><div><small>System</small><h2>Netværk</h2></div><span class="badge ok">Online</span></header><form data-save="doc-sys-network"><section class="setting-group"><h4>Forbindelse</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="sn-host">Host</label></div><div class="setting-control"><input class="input w-md" id="sn-host" name="sn-host" value="lune-v6.local"></div></div><div class="setting"><div class="setting-label"><label for="sn-port">Port</label></div><div class="setting-control"><input class="input w-xs" id="sn-port" name="sn-port" type="number" value="80"></div></div></div></section><footer class="savebar"><span class="save-status" aria-live="polite"></span><button type="reset" class="btn">Fortryd</button><button class="btn primary" type="submit">Gem</button></footer></form></section><section class="sys-cat" data-cat="service"><label class="sys-back" for="c-none">System</label><header><div><small>System</small><h2>Service</h2></div></header><form data-save="doc-sys-service"><section class="setting-group"><h4>Diagnostik</h4><div class="setting-list"><div class="setting"><div class="setting-label"><span>Oppetid</span></div><div class="setting-control"><span>3 d 4 t</span></div></div></div></section><footer class="savebar"><span class="save-status" aria-live="polite"></span><button type="reset" class="btn">Fortryd</button><button class="btn primary" type="submit">Gem</button></footer></form></section></div></div></div>
+        <div class="rules"><div class="do"><h4>Brug</h4><ul><li>Kategorier fra systemCategories i config</li><li>Én formular pr. kategori</li></ul></div><div class="dont"><h4>Undgå</h4><ul><li>Indstillinger for én ting i huset (de hører i dens ark)</li><li>Kort/paneler til indstillinger</li></ul></div></div>
+        <details class="more"><summary>Markup</summary><pre class="code">&lt;input class=&quot;state&quot; type=&quot;radio&quot; name=&quot;syscat&quot; id=&quot;c-none&quot; checked&gt;
+&lt;input class=&quot;state&quot; type=&quot;radio&quot; name=&quot;syscat&quot; id=&quot;c-device&quot; data-hash=&quot;enhed&quot;&gt;
+…
+&lt;div class=&quot;sys&quot;&gt;
+  &lt;nav class=&quot;sys-nav&quot;&gt;&lt;label for=&quot;c-device&quot;&gt;&lt;svg …/&gt;Enhed&lt;/label&gt;…&lt;/nav&gt;
+  &lt;div class=&quot;sys-main&quot;&gt;
+    &lt;section class=&quot;sys-cat&quot; data-cat=&quot;device&quot;&gt;
+      &lt;label class=&quot;sys-back&quot; for=&quot;c-none&quot;&gt;System&lt;/label&gt;      &lt;!-- kun mobil --&gt;
+      &lt;header&gt;&lt;div&gt;&lt;small&gt;System&lt;/small&gt;&lt;h2&gt;Enhed&lt;/h2&gt;&lt;/div&gt;&lt;/header&gt;
+      &lt;form data-save=&quot;device&quot;&gt;…grupper… &lt;footer class=&quot;savebar&quot;&gt;…&lt;/footer&gt;&lt;/form&gt;
+    &lt;/section&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+&lt;!-- config: &quot;modes&quot;: [&quot;home&quot;,&quot;sys&quot;], &quot;systemCategories&quot;: [&quot;device&quot;, …] --&gt;</pre></details>
       </article>
       <article class="doc-comp c6" id="k-typeafhaengige-felter">
         <h3>Typeafhængige felter</h3>
@@ -2354,10 +2606,10 @@
           <div><dt>Enheder</dt><dd>Mellemrum: 21,4 °C, 6 m/s — kort grad i felter: 21,4°</dd></div>
           <div><dt>i18n</dt><dd>Build-time, --langs en,da, alle aria-labels oversat</dd></div>
         </dl></section>
-      <section class="panel"><header class="panel-head"><h3>ESP32-budget</h3><span class="badge warn">62,6 kB · budget 48 kB</span></header>
+      <section class="panel"><header class="panel-head"><h3>ESP32-budget</h3><span class="badge ok">58,7 kB · budget 60 kB</span></header>
         <dl class="metrics">
-          <div class="metric"><dt>CSS</dt><dd>19,6 <small>kB gzip</small></dd></div>
-          <div class="metric"><dt>Side pr. sprog</dt><dd>21,5 <small>kB gzip (13,9 uden indlejrede grafpunkter)</small></dd></div>
+          <div class="metric"><dt>CSS</dt><dd>21,0 <small>kB gzip</small></dd></div>
+          <div class="metric"><dt>Side pr. sprog</dt><dd>16,8 <small>kB gzip uden grafpunkter (25,2 med)</small></dd></div>
           <div class="metric"><dt>Eksterne requests</dt><dd>0</dd></div>
           <div class="metric"><dt>JS til tilstand</dt><dd>0 <small>linjer</small></dd></div>
         </dl></section></div></div>
@@ -2376,24 +2628,26 @@ function snap(f){var o={};f.querySelectorAll("input,select,textarea").forEach(fu
 if(!el.name||/^(submit|reset|button|file)$/.test(el.type))return;
 var k=el.name+(el.type==="radio"||el.type==="checkbox"?":"+el.value:"");
 o[k]=el.type==="checkbox"||el.type==="radio"?el.checked:el.value});return o}
-function wrap(el){return el.closest(".field,.switch,.seg,.compass")}
-function btn(f){return f.querySelector('.panel-foot .btn.primary[type="submit"]')}
+function wrap(el){return el.closest(".setting,.field,.switch,.seg,.compass")}
+function btn(f){return f.querySelector(':is(.panel-foot,.savebar) .btn.primary[type="submit"]')}
 function st(f){return f.querySelector(".save-status")}
 function auto(f){return!!f.querySelector(".climate")}
 function track(f){return!!st(f)}
 function cross(){
-document.querySelectorAll('.tile[data-dirty],.mode label[data-dirty],.section-nav a[data-dirty],.section[data-dirty],details.section[data-dirty]').forEach(function(el){
+document.querySelectorAll('.tile[data-dirty],.mode label[data-dirty],.section-nav a[data-dirty],.section[data-dirty],details.section[data-dirty],.sys-nav label[data-dirty],[popovertarget][data-dirty]').forEach(function(el){
 el.removeAttribute("data-dirty")});
-var conf=false;
-document.querySelectorAll("form.panel[data-save][data-dirty]").forEach(function(f){
-var v=f.closest(".view");if(!v||!v.id)return;var m=/^v-(dash|conf)-(.+)$/.exec(v.id);if(!m)return;
+var conf=false,sys=false;
+document.querySelectorAll("form[data-save][data-dirty]").forEach(function(f){
+var cat=f.closest(".sys-cat[data-cat]");if(cat){var cl=document.querySelector('.sys-nav label[for="c-'+cat.dataset.cat+'"]');if(cl)cl.setAttribute("data-dirty","")}
+var sh=f.closest(".sheet[id]");if(sh)document.querySelectorAll('[popovertarget="'+sh.id+'"]:not(.sheet-close)').forEach(function(o){o.setAttribute("data-dirty","")});
+var v=f.closest(".view");if(!v||!v.id)return;if(v.id==="v-sys"){sys=true;return}var m=/^v-(dash|conf|home)-(.+)$/.exec(v.id);if(!m)return;
 if(m[1]==="conf")conf=true;var tile=document.querySelector('label.tile[for="s-'+m[2]+'"]');if(tile)tile.setAttribute("data-dirty","");
 var sec=f.closest("section.section,details.section");
 if(sec){sec.setAttribute("data-dirty","");
 if(sec.id){var link=document.querySelector('.section-nav a[href="#'+sec.id+'"]');
 if(link)link.setAttribute("data-dirty","")}}
 });
-if(conf){var lab=document.querySelector('.mode label[for="m-conf"]');if(lab)lab.setAttribute("data-dirty","")}}
+if(conf||sys){var lab=document.querySelector('.mode label[for="m-'+(sys?"sys":"conf")+'"]');if(lab)lab.setAttribute("data-dirty","")}}
 function openSectionFromHash(){
 var id=(location.hash||"").replace(/^#/,"");if(!id)return;
 var el=document.getElementById(id);
@@ -2429,18 +2683,18 @@ setTimeout(function(){delete f.dataset.state;if(b)b.textContent=f._label;paint(f
 else if(auto(f)){if(a)a.innerHTML=t("rt.autoFailed")+' <button type="button" class="btn" data-autosave-retry>'+t("rt.retry")+"</button>"}
 else{f.dataset.state="error";if(sEl)sEl.textContent=msg||t("rt.saveFailed");if(b)b.textContent=f._label;paint(f)}};
 if(track(f)&&!auto(f))paint(f)}
-document.querySelectorAll("form.panel[data-save]").forEach(bind);
+document.querySelectorAll("form[data-save]").forEach(bind);
 function onEdit(e){
-var f=e.target&&e.target.closest&&e.target.closest("form.panel[data-save]");if(!f||!f.dataset.js)return;
+var f=e.target&&e.target.closest&&e.target.closest("form[data-save]");if(!f||!f.dataset.js)return;
 if(auto(f)){if(e.target.disabled)return;var a=f.querySelector(".autosave");if(a)a.textContent=t("rt.autoSaving");
 clearTimeout(f._autoT);f._autoT=setTimeout(function(){f._autoT=null;f.dataset.state="saving";
 document.dispatchEvent(new CustomEvent("lune:save",{detail:{key:f.dataset.save,data:new FormData(f),auto:true,form:f}}))},1500)}
 else if(track(f)){delete f.dataset.state;paint(f)}}
 document.addEventListener("input",onEdit,true);document.addEventListener("change",onEdit,true);
-document.addEventListener("reset",function(e){var f=e.target;if(f&&f.matches&&f.matches("form.panel[data-save]"))setTimeout(function(){delete f.dataset.state;paint(f)},0)});
+document.addEventListener("reset",function(e){var f=e.target;if(f&&f.matches&&f.matches("form[data-save]"))setTimeout(function(){delete f.dataset.state;paint(f)},0)});
 document.addEventListener("click",function(e){
 var retry=e.target.closest&&e.target.closest("[data-autosave-retry]");
-if(retry){var f=retry.closest("form.panel[data-save]");if(f){var a=f.querySelector(".autosave");if(a)a.textContent=t("rt.autoSaving");
+if(retry){var f=retry.closest("form[data-save]");if(f){var a=f.querySelector(".autosave");if(a)a.textContent=t("rt.autoSaving");
 f.dataset.state="saving";
 document.dispatchEvent(new CustomEvent("lune:save",{detail:{key:f.dataset.save,data:new FormData(f),auto:true,form:f}}))}return}
 var copy=e.target.closest&&e.target.closest("[data-copy]");
@@ -2452,9 +2706,9 @@ if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeT
 var ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();
 try{document.execCommand("copy");done()}catch(err){}ta.remove()});return}
 var b=e.target.closest&&e.target.closest('.btn.primary[type="submit"]');
-if(b&&b.getAttribute("aria-disabled")==="true"&&b===btn(b.closest("form.panel[data-save]"))){e.preventDefault();e.stopPropagation()}},true);
+if(b&&b.getAttribute("aria-disabled")==="true"&&b===btn(b.closest("form[data-save]"))){e.preventDefault();e.stopPropagation()}},true);
 document.addEventListener("submit",function(e){
-var f=e.target;if(!f||!f.matches||!f.matches("form.panel[data-save]"))return;e.preventDefault();
+var f=e.target;if(!f||!f.matches||!f.matches("form[data-save]"))return;e.preventDefault();
 var sub=e.submitter,b=btn(f),isSave=!sub||sub===b;
 if(isSave&&b&&b.getAttribute("aria-disabled")==="true")return;
 if(isSave&&f.dataset.state==="saving")return;
@@ -2463,7 +2717,50 @@ var pop=sub&&sub.closest&&sub.closest(".confirm-pop");
 if(pop&&pop.matches(":popover-open"))pop.hidePopover();
 if(isSave&&track(f)&&!auto(f)){f.dataset.state="saving";if(b){b.setAttribute("aria-busy","true");b.textContent=t("rt.saving")}}
 document.dispatchEvent(new CustomEvent("lune:save",{detail:{key:f.dataset.save,data:new FormData(f,sub),auto:false,form:f}}))});
-window.addEventListener("beforeunload",function(e){if(document.querySelector("form.panel[data-save][data-dirty]")){e.preventDefault();e.returnValue=t("rt.leaveUnsaved")}});
+/* ---- Ark, faner, System og deep links (DESIGN.md 15) ---- */
+function dirtyIn(el){return!!(el&&el.querySelector("form[data-save][data-dirty]"))}
+function sheetOpen(){return document.querySelector(".sheet:popover-open")}
+function hashOf(el){return el?(el.getAttribute("data-hash")||(el.id||"").replace(/^(sheet-|c-)/,"")):""}
+function writeHash(){
+var sh=sheetOpen(),h="";
+if(sh){h=hashOf(sh);var tb=sh.querySelector("input.tab:checked"),first=sh.querySelector("input.tab");if(tb&&tb!==first)h+="/"+hashOf(tb)}
+else{var ms=document.getElementById("m-sys");if(ms&&ms.checked){h=hashOf(ms)||"system";var c=document.querySelector('input[name="syscat"]:checked');if(c&&c.id!=="c-none")h+="/"+hashOf(c)}}
+var url=location.pathname+location.search+(h?"#"+h:"");
+if(url!==location.pathname+location.search+location.hash)history.replaceState(null,"",url)}
+function readHash(){
+var parts=decodeURIComponent((location.hash||"").replace(/^#/,"")).split("/");if(!parts[0])return;
+var root=document.querySelector('[data-hash="'+parts[0]+'"]')||document.getElementById("sheet-"+parts[0]);
+if(!root)return;
+if(root.matches("input")){root.checked=true;
+if(parts[1]){var c=document.querySelector('input[name="syscat"][data-hash="'+parts[1]+'"]')||document.getElementById("c-"+parts[1]);if(c)c.checked=true}}
+else if(root.matches("[popover]")){
+if(parts[1]){var tb=root.querySelector('input.tab[data-hash="'+parts[1]+'"]')||root.querySelector('input.tab[value="'+parts[1]+'"]');if(tb)tb.checked=true}
+if(!root.matches(":popover-open"))try{root.showPopover()}catch(e){}}}
+window.addEventListener("hashchange",readHash);
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",readHash);else readHash();
+/* data-tab på en trigger: åbn arket direkte på den fane. */
+document.addEventListener("click",function(e){
+var trg=e.target.closest&&e.target.closest("[popovertarget][data-tab]");if(!trg)return;
+var sh=document.getElementById(trg.getAttribute("popovertarget")),tb=sh&&sh.querySelector('input.tab[value="'+trg.dataset.tab+'"]');if(tb)tb.checked=true},true);
+/* Luk ark med ugemte ændringer: advar (uden JS lukker det bare). */
+document.addEventListener("toggle",function(e){
+var sh=e.target;if(!sh.classList||!sh.classList.contains("sheet"))return;
+if(e.newState==="closed"&&dirtyIn(sh)&&!sh._leaving){
+if(!window.confirm(t("rt.leaveUnsaved"))){try{sh.showPopover()}catch(err){}return}
+sh.querySelectorAll("form[data-save][data-dirty]").forEach(function(f){f.reset()})}
+writeHash()},true);
+/* Skift mellem Hjem/System og systemkategorier: advar ved ugemte ændringer i det, man forlader. */
+var prev={};
+document.querySelectorAll('input.state[type=radio]:checked').forEach(function(r){prev[r.name]=r});
+document.addEventListener("change",function(e){
+var r=e.target;if(!r.matches||!r.matches("input[type=radio]"))return;
+if(r.name==="mode"||r.name==="syscat"){
+var old=prev[r.name],scope=old&&(r.name==="mode"?document.getElementById("v-sys"):document.querySelector('.sys-cat[data-cat="'+old.id.replace(/^c-/,"")+'"]'));
+if(old&&old.id==="m-sys"&&r.name==="mode"||r.name==="syscat"){
+if(scope&&dirtyIn(scope)&&!window.confirm(t("rt.leaveUnsaved"))){old.checked=true;return}}
+prev[r.name]=r;writeHash()}
+else if(r.matches("input.tab"))writeHash()},true);
+window.addEventListener("beforeunload",function(e){if(document.querySelector("form[data-save][data-dirty]")){e.preventDefault();e.returnValue=t("rt.leaveUnsaved")}});
 function placeConfirm(pop){
 if(!pop)return;
 if(window.matchMedia("(max-width:599.98px)").matches){

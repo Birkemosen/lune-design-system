@@ -13,7 +13,8 @@
    LUNE DESIGN SYSTEM 2 — fælles stylesheet for Lune V6 og Lune Touch
    Bygget til Lune Touch af tools/lds_build.py — redigér css/lune-ui.src.css, ikke denne fil.
    Regler og komponentbeskrivelser: DESIGN.md
-   Projektspecifikke blokke markeres med en @only-kommentar (touch eller v6)
+   Projektspecifikke blokke markeres med en @only-kommentar (touch, v6 eller en
+   feature som legacy = Dashboard/Konfiguration-modellen, DESIGN.md 12)
    og en @end-kommentar; lds_build.py fjerner dem fra de andre projekters CSS.
    Blokkene indlejres ikke. Se DESIGN.md 12.
    --------------------------------------------------------------------------
@@ -139,6 +140,7 @@
     --space-7: 48px;
     /* radius */
     --r-card: 16px;
+    --r-sheet: 24px;
     --r-tile: 14px;
     --r-field: 12px;
     --r-pill: 999px;
@@ -150,8 +152,14 @@
     --row-h: 40px;
     --tile-h: auto;
     --container: 1200px;
+    --sheet-w: 520px;
+    --sheet-inset: 12px;
+    --sys-nav-w: 240px;
+    --sys-main-w: 640px;
+    --setting-h: 52px;
     /* shadow */
     --card-edge: 0 0 0 1px var(--card-edge-c);
+    --float: inset 0 1px 0 rgba(255,255,255,.07), 0 0 0 1px var(--border), 0 30px 80px rgba(0,0,0,.5);
     /* motion */
     --ease: cubic-bezier(.4,0,.2,1);
     --dur: 200ms;
@@ -650,6 +658,9 @@
     transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
   }
   .tile:hover { background: var(--raised); }
+  /* Felter og rækker der åbner et ark (DESIGN.md 15) er knapper med popovertarget. */
+  button:is(.tile, .comfort > *) { width: 100%; border: 0; font: inherit; text-align: inherit; }
+  .comfort > button { background: none; color: inherit; }
   .tile-id   { grid-area: id; font-size: var(--fs-xs); font-weight: 600; color: var(--muted); }
   .tile-name { grid-area: name; font-size: var(--fs-sm); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .tile-val  { grid-area: val; font-size: var(--fs-lg); font-weight: 600; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1; }
@@ -991,7 +1002,7 @@
      skriver blot nye "points"-strenge — ingen chart-bibliotek.
      Smalt panel: grafen under navnet. Bredt panel: på samme række. */
   .comfort { display: grid; }
-  .comfort label {
+  .comfort > :is(label, button) {
     display: grid;
     grid-template-columns: 40px minmax(0, 1fr) auto;
     grid-template-areas: "id name val" "id spark spark";
@@ -1003,9 +1014,9 @@
     border-radius: var(--r-field);
     cursor: pointer;
   }
-  .comfort label + label { border-top: 1px solid var(--border); }
-  .comfort label:hover { background: var(--raised); border-color: transparent; }
-  .comfort label:hover + label { border-color: transparent; }
+  .comfort > :is(label, button) + :is(label, button) { border-top: 1px solid var(--border); }
+  .comfort > :is(label, button):hover { background: var(--raised); border-color: transparent; }
+  .comfort > :is(label, button):hover + :is(label, button) { border-color: transparent; }
   .comfort .id    { grid-area: id; font-size: var(--fs-xs); font-weight: 600; color: var(--muted); }
   .comfort .name  { grid-area: name; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .comfort .val   { grid-area: val; font-size: var(--fs-sm); color: var(--muted); white-space: nowrap; text-align: right; }
@@ -1016,7 +1027,7 @@
   .comfort [data-state="learning"] :is(.id, .val) { color: var(--violet); }
 
   @container (min-width: 560px) {
-    .comfort label {
+    .comfort > :is(label, button) {
       grid-template-columns: 40px minmax(90px, 140px) minmax(0, 1fr) 112px;  /* fast værdikolonne → graferne flugter */
       grid-template-areas: "id name spark val";
     }
@@ -1367,14 +1378,20 @@
   .setting-group { display: grid; gap: var(--space-2); }
   .setting-group > h4 { margin: 0 0 0 4px; font-size: var(--fs-sm); font-weight: 500; color: var(--muted); }
   .setting-list { border-radius: var(--r-tile); background: var(--raised); box-shadow: inset 0 1px 0 rgba(255,255,255,.05); overflow: hidden; }
-  .setting { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-height: 52px; padding: 8px var(--space-4); }
-  .setting + .setting, .setting + .gated-body > .setting:first-child, .gated-body > .setting + .setting { border-top: 1px solid var(--border); }
+  .setting { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-height: var(--setting-h); padding: 8px var(--space-4); }
+  .setting + .setting, .setting + .gated-body > .setting:first-child, .gated-body > .setting + .setting,
+  .setting-list > :is(.setting, details) + details > summary.setting, .setting-list > details + .setting { border-top: 1px solid var(--border); }
   .setting-label { display: grid; gap: 2px; min-width: 0; }
   .setting-label > :first-child { font-size: var(--fs-md); font-weight: 500; }
   .setting-label small { font-size: var(--fs-xs); color: var(--muted); }
   .setting-control { flex: none; display: flex; align-items: center; gap: var(--space-2); }
   .setting-control > .input, .setting-control > .select { min-height: 36px; }
   .setting-control > .stepper { width: 140px; min-height: 36px; }
+  .setting-control > .select { width: auto; min-width: 160px; max-width: 220px; }
+  /* Kompas i en række: fire runde vægge (N Ø S V) uden hus. */
+  .compass.inline { display: flex; gap: var(--space-2); }
+  .compass.inline .c { display: none; }
+  .compass.inline span { width: 36px; height: 36px; border-radius: 50%; }
   .setting-group > .note { margin: 0 0 0 4px; font-size: var(--fs-xs); color: var(--faint); }
   .setting.switch { cursor: pointer; }
   .setting-list .btn:not(.primary):not(.danger-solid) { background: var(--card); box-shadow: inset 0 0 0 1px var(--border); }
@@ -1382,8 +1399,178 @@
   .setting.stack { flex-direction: column; align-items: stretch; gap: var(--space-2); padding-block: var(--space-3); }
   .setting.stack .setting-control > * { width: 100%; }
   @media (max-width: 599.98px) {
+    /* Kontrollen bliver på rækken, når den kan; ellers brydes den under labelen. */
     .setting { flex-wrap: wrap; }
-    .setting-control { width: 100%; justify-content: flex-start; }
+    .setting-control { margin-left: auto; max-width: 100%; }
+    .setting.stack .setting-control { margin-left: 0; width: 100%; }
+  }
+
+  /* Avanceret: række med › der åbner en underside i samme ark/kategori (15.3).
+     details.subpage — uden JS. Når den er åben, skjules resten af fanen/kategorien,
+     og summary bliver til «‹ Tilbage». */
+  details.subpage > summary { list-style: none; cursor: pointer; }
+  details.subpage > summary::-webkit-details-marker { display: none; }
+  details.subpage > summary .setting-control::after { content: "›"; font-size: var(--fs-lg); color: var(--muted); }
+  details.subpage > summary .sub-back { display: none; }
+  details.subpage[open] > summary { min-height: var(--hit); padding-inline: 0; border-radius: 0; background: none; }
+  details.subpage[open] > summary :is(.setting-label, .setting-control) { display: none; }
+  details.subpage[open] > summary .sub-back { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--fs-sm); font-weight: 500; color: var(--muted); }
+  details.subpage[open] > summary .sub-back::before { content: "‹"; font-size: var(--fs-lg); }
+  details.subpage > .subpage-body { display: grid; gap: var(--space-5); padding-top: var(--space-2); }
+  /* Åben underside: kun den står tilbage i fanen/kategorien. */
+  :is(.tab-panel, .sys-cat, .subpage-host):has(details.subpage[open]) .setting-group:not(:has(details.subpage[open])):not(.subpage-body .setting-group),
+  :is(.tab-panel, .sys-cat, .subpage-host):has(details.subpage[open]) > :not(.setting-group, form, .savebar),
+  :is(.tab-panel, .sys-cat, .subpage-host) form:has(details.subpage[open]) > :not(.setting-group, .savebar),
+  .setting-group:has(details.subpage[open]) > :not(.setting-list),
+  .setting-list:has(> details.subpage[open]) > :not(details.subpage[open]) { display: none; }
+  .setting-list:has(> details.subpage[open]) { background: none; box-shadow: none; overflow: visible; }
+
+  /* ---- Ark (.sheet, DESIGN.md 15.3) ------------------------------------
+     Native popover: Esc og klik udenfor lukker. Desktop: fast i højre side.
+     Mobil: ark fra bunden. Arket selv scroller; hoved og gem-bjælke klæber. */
+  .sheet {
+    position: fixed;
+    inset: var(--sheet-inset) var(--sheet-inset) var(--sheet-inset) auto;
+    width: min(var(--sheet-w), calc(100vw - 2 * var(--sheet-inset)));
+    height: auto;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: var(--r-sheet);
+    background: var(--card);
+    color: var(--fg);
+    box-shadow: var(--float);
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .sheet:popover-open { display: flex; flex-direction: column; }
+  .sheet::backdrop { background: rgb(0 0 0 / 35%); }
+  .sheet-head {
+    position: sticky; top: 0; z-index: 2;
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--space-2) var(--space-3);
+    padding: var(--space-5) var(--space-5) var(--space-3);
+    background: var(--card);
+  }
+  .sheet-head h2 { font-size: var(--fs-xl); font-weight: 600; letter-spacing: -.02em; line-height: 1.15; }
+  .sheet-head p { font-size: var(--fs-sm); color: var(--muted); }
+  .sheet-head .tabs { grid-column: 1 / -1; margin-top: var(--space-2); }
+  .sheet-close {
+    align-self: start;
+    display: grid; place-items: center;
+    width: var(--hit); height: var(--hit);
+    border: 0; border-radius: 50%;
+    background: var(--raised); color: var(--fg);
+    font-size: var(--fs-lg); line-height: 1; cursor: pointer;
+  }
+  .sheet-close:hover { background: var(--inv-bg); color: var(--inv-fg); }
+  .sheet-body { flex: 1 1 auto; display: grid; align-content: start; gap: var(--space-5); padding: var(--space-2) var(--space-5) var(--space-5); }
+  .sheet-body > .tab-panel { display: none; gap: var(--space-5); align-content: start; }
+  .sheet form { display: grid; gap: var(--space-5); }
+  @media (max-width: 599.98px) {
+    .sheet {
+      inset: auto 0 0 0;
+      width: 100%;
+      max-height: 92vh;
+      border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+    }
+    .sheet-head { padding: var(--space-4) var(--space-4) var(--space-3); }
+    .sheet-body { padding: var(--space-2) var(--space-4) max(var(--space-5), env(safe-area-inset-bottom)); }
+  }
+
+  /* Ikonbrik: dyb fyld-tone + hvid glyf (3.2.2). data-tone vælger domæne/status. */
+  .chip-icon {
+    display: grid; place-items: center; flex: none;
+    width: var(--hit); height: var(--hit);
+    border-radius: var(--r-field);
+    background: var(--heat-fill); color: var(--on-fill);
+  }
+  .chip-icon svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .chip-icon[data-tone="info"]   { background: var(--info-fill); }
+  .chip-icon[data-tone="ok"]     { background: var(--ok-fill); }
+  .chip-icon[data-tone="violet"] { background: var(--violet-fill); }
+  .chip-icon[data-tone="warn"]   { background: var(--warn-fill); color: var(--on-warn-fill); }
+  .chip-icon[data-tone="danger"] { background: var(--danger-fill); }
+  .chip-icon[data-tone="neutral"]{ background: var(--raised); color: var(--fg); }
+
+  /* ---- Faner (.tabs) ----------------------------------------------------
+     Radioer (class="state", name="tab-{id}", value=overview|history|settings)
+     står først i arket; fanerne er labels; panelerne vises med søskende-selektorer
+     ud fra radioens value — ingen genereret CSS pr. ark. */
+  .tabs { display: inline-flex; justify-self: start; width: fit-content; max-width: 100%; padding: 4px; border-radius: var(--r-pill); background: var(--raised); }
+  .tabs label { display: grid; place-items: center; min-height: calc(var(--hit) - 8px); padding: 0 var(--space-4); border-radius: var(--r-pill);
+    font-size: var(--fs-sm); font-weight: 500; color: var(--muted); white-space: nowrap; cursor: pointer; }
+  .tabs label:hover { color: var(--fg); }
+  input.tab[value="overview"]:checked ~ .sheet-head .tabs label[data-tab="overview"],
+  input.tab[value="history"]:checked  ~ .sheet-head .tabs label[data-tab="history"],
+  input.tab[value="settings"]:checked ~ .sheet-head .tabs label[data-tab="settings"] { background: var(--inv-bg); color: var(--inv-fg); }
+  input.tab[value="overview"]:focus-visible ~ .sheet-head .tabs label[data-tab="overview"],
+  input.tab[value="history"]:focus-visible  ~ .sheet-head .tabs label[data-tab="history"],
+  input.tab[value="settings"]:focus-visible ~ .sheet-head .tabs label[data-tab="settings"] { outline: 2px solid var(--focus); outline-offset: 2px; }
+  input.tab[value="overview"]:checked ~ .sheet-body > .tab-panel[data-tab="overview"],
+  input.tab[value="history"]:checked  ~ .sheet-body > .tab-panel[data-tab="history"],
+  input.tab[value="settings"]:checked ~ .sheet-body > .tab-panel[data-tab="settings"] { display: grid; }
+
+  /* ---- Gem-bjælke (.savebar) -------------------------------------------
+     Én pr. fane/kategori, sidst i formularen. Klæber nederst. Dirty-mønstret
+     (6.1): clean = neutral knap med aria-disabled og ingen Fortryd. */
+  .savebar {
+    position: sticky; bottom: 0; z-index: 2;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-2);
+    margin-inline: calc(-1 * var(--space-5));
+    padding: var(--space-3) var(--space-5) max(var(--space-3), env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border);
+    background: var(--card);
+  }
+  .sys .savebar { margin-inline: 0; padding-inline: 0; background: var(--bg); }
+  .savebar .save-status { margin-right: auto; font-size: var(--fs-sm); color: var(--warn); }
+  .savebar .save-status:not(:empty)::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: var(--space-2); border-radius: 50%; background: currentColor; vertical-align: middle; }
+  .savebar .save-status:empty { display: none; }
+  form[data-state="error"] .savebar .save-status { color: var(--danger); }
+  form[data-js]:not([data-dirty]):not([data-state="saving"]):not([data-state="saved"]) .savebar > .btn.primary,
+  form[data-js]:not([data-dirty]):not([data-state="saving"]):not([data-state="saved"]) .savebar > .btn.primary:hover { background: var(--raised); color: var(--muted); }
+  form[data-js]:not([data-dirty]) .savebar > button[type="reset"] { display: none; }
+  @media (max-width: 599.98px) {
+    .savebar { margin-inline: calc(-1 * var(--space-4)); padding-inline: var(--space-4); }
+    /* System på mobil: over den svævende tilstandspille. */
+    .sys .savebar { bottom: calc(var(--hit) + var(--space-6) + env(safe-area-inset-bottom)); padding-inline: 0; }
+  }
+
+  /* ---- System-side (.sys, DESIGN.md 15.4) ------------------------------
+     Kategorier = radioer (class="state", name="syscat", id="c-{kategori}" og
+     "c-none") lige før .sys (eller før .app). Visning af kategorier genereres af
+     lds_build.py ud fra systemCategories. c-none: desktop viser første kategori,
+     mobil viser listen. */
+  .sys { display: grid; grid-template-columns: var(--sys-nav-w) minmax(0, var(--sys-main-w)); gap: var(--space-7); align-items: start; padding-block: var(--space-4) var(--space-7); }
+  .sys-nav { position: sticky; top: calc(var(--hit) + var(--space-7)); display: grid; gap: 2px; }
+  .sys-nav label {
+    display: flex; align-items: center; gap: var(--space-3);
+    min-height: var(--hit); padding: 0 var(--space-3);
+    border-radius: var(--r-field);
+    font-size: var(--fs-md); font-weight: 500; color: var(--muted); cursor: pointer;
+  }
+  .sys-nav label:hover { background: var(--card); color: var(--fg); }
+  .sys-nav label svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.7; }
+  .sys-nav label[data-dirty]::after { content: ""; width: 6px; height: 6px; margin-left: auto; border-radius: 50%; background: var(--warn); }
+  .sys-main { min-width: 0; }
+  .sys-cat { display: none; gap: var(--space-5); align-content: start; }
+  .sys-cat > header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-2) var(--space-4); }
+  .sys-cat > header small { display: block; font-size: var(--fs-sm); color: var(--muted); }
+  .sys-cat > header h2 { font-size: var(--fs-view); letter-spacing: -.03em; line-height: 1.1; }
+  .sys-cat form { display: grid; gap: var(--space-5); }
+  .sys-back { display: none; }
+  @media (max-width: 899.98px) { .sys { grid-template-columns: calc(var(--sys-nav-w) * .8) minmax(0, 1fr); gap: var(--space-5); } }
+  @media (max-width: 599.98px) {
+    .sys { grid-template-columns: minmax(0, 1fr); gap: var(--space-3); }
+    .sys-nav { position: static; padding: var(--space-2); border-radius: var(--r-tile); background: var(--card); }
+    .sys-nav label { min-height: var(--setting-h); color: var(--fg); }
+    .sys-nav label::after { content: "›"; margin-left: auto; color: var(--muted); }
+    #c-none:not(:checked) ~ :is(.app, .sys) .sys-nav { display: none; }
+    #c-none:not(:checked) ~ :is(.app, .sys) .sys-back {
+      display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--hit);
+      font-size: var(--fs-sm); font-weight: 500; color: var(--muted); cursor: pointer;
+    }
+    .sys-back::before { content: "‹"; font-size: var(--fs-lg); }
   }
 
   /* Stepper — pille */
@@ -1438,7 +1625,7 @@
   .seg span { padding: 0 var(--space-4) !important; }
   @media (max-width: 599.98px) { .seg { display: flex; width: auto; } .seg label { flex: 1; } }
   .seg input { position: absolute; opacity: 0; pointer-events: none; }
-  .seg span { display: grid; place-items: center; padding: 0 var(--space-3); border-radius: var(--r-pill); font-size: var(--fs-sm); font-weight: 500; color: var(--muted); cursor: pointer; text-align: center; }
+  .seg span { display: grid; place-items: center; white-space: nowrap; padding: 0 var(--space-3); border-radius: var(--r-pill); font-size: var(--fs-sm); font-weight: 500; color: var(--muted); cursor: pointer; text-align: center; }
   .seg input:checked + span { background: var(--inv-bg); color: var(--inv-fg); }
   .seg input:focus-visible + span { outline: 2px solid var(--focus); }
   /* .seg med eksterne .state-radioer + label[for] (typeafhængige felter, 5.18):
@@ -1540,7 +1727,7 @@
     width: min(400px, calc(100% - 32px)); margin: auto; padding: var(--space-5);
     max-block-size: calc(100dvh - var(--space-7)); overflow: auto;
     border: 0; border-radius: var(--r-card); background: var(--card); color: var(--fg);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 0 0 1px var(--border), 0 30px 80px rgba(0,0,0,.5);
+    box-shadow: var(--float);
   }
   .confirm-pop::backdrop { background: rgb(0 0 0 / .5); }
   @supports (anchor-name: --x) {
@@ -1798,7 +1985,7 @@
     & .subs { gap: var(--space-4) var(--space-5); }
     & .msg { padding: var(--space-2) var(--space-3); }
     & .metrics { gap: var(--space-4) var(--space-3); }
-    & .comfort label { padding-block: 6px; }
+    & .comfort > :is(label, button) { padding-block: 6px; }
     & .btn { padding-inline: var(--space-4); }
     & .file-pick { min-height: calc(var(--hit) - 2 * var(--space-1)); }
 
@@ -1840,7 +2027,7 @@
     & .subs { gap: var(--space-4) var(--space-5); }
     & .msg { padding: var(--space-2) var(--space-3); }
     & .metrics { gap: var(--space-4) var(--space-3); }
-    & .comfort label { padding-block: 6px; }
+    & .comfort > :is(label, button) { padding-block: 6px; }
     & .btn { padding-inline: var(--space-4); }
     & .file-pick { min-height: calc(var(--hit) - 2 * var(--space-1)); }
 

@@ -800,7 +800,7 @@ Sprog vælges ved build, ikke i browseren.
 | Regel | Hvorfor |
 |---|---|
 | Ingen eksterne requests (fonte, CDN, billeder) | Enheden kører uden internet |
-| CSS + én side pr. sprog, gzippet: V6 ≤ 48 kB i alt for to sprog (se budgettet nedenfor) | Flash-plads og indlæsningstid |
+| CSS + `lune-forms.js` + én side pr. sprog, gzippet: V6 ≤ 60 kB i alt for to sprog (se budgettet nedenfor) | Flash-plads og indlæsningstid |
 | Ikoner som SVG-sprite (`<symbol>` + `<use>`) | Ét sted, genbrugt |
 | Tilstand i CSS (radio/checkbox, `<details>`) | Ingen JS-framework |
 | JS kun til: live-data, +/−, submit-hook, ugemt/gem og autogem (`js/lune-forms.js`), kopiér diagnostik, placering af hjælp- og bekræftelses-popover, luk dropdown | Virker uden JS |
@@ -808,9 +808,9 @@ Sprog vælges ved build, ikke i browseren.
 
 Geist er første valg i font-stakken, men hentes ikke. Ønskes den, kan en latin-subset (woff2, ca. 30 kB) lægges i flash med `@font-face` og `font-display: swap`.
 
-**Bevidst budget (LDS 2.1.1): V6 ≤ 48 kB gzip for to sprog** — CSS ≤ 20 kB + ≤ 14 kB pr. sprogside. Det oprindelige mål på 40 kB holdes ikke, fordi CSS'en nu bærer både 2.1-komponenterne (grupperede lister, ark, navbar, skalaer) og de V6-komponenter, der endnu ikke er migreret til afsnit 15 (sektioner, gem-mønster, hjælp, zonegraf). Budgettet skal ned igen, når migreringen er færdig, og de gamle komponenter kan fjernes.
+**Bevidst budget (LDS 2.2): V6 ≤ 60 kB gzip for to sprog** — CSS ≤ 21 kB + `lune-forms.js` ≤ 4,5 kB (én fil, fælles for alle sprog) + ≤ 17 kB pr. sprogside uden grafpunkter. Det oprindelige mål på 40 kB holdes ikke. Hovedårsagen er arkene (DESIGN.md 15.3): de skal ligge i siden, for at de kan åbnes uden JavaScript, og de seks zone-ark plus manifold-arket fylder ca. 14 kB gzip pr. sprog. Resten er 2.1-komponenterne (grupperede lister, ark, System, skalaer). Dashboard/Konfiguration-komponenterne (sektioner, Konfigurationens spalter) ligger i `@only legacy`-blokke, som V6 ikke får med (12); produkter, der endnu ikke er migreret, sætter `"features": ["legacy"]` i config.
 
-Målt for 2.1.1 (V6-eksemplet, en + da): CSS 19,6 kB + 2 × 21,5 kB sider = 62,6 kB gzip. Heraf er ca. 7,7 kB pr. side indlejrede grafpunkter (`points` i komfortlisten, trend og zonegraf). **Grafpunkter hentes live af binderen** fra firmwarens historik og indlejres ikke i siden; siden sendes med tomme `points` og `data-empty`, indtil data er hentet (5.9). Uden de indlejrede punkter er eksemplet 19,6 + 13,9 + 13,8 = 47,3 kB — inden for budgettet. Eksemplet indlejrer dem kun for at kunne vises uden enhed.
+Målt for 2.2 (V6-eksemplet, en + da): CSS 21,0 kB + JS 4,1 kB + 25,1 + 25,3 kB sider = 75,4 kB gzip. Heraf er ca. 8,4 kB pr. side indlejrede grafpunkter (`points` i komfortlisten, trend og zonegraf). **Grafpunkter hentes live af binderen** fra firmwarens historik og indlejres ikke i siden; siden sendes med tomme `points` og `data-empty`, indtil data er hentet (5.9). Uden de indlejrede punkter er eksemplet 21,0 + 4,1 + 16,7 + 16,9 = 58,7 kB — inden for budgettet. Eksemplet indlejrer dem kun for at kunne vises uden enhed.
 
 ---
 
@@ -890,7 +890,7 @@ python examples/v6/build_ui.py --langs en,da  # V6-sider + web_ui.h
 python examples/touch/build_ui.py --langs en,da --preview --hs-type asgard
 ```
 
-**Projektspecifik CSS.** Komponenter, som kun ét produkt bruger, står i `css/lune-ui.src.css` mellem `/* @only touch */` (eller `v6`; flere med komma) og `/* @end */`. `lds_build.py` fjerner blokke, hvis id ikke er projektets `config.id`; referencesiden får alle. Blokke indlejres ikke og omslutter altid hele regler. Touch-only: hierarkisk strimmel, `.boards`, `.bars`, `.plan`, `.dist`, vejrudsigtens Touch-udvidelser, typefelter, `.section-head`. V6-only: `.zc`, `.hp-limits`, probe-layout.
+**Projektspecifik CSS.** Komponenter, som kun ét produkt bruger, står i `css/lune-ui.src.css` mellem `/* @only touch */` (eller `v6`; flere med komma) og `/* @end */`. `lds_build.py` fjerner blokke, hvis id ikke er projektets `config.id`; referencesiden får alle. Blokke indlejres ikke og omslutter altid hele regler. Touch-only: hierarkisk strimmel, `.boards`, `.bars`, `.plan`, `.dist`, vejrudsigtens Touch-udvidelser, typefelter, `.section-head`. V6-only: `.zc`, `.hp-limits`, probe-layout. Features (`"features"` i config) virker på samme måde: `@only legacy` = Dashboard/Konfiguration-modellen (sektioner, sektionslinks, Konfigurationens 1/2/3 spalter, «redigerer»-prikken), som kun configs med `"features": ["legacy"]` får med.
 
 Ændringer i tokens eller komponenter: ret kilden, kør builds, og kontrollér referencesiderne i begge temaer. **Designændringer i produkterne (V6/Touch) lander her først**; ret aldrig kun den kopierede CSS/HTML i et produktrepo.
 
@@ -1214,3 +1214,72 @@ Ingen kontrol strækkes for at fylde rækken. På mobil (< 600 px) må en kontro
 | Mængde (åbning, fremdrift) | Neutral segmentbjælke eller bjælke + procent |
 | Forklaring | "?"-popover eller hint; aldrig som værdi |
 | Teknisk/diagnostik | Ark › Avanceret eller System › Service |
+
+### 15.9 Markup: ark, faner, gem-bjælke, underside og System
+
+**Tilstande i config.** `"modes": ["home", "sys"]`. `home` har en visning pr. omfang (`#v-home-{omfang}`, som før); `sys` har **én** visning, `#v-sys`, uanset omfang, og strimlen skjules på System. Radioerne er `#m-home` / `#m-sys` i navbarens pille («Hjem» / «System»). `systemCategories` (liste af id'er) genererer System-sidens kategoriregler. Configs med `dash`/`conf` bygger stadig, men `lds_build.py` advarer.
+
+**Ark (`.sheet`).** Native `popover` (auto): Esc og klik udenfor lukker. Åbnes af ethvert element med `popovertarget`. Desktop: fast i højre side (`--sheet-w` 520 px, `--sheet-inset` 12 px fra kanterne, `--r-sheet` 24, `--float`-skygge, `::backdrop` 35 % sort). Under 600 px: ark fra bunden, maks. 92vh, safe-area nederst. Arket selv scroller; hoved og gem-bjælke klæber.
+
+```html
+<div id="sheet-z1" popover class="sheet" role="dialog" aria-labelledby="sheet-z1-t" data-hash="z1">
+  <input class="state tab" type="radio" name="tab-z1" id="tab-z1-o" value="overview" data-hash="overblik" checked aria-label="Overblik">
+  <input class="state tab" type="radio" name="tab-z1" id="tab-z1-h" value="history"  data-hash="historik" aria-label="Historik">
+  <input class="state tab" type="radio" name="tab-z1" id="tab-z1-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
+  <header class="sheet-head">
+    <span class="chip-icon" data-tone="…" aria-hidden="true"><svg …/></span>
+    <div><h2 id="sheet-z1-t">Josephine</h2><p>1. sal · Z1 · 22,9° · 62 % åben</p></div>
+    <button class="sheet-close" type="button" popovertarget="sheet-z1" popovertargetaction="hide" aria-label="{i18n: Luk}">×</button>
+    <nav class="tabs" aria-label="{i18n}"><label for="tab-z1-o" data-tab="overview">Overblik</label>…</nav>
+  </header>
+  <div class="sheet-body">
+    <section class="tab-panel" data-tab="overview">…</section>
+    <section class="tab-panel" data-tab="history">…</section>
+    <section class="tab-panel" data-tab="settings"><form data-save="z1">… <footer class="savebar">…</footer></form></section>
+  </div>
+</div>
+```
+
+- **Ikonbrik** (`.chip-icon`): dyb fyld-tone med hvid glyf; `data-tone` = `info` / `ok` / `violet` / `warn` / `danger` / `neutral` (standard er varme).
+- **Faner** (`.tabs`): radioerne står først i arket; panelerne vises ud fra radioens `value` (`overview` / `history` / `settings`) — der genereres ingen CSS pr. ark. Uden JS åbner arket på Overblik. En trigger med `data-tab="settings"` åbner det på Indstillinger (JS sætter radioen før popoveren vises).
+- **Ugemte ændringer:** lukkes et ark med en ændret formular, spørger `lune-forms.js` (`rt.leaveUnsaved`); fortryder man, åbnes arket igen, ellers nulstilles formularen. Uden JS lukker det bare.
+
+**Gem-bjælke (`.savebar`).** Sidst i formularen, én pr. fane eller System-kategori. Klæber nederst. Følger dirty-mønstret (6.1): clean = neutral `.btn.primary` med `aria-disabled`, ingen Fortryd; dirty = «n ændringer ikke gemt» i `--warn` + Fortryd + primær Gem.
+
+```html
+<footer class="savebar">
+  <span class="save-status" id="ss-z1" aria-live="polite"></span>
+  <button type="reset" class="btn">Fortryd</button>
+  <button class="btn primary" type="submit">Gem</button>
+</footer>
+```
+
+**Underside («Avanceret ›»).** En række, der åbner sjældne indstillinger i samme ark eller kategori. `details.subpage` — uden JS. Når den er åben, skjules resten af fanen, og rækken bliver til «‹ Tilbage».
+
+```html
+<details class="subpage">
+  <summary class="setting"><span class="sub-back">Tilbage</span>
+    <span class="setting-label"><span>Motor og kalibrering</span></span>
+    <span class="setting-control"><span class="muted">Lært</span></span></summary>
+  <div class="subpage-body"><section class="setting-group">…</section></div>
+</details>
+```
+
+**System-side (`.sys`).** Kategoriliste (`--sys-nav-w` 240 px, klæber) + indhold (maks. `--sys-main-w` 640 px, venstrestillet). Kategorierne er radioer (`name="syscat"`, `id="c-{kategori}"` og `id="c-none"`), som står lige før `.sys` (eller før `.app`). `c-none`: desktop viser første kategori, mobil viser listen som en skærm; en valgt kategori viser `.sys-back` («‹ System», label for `c-none`) øverst.
+
+```html
+<input class="state" type="radio" name="syscat" id="c-none" checked aria-label="{i18n}">
+<input class="state" type="radio" name="syscat" id="c-device" data-hash="enhed" aria-label="{i18n}">
+<div class="sys">
+  <nav class="sys-nav" aria-label="{i18n}"><label for="c-device"><svg …/>Enhed</label>…</nav>
+  <div class="sys-main">
+    <section class="sys-cat" data-cat="device">
+      <label class="sys-back" for="c-none">System</label>
+      <header><div><small>System</small><h2>Enhed</h2></div><span class="badge ok">…</span></header>
+      <form data-save="device">…grupper… <footer class="savebar">…</footer></form>
+    </section>
+  </div>
+</div>
+```
+
+**Deep links** (progressiv, `lune-forms.js`). `data-hash` på ark, faneradioer, `#m-sys` og kategoriradioer bestemmer adressen: `#z3` åbner arket, `#z3/indstillinger` på fanen, `#system/varmekilde` System på kategorien. Adressen opdateres ved navigation (`history.replaceState`). Skift væk fra System eller en kategori med ugemte ændringer advarer.
