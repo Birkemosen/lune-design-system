@@ -806,7 +806,7 @@ Sprog vælges ved build, ikke i browseren.
 | Regel | Hvorfor |
 |---|---|
 | Ingen eksterne requests (fonte, CDN, billeder) | Enheden kører uden internet |
-| CSS + `lune-forms.js` + én side pr. sprog, gzippet: V6 ≤ 60 kB i alt for to sprog (se budgettet nedenfor) | Flash-plads og indlæsningstid |
+| CSS + `lune-forms.js` + én side pr. sprog, gzippet: V6 ≤ 69 kB for to sprog, hele web-UI'et inkl. binder ≤ 160 kB (se budgettet nedenfor) | Flash-plads og indlæsningstid |
 | Ikoner som SVG-sprite (`<symbol>` + `<use>`) | Ét sted, genbrugt |
 | Tilstand i CSS (radio/checkbox, `<details>`) | Ingen JS-framework |
 | JS kun til: live-data, +/−, submit-hook, ugemt/gem og autogem (`js/lune-forms.js`), kopiér diagnostik, placering af hjælp- og bekræftelses-popover, luk dropdown. `lune-forms.js` serveres som egen fil eller lægges i produktets binder (én kopi for alle sprog), aldrig inline i hver sprogside | Virker uden JS |
@@ -814,7 +814,7 @@ Sprog vælges ved build, ikke i browseren.
 
 Geist er første valg i font-stakken, men hentes ikke. Ønskes den, kan en latin-subset (woff2, ca. 30 kB) lægges i flash med `@font-face` og `font-display: swap`.
 
-**Bevidst budget (LDS 2.2): V6 ≤ 60 kB gzip for to sprog** — CSS ≤ 21 kB + `lune-forms.js` ≤ 4,5 kB (én fil, fælles for alle sprog) + ≤ 17 kB pr. sprogside uden grafpunkter. Det oprindelige mål på 40 kB holdes ikke. Hovedårsagen er arkene (DESIGN.md 15.3): de skal ligge i siden, for at de kan åbnes uden JavaScript, og de seks zone-ark plus manifold-arket fylder ca. 14 kB gzip pr. sprog. Resten er 2.1-komponenterne (grupperede lister, ark, System, skalaer). Dashboard/Konfiguration-komponenterne (sektioner, Konfigurationens spalter) ligger i `@only legacy`-blokke, som V6 ikke får med (12); produkter, der endnu ikke er migreret, sætter `"features": ["legacy"]` i config.
+**Budget (LDS 2.3.2), målt på enheden:** V6 er en ESP32-S3 med 8 MB flash og to app-partitioner á 3.932.160 B. Firmwaren med web-UI er 1.633.792 B; web-UI'et i den (binder med `lune-forms.js` 59,4 kB + CSS 21,6 kB + to sider 18,0 og 18,4 kB) er 117 kB gzip, så der er ca. 2,3 MB (58 %) fri i app-partitionen (kilder: `packages/board/esp32-s3.yaml`, `partitions.csv`, `firmware.map` i `lune`). Flash er altså ikke grænsen; det er indlæsningstiden over ESP32-wifi og plads til, at firmwaren kan vokse. Budgettet er derfor: **CSS ≤ 24 kB, `lune-forms.js` ≤ 5 kB, ≤ 20 kB pr. sprogside uden grafpunkter (i alt ≤ 69 kB for to sprog), produktets binder ≤ 70 kB og hele web-UI'et ≤ 160 kB gzip** (ca. 4 % af app-partitionen). Arkene skal ligge i siden for at virke uden JavaScript; Dashboard/Konfiguration-komponenterne ligger i `@only legacy`-blokke, som V6 ikke får med (12).
 
 Målt for 2.2 (V6-eksemplet, en + da): CSS 21,0 kB + JS 4,1 kB + 25,1 + 25,3 kB sider = 75,4 kB gzip. Heraf er ca. 8,4 kB pr. side indlejrede grafpunkter (`points` i komfortlisten, trend og zonegraf). **Grafpunkter hentes live af binderen** fra firmwarens historik og indlejres ikke i siden; siden sendes med tomme `points` og `data-empty`, indtil data er hentet (5.9). Uden de indlejrede punkter er eksemplet 21,0 + 4,1 + 16,7 + 16,9 = 58,7 kB — inden for budgettet. Eksemplet indlejrer dem kun for at kunne vises uden enhed.
 
