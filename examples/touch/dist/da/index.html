@@ -211,25 +211,28 @@
           <div class="panel-foot" style="justify-content:flex-start"><label class="btn" for="m-conf">Åbn varmekildeindstillinger</label></div>
         </div>
 
-        <section class="panel c4">
-          <header class="panel-head"><h3>Husklima</h3></header>
+        <section class="panel c5">
+          <header class="panel-head"><h3>Lige nu</h3></header>
           <dl class="metrics">
             <div class="metric"><dt>Hustemperatur</dt><dd data-bind="house.temp">21,2 <small>°C</small></dd></div>
-            <div class="metric"><dt>Ude</dt><dd data-bind="house.outdoor">8,4 <small>°C</small></dd></div>
+            <div class="metric"><dt>Ude</dt><dd data-bind="house.outdoor" class="c-info">8,4 <small>°C</small></dd></div>
             <div class="metric"><dt>Komfortmål</dt><dd data-bind="house.target">21,0 <small>°C</small></dd></div>
           </dl>
         </section>
 
-        <section class="panel c5" data-hs-type="asgard">
+        <section class="panel c7">
+          <header class="panel-head"><h3>Kræver opmærksomhed</h3><button class="help-btn" type="button" popovertarget="help-attn" style="anchor-name:--a-help-attn" aria-label="Hjælp: Kræver opmærksomhed">?</button><p>Kun det, der ikke er i ro. Vælg en række for at åbne zonen.</p></header>
+          <div id="help-attn" popover class="help-pop" style="position-anchor:--a-help-attn"><p>Kalder: zonen er under sit mål og beder om varme. Fejl: motoren eller føleren svarer ikke, og zonen holdes lukket, indtil fejlen er nulstillet på V6.</p></div>
+          <div class="comfort"><label for="s-m1z3" data-state="calling"><span class="id">M1</span><span class="name">Spise</span><span class="val"><b>21,4°</b> Kalder</span></label><label for="s-m1z5" data-state="calling"><span class="id">M1</span><span class="name">Spisekrog</span><span class="val"><b>21,0°</b> Kalder</span></label><label for="s-m2z3" data-state="fault"><span class="id">M2</span><span class="name">Gang</span><span class="val"><b>20,2°</b> Fejl</span></label></div>
+        </section>
+
+        <section class="panel wide" data-hs-type="asgard">
           <header class="panel-head"><h3>Varmekilde</h3><span class="badge ok">Forbundet</span></header>
-          <dl class="metrics">
-            <div class="metric"><dt>Seneste skrivning</dt><dd data-bind="heat.lastPush">2 min siden <small></small></dd></div>
-            <div class="metric"><dt>Sætpunkt</dt><dd data-bind="heat.setpoint">21,0 <small>°C</small></dd></div>
-          </dl>
           <div class="hs-type-asgard sub">
             <dl class="metrics">
               <div class="metric"><dt>Frem</dt><dd data-bind="heat.supply">38,2 <small>°C</small></dd></div>
-              <div class="metric"><dt>Retur</dt><dd data-bind="heat.return">32,1 <small>°C</small></dd></div>
+              <div class="metric"><dt>Retur</dt><dd data-bind="heat.return" class="c-info">32,1 <small>°C</small></dd></div>
+              <div class="metric"><dt>Sætpunkt</dt><dd data-bind="heat.setpoint">21,0 <small>°C</small></dd></div>
             </dl>
             <h4>Plan vs virkelighed</h4>
             <div class="bars" style="--bars-n:12"><div class="bars-plot"><div class="col"><i class="plan" style="--plan:35"></i><i class="act" style="--act:27"></i></div><div class="col"><i class="plan" style="--plan:44"></i><i class="act" style="--act:37"></i></div><div class="col"><i class="plan" style="--plan:53"></i><i class="act" style="--act:47"></i></div><div class="col"><i class="plan" style="--plan:62"></i><i class="act" style="--act:57"></i></div><div class="col"><i class="plan" style="--plan:71"></i><i class="act" style="--act:67"></i></div><div class="col"><i class="plan" style="--plan:80"></i><i class="act" style="--act:72"></i></div><div class="col"><i class="plan" style="--plan:89"></i><i class="act" style="--act:82"></i></div><div class="col"><i class="plan" style="--plan:43"></i><i class="act" style="--act:37"></i></div><div class="col"><i class="plan" style="--plan:52"></i><i class="act" style="--act:47"></i></div><div class="col"><i class="plan" style="--plan:61"></i><i class="act" style="--act:57"></i></div><div class="col"><i class="plan" style="--plan:70"></i><i class="act" style="--act:62"></i></div><div class="col"><i class="plan" style="--plan:79"></i><i class="act" style="--act:72"></i></div></div><div class="bars-legend"><span><i class="lp"></i>Plan</span><span><i class="la"></i>Faktisk</span></div></div>
@@ -245,9 +248,13 @@
           <header class="panel-head"><h3>Manifold</h3></header>
           <dl class="metrics">
             <div class="metric"><dt>Frem °C</dt><dd>33,1 <small>°C</small></dd></div>
-            <div class="metric"><dt>Retur °C</dt><dd>29,9 <small>°C</small></dd></div>
+            <div class="metric"><dt>Retur °C</dt><dd class="c-info">29,9 <small>°C</small></dd></div>
           </dl>
           <p class="note">Note: Manifold-indstillinger ligger på hvert V6-board. Brug den parrede controller til ventil og balancing.</p>
+        </section>
+        <section class="panel c7">
+          <header class="panel-head"><h3>Zoner</h3><p>Vælg en zone for at se temperaturen.</p></header>
+          <div class="comfort"><label for="s-m1z1" data-state="idle"><span class="id">Z1</span><span class="name">Entré</span><span class="val"><b>20,9°</b> 21,0°</span></label><label for="s-m1z2" data-state="idle"><span class="id">Z2</span><span class="name">Køkken</span><span class="val"><b>21,2°</b> 21,0°</span></label><label for="s-m1z3" data-state="calling"><span class="id">Z3</span><span class="name">Spise</span><span class="val"><b>21,4°</b> 21,5°</span></label><label for="s-m1z4" data-state="idle"><span class="id">Z4</span><span class="name">Stue</span><span class="val"><b>21,1°</b> 21,5°</span></label><label for="s-m1z5" data-state="calling"><span class="id">Z5</span><span class="name">Spisekrog</span><span class="val"><b>21,0°</b> 21,5°</span></label><label for="s-m1z6" data-state="idle"><span class="id">Z6</span><span class="name">Kontor</span><span class="val"><b>20,6°</b> 21,0°</span></label></div>
         </section>
       </section>
       <section class="view" id="v-dash-zone" aria-labelledby="h-dash-zone">
@@ -258,6 +265,12 @@
             <div class="metric"><dt>Hustemperatur</dt><dd>21,4 <small>°C</small></dd></div>
             <div class="metric"><dt>Komfortmål</dt><dd>21,5 <small>°C</small></dd></div>
           </dl>
+          <h4>Temperatur i dag</h4>
+          <svg class="insight" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="Temperatur i dag">
+              <path class="area" d="M0 58C28 56 48 44 78 38C112 31 132 24 164 26C198 28 214 34 240 32V80H0Z"/>
+              <path class="goal" d="M0 42H240"/>
+              <path class="line" d="M0 58C28 56 48 44 78 38C112 31 132 24 164 26C198 28 214 34 240 32"/>
+            </svg>
           <p class="note">Zonedetaljer udfyldes af koordinatoren ved kørsel. Denne referenceside viser layout og navigation.</p>
         </section>
       </section>

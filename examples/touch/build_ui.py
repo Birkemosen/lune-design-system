@@ -153,9 +153,10 @@ def render(T, langs, lang_urls, css_href, js_href, hs_type, inline_css=None):
             f'<span class="file-name" data-empty="{T("common.noFile")}">{T("common.noFile")}</span></label>'
         )
 
-    def metric(label, val, unit, bind=""):
+    def metric(label, val, unit, bind="", cls=""):
         b = f' data-bind="{bind}"' if bind else ""
-        return f'<div class="metric"><dt>{label}</dt><dd{b}>{val} <small>{unit}</small></dd></div>'
+        c = f' class="{cls}"' if cls else ""
+        return f'<div class="metric"><dt>{label}</dt><dd{b}{c}>{val} <small>{unit}</small></dd></div>'
 
     def sect(key):
         return f'<header class="section-head"><span>{T(key)}</span></header>'
@@ -291,6 +292,36 @@ def render(T, langs, lang_urls, css_href, js_href, hs_type, inline_css=None):
             f'<span><i class="la"></i>{T("heat.barsLegendAct")}</span></div></div>'
         )
 
+    def attn_row(z):
+        m, n, name, temp, _target, state, *_rest = z
+        return (
+            f'<label for="s-m{m}z{n}" data-state="{state}">'
+            f'<span class="id">M{m}</span>'
+            f'<span class="name">{name}</span>'
+            f'<span class="val"><b>{T.num(temp)}°</b> {T(f"state.short.{state}")}</span>'
+            f'</label>'
+        )
+
+    attention = "".join(attn_row(z) for z in ZONES if z[5] in ("calling", "fault"))
+
+    def zone_row(z):
+        m, n, name, temp, target, state, *_rest = z
+        return (
+            f'<label for="s-m{m}z{n}" data-state="{state}">'
+            f'<span class="id">Z{n}</span>'
+            f'<span class="name">{name}</span>'
+            f'<span class="val"><b>{T.num(temp)}°</b> {T.num(target)}°</span>'
+            f'</label>'
+        )
+
+    manifold_zones = "".join(zone_row(z) for z in ZONES if z[0] == 1)
+
+    insight = f'''<svg class="insight" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="{T("dash.zone.insight")}">
+              <path class="area" d="M0 58C28 56 48 44 78 38C112 31 132 24 164 26C198 28 214 34 240 32V80H0Z"/>
+              <path class="goal" d="M0 42H240"/>
+              <path class="line" d="M0 58C28 56 48 44 78 38C112 31 132 24 164 26C198 28 214 34 240 32"/>
+            </svg>'''
+
     dash_house = f'''
       <section class="view" id="v-dash-house" aria-labelledby="h-dash-house">
         <header class="view-head"><h2 id="h-dash-house" data-bind="scope.title">{T("scope.title.house")}</h2><p data-bind="scope.sub">{house_sub}</p></header>
@@ -301,25 +332,28 @@ def render(T, langs, lang_urls, css_href, js_href, hs_type, inline_css=None):
           <div class="panel-foot" style="justify-content:flex-start"><label class="btn" for="m-conf">{T("alert.openHeat")}</label></div>
         </div>
 
-        <section class="panel c4">
-          <header class="panel-head"><h3>{T("climate.title")}</h3></header>
+        <section class="panel c5">
+          <header class="panel-head"><h3>{T("dash.now")}</h3></header>
           <dl class="metrics">
             {metric(T("climate.now"), T.num(21.2), "°C", "house.temp")}
-            {metric(T("climate.outdoor"), T.num(8.4), "°C", "house.outdoor")}
+            {metric(T("climate.outdoor"), T.num(8.4), "°C", "house.outdoor", "c-info")}
             {metric(T("climate.target"), T.num(21.0), "°C", "house.target")}
           </dl>
         </section>
 
-        <section class="panel c5" data-hs-type="{hs_type}">
+        <section class="panel c7">
+          <header class="panel-head"><h3>{T("dash.attention")}</h3>{help_btn("help-attn", T("dash.attention"))}<p>{T("dash.attentionHint")}</p></header>
+          {help_pop("help-attn", "dash.attentionHelp")}
+          <div class="comfort">{attention}</div>
+        </section>
+
+        <section class="panel wide" data-hs-type="{hs_type}">
           <header class="panel-head"><h3>{T("heat.title")}</h3><span class="badge ok">{T("heat.badge.ok")}</span></header>
-          <dl class="metrics">
-            {metric(T("heat.lastPush"), T("rt.minutesAgo", n=2), "", "heat.lastPush")}
-            {metric(T("heat.setpoint"), T.num(21.0), "°C", "heat.setpoint")}
-          </dl>
           <div class="hs-type-asgard sub">
             <dl class="metrics">
               {metric(T("heat.supply"), T.num(38.2), "°C", "heat.supply")}
-              {metric(T("heat.return"), T.num(32.1), "°C", "heat.return")}
+              {metric(T("heat.return"), T.num(32.1), "°C", "heat.return", "c-info")}
+              {metric(T("heat.setpoint"), T.num(21.0), "°C", "heat.setpoint")}
             </dl>
             <h4>{T("heat.barsTitle")}</h4>
             {heat_bars()}
@@ -337,9 +371,13 @@ def render(T, langs, lang_urls, css_href, js_href, hs_type, inline_css=None):
           <header class="panel-head"><h3>{T("mconf.title")}</h3></header>
           <dl class="metrics">
             {metric(T("mconf.supply"), T.num(33.1), "°C")}
-            {metric(T("mconf.return"), T.num(29.9), "°C")}
+            {metric(T("mconf.return"), T.num(29.9), "°C", "", "c-info")}
           </dl>
           <p class="note">{T("common.note")}: {T("mconf.note")}</p>
+        </section>
+        <section class="panel c7">
+          <header class="panel-head"><h3>{T("dash.zones")}</h3><p>{T("dash.zonesHint")}</p></header>
+          <div class="comfort">{manifold_zones}</div>
         </section>
       </section>'''
 
@@ -352,6 +390,8 @@ def render(T, langs, lang_urls, css_href, js_href, hs_type, inline_css=None):
             {metric(T("climate.now"), T.num(21.4), "°C")}
             {metric(T("climate.target"), T.num(21.5), "°C")}
           </dl>
+          <h4>{T("dash.zone.insight")}</h4>
+          {insight}
           <p class="note">{T("dash.zone.note")}</p>
         </section>
       </section>'''
