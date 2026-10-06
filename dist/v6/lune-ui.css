@@ -263,6 +263,7 @@
     .strip.strip--many { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
 
+  a.tile { text-decoration: none; }
 
   /* ---- 3.3 Indhold ---------------------------------------------------- */
   .content { padding-block: var(--space-5) var(--space-7); }
@@ -1206,6 +1207,7 @@
   .chip-icon[data-tone="warn"]   { background: var(--warn-fill); color: var(--on-warn-fill); }
   .chip-icon[data-tone="danger"] { background: var(--danger-fill); }
   .chip-icon[data-tone="neutral"]{ background: var(--raised); color: var(--fg); }
+
 
   /* ---- Faner (.tabs) ----------------------------------------------------
      Radioer (class="state", name="tab-{id}", value=overview|history|settings)

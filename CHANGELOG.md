@@ -1,5 +1,24 @@
 # Changelog — Lune Design System
 
+## 2.3.0
+
+Fase 3: Lune Touch på Hjem / ark / System.
+
+### Nyt i LDS
+- `.home-hero` + `.thermo` (termostat-ring, autogem), `.home-tiles`/`.home-tile` (maks. 4 felter, ét tal + én visualisering, `.ht-price`), `.scale-chip`, `.heatmap`/`.room-group`/`.room-grid` (rum pr. styring, offline-tilstand), `.setting-group[data-offline]` (DESIGN.md 15.10). Alle `@only touch`.
+- `lune-forms.js`: delvis gem = patch (`data-save="ressource.del"` + `data-patch` → `method: "PATCH"`, `changed`), DESIGN.md 6.1. Deep links matcher kun ark og tilstande på første niveau (et ark og en System-kategori kan dele navn).
+- `lds_build.py --check` fejler på enhver `var(--x)` i `css/lune-ui.src.css`, der hverken er et token, en lokal variabel eller en tilladt inline-variabel (`--v`, `--w`, `--a`, `--b`, `--deg`, `--now`, `--act`, `--bars-n`, `--fc-cols`, `--fc-dirs`, `--sub-n`, `--plan`, `--float`).
+- Typefelter: aktiv pille virker også, når `.seg` ligger inde i en grupperet liste (`#x:checked ~ * .seg label[for]`).
+
+### Forældet
+- Den hierarkiske strimmel (`strip--tiers`, `.substrip`, `.tile-manifold`, `.boards`) ligger bag feature'n `tiers-strip` og fjernes i en senere version.
+
+### Touch-eksemplet
+- Skrevet forfra på produktets felter (`lune-coordinator/web/touch-ui`), en + da. Hjem: hovedsektion, Varme · Næste varme (med elpris) · Vejr · Cirkulation, varmekort pr. styring. Ark: Varme, Næste varme, Vejr, Cirkulation, Manifold (pr. styring), Rum. System: Enhed · Styringer · Varmekilde · Elpris · Cirkulationspumpe · Vejr · Netværk · Firmware og backup · Service.
+- Eksempeldata: tre styringer (Anneks offline), én motorfejl (Gang), ét rum uden data (Lager).
+- `config/touch.json`: `["home","sys"]`, omfang `house`, `systemCategories`; ingen `tiers`/`legacy`.
+- `examples/touch/MAPPING.md`, `conf_fields.txt` (90 felter/handlinger fra produktet) og `check_fields.py`.
+
 ## 2.2.0
 
 Byggeklodserne til Hjem / ark / System (DESIGN.md 15.9). Produkterne migreres i separate trin.

@@ -35,7 +35,8 @@ MODES = frozenset({"home", "sys"})
 LEGACY_MODES = frozenset({"dash", "conf"})
 # Valgfrie CSS-dele (@only-blokke) ud over projektets id.
 # legacy = Dashboard/Konfiguration-modellen (sektioner, Konfigurationens spalter).
-KNOWN_FEATURES = frozenset({"legacy"})
+# tiers-strip = Touch' hierarkiske strimmel og .boards (forældet i 2.2).
+KNOWN_FEATURES = frozenset({"legacy", "tiers-strip"})
 
 # ------------------------------------------------------------------ tokens --
 def flat_colors():
@@ -272,7 +273,8 @@ def typed_fields_rules(types, prefix="hs"):
     # External state radios + .seg label[for] (Touch heat-source type pill)
     L.append("  /* .seg med eksterne .state-radioer — aktiv pille */")
     pill = [
-        f'  #{prefix}-{t}:checked ~ .seg label[for="{prefix}-{t}"] > span'
+        f'  #{prefix}-{t}:checked ~ .seg label[for="{prefix}-{t}"] > span,\n'
+        f'  #{prefix}-{t}:checked ~ * .seg label[for="{prefix}-{t}"] > span'
         for t in types
     ]
     L.append(",\n".join(pill) + " { background: var(--inv-bg); color: var(--inv-fg); }")
@@ -303,7 +305,8 @@ def typed_group_rules(prefix, types, base=True):
         f'  #{prefix}-{t}:checked ~ .typed-fields[data-type="{t}"]' for t in types
     ) + " { display: grid; }")
     L.append(",\n".join(
-        f'  #{prefix}-{t}:checked ~ .seg label[for="{prefix}-{t}"] > span' for t in types
+        f'  #{prefix}-{t}:checked ~ .seg label[for="{prefix}-{t}"] > span,\n'
+        f'  #{prefix}-{t}:checked ~ * .seg label[for="{prefix}-{t}"] > span' for t in types
     ) + " { background: var(--inv-bg); color: var(--inv-fg); }")
     L.append(",\n".join(
         f'  #{prefix}-{t}:focus-visible ~ .seg label[for="{prefix}-{t}"] > span' for t in types
@@ -394,7 +397,7 @@ def state_css(cfg):
 
     return "\n".join(L)
 
-ONLY_RE = re.compile(r"[ \t]*/\* @only ([a-z0-9_,]+) \*/\n(.*?)[ \t]*/\* @end \*/\n", re.S)
+ONLY_RE = re.compile(r"[ \t]*/\* @only ([a-z0-9_,-]+) \*/\n(.*?)[ \t]*/\* @end \*/\n", re.S)
 
 def only_css(src, keep):
     """Behold /* @only id[,id] */ … /* @end */-blokke, hvis et af id'erne er i keep
@@ -453,6 +456,33 @@ def build_css(cfg, project_id="cfg"):
     return css.replace("Kildefil. Den færdige CSS pr. projekt bygges med tools/lds_build.py.",
                        f"Bygget til {cfg['project']} af tools/lds_build.py — redigér css/lune-ui.src.css, ikke denne fil.")
 
+# ------------------------------------------------------------------ var-tjek
+# Inline-variabler: sættes i markup (style="--v:32%") eller af binderen, ikke i tokens.
+INLINE_VARS = frozenset({"v", "w", "a", "b", "deg", "now", "act", "bars-n", "fc-cols", "fc-dirs", "sub-n", "plan", "float"})
+
+def token_names():
+    names = set()
+    for group in TOK["color"].values():
+        names |= set(group)
+    for section in ("font", "type", "space", "radius", "size", "shadow", "motion"):
+        names |= set(TOK[section])
+    names |= set(TOK.get("density", {}).get("compact", {}))
+    return names
+
+def var_report():
+    """Hver var(--x) i kildefilen skal være et token, defineret lokalt i CSS'en
+    (--x: …) eller stå i INLINE_VARS. Returnerer [(navn, linjenumre)] for ukendte."""
+    src = (ROOT/"css/lune-ui.src.css").read_text(encoding="utf-8")
+    code = re.sub(r"/\*.*?\*/", lambda m: "\n" * m.group(0).count("\n"), src, flags=re.S)
+    local = set(re.findall(r"--([a-z0-9-]+)\s*:", code))
+    known = token_names() | local | INLINE_VARS
+    bad = {}
+    for no, line in enumerate(code.splitlines(), 1):
+        for name in re.findall(r"var\(\s*--([a-z0-9-]+)", line):
+            if name not in known:
+                bad.setdefault(name, []).append(no)
+    return sorted(bad.items())
+
 # ------------------------------------------------------------------ main ----
 def main():
     ap = argparse.ArgumentParser()
@@ -466,7 +496,12 @@ def main():
     if a.check or not a.config:
         for fg, bg, th, r, need, ok in rows:
             print(f"{'OK ' if ok else 'FEJL'}  {fg:>11} på {bg:<10} {th:<5} {r:5.2f}:1  (krav {need})")
-        sys.exit(1 if bad else 0)
+        unknown = var_report()
+        for name, lines in unknown:
+            print(f"FEJL  var(--{name}) er hverken token, lokal variabel eller inline-variabel (linje {', '.join(map(str, lines))})")
+        if not unknown:
+            print("OK   alle var(--…) i css/lune-ui.src.css er kendte")
+        sys.exit(1 if bad or unknown else 0)
     if bad:
         print("ADVARSEL: tokens består ikke kontrastkravene — kør --check")
 
