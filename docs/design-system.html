@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Lune Design System 2.3.0</title>
+<title>Lune Design System 2.3.1</title>
 <style>
 /* ==========================================================================
    LUNE DESIGN SYSTEM 2 — fælles stylesheet for Lune V6 og Lune Touch
@@ -933,6 +933,7 @@
   :is(.note, p, .hint, details)[data-show-when] { --show-display: block; }
   dl[data-show-when] { --show-display: grid; }
   .actions[data-show-when] { --show-display: flex; }
+  .setting[data-show-when] { --show-display: flex; }
   [data-state="unpaired"] [data-show-when~="unpaired"],
   [data-state="approved"] [data-show-when~="approved"],
   [data-state="pending"]  [data-show-when~="pending"],
@@ -1420,7 +1421,7 @@
   .setting-list { border-radius: var(--r-tile); background: var(--raised); box-shadow: inset 0 1px 0 rgba(255,255,255,.05); overflow: hidden; }
   .setting { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-height: var(--setting-h); padding: 8px var(--space-4); }
   .setting + .setting, .setting + .gated-body > .setting:first-child, .gated-body > .setting + .setting,
-  .setting-list > :is(.setting, details) + details > summary.setting, .setting-list > details + .setting { border-top: 1px solid var(--border); }
+  :is(.setting-list, .gated-body) > :is(.setting, details) + details > summary.setting, :is(.setting-list, .gated-body) > details + .setting { border-top: 1px solid var(--border); }
   .setting-label { display: grid; gap: 2px; min-width: 0; }
   .setting-label > :first-child { font-size: var(--fs-md); font-weight: 500; }
   .setting-label small { font-size: var(--fs-xs); color: var(--muted); }
@@ -1433,6 +1434,9 @@
   .compass.inline .c { display: none; }
   .compass.inline span { width: 36px; height: 36px; border-radius: 50%; }
   .setting-group > .note { margin: 0 0 0 4px; font-size: var(--fs-xs); color: var(--faint); }
+  /* Læseværdi (15.5): værdien i 600-vægt, tid/kilde dæmpet bagefter. */
+  .setting-value { font-weight: 600; text-align: right; }
+  .setting-value small { font-weight: 400; color: var(--muted); }
   .setting.switch { cursor: pointer; }
   .setting-list .btn:not(.primary):not(.danger-solid) { background: var(--card); box-shadow: inset 0 0 0 1px var(--border); }
   /* Lang værdi (URL, variabel): kontrollen under labelen i fuld bredde */
@@ -2184,7 +2188,7 @@
 
   <div class="navbar-wrap wrap">
     <header class="header" style="grid-template-columns:1fr auto">
-      <div class="device"><summary style="pointer-events:none"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="var(--fg)"/><path d="M10 22V12M14 22V10M18 22V13M22 22V11" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/></svg><span class="name"><b>Lune Design System</b><small>v2.3.0</small></span></summary></div>
+      <div class="device"><summary style="pointer-events:none"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="var(--fg)"/><path d="M10 22V12M14 22V10M18 22V13M22 22V11" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/></svg><span class="name"><b>Lune Design System</b><small>v2.3.1</small></span></summary></div>
       <label class="icon-btn theme-btn" for="theme" title="Skift lyst/mørkt tema">
         <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg>
         <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
@@ -2195,7 +2199,7 @@
   <main class="content wrap">
     <div class="doc-layout"><nav class="doc-toc" aria-label="Indhold"><b>Grundlag</b><a href="#principper">Principper</a><a href="#arkitektur">Arkitektur</a><a href="#farver">Farver</a><a href="#grundelementer">Typografi og afstand</a><b>Komponenter</b><a href="#k-navigation">Navigation</a><a href="#k-hjem">Indhold på Hjem</a><a href="#k-indstillinger">Indstillinger</a><a href="#k-feedback">Feedback og handlinger</a><b>Mønstre</b><a href="#moenstre">Mønstre og indhold</a></nav>
     <div class="view"><span id="principper"></span>
-      <div class="view-head" style="grid-column:1/-1;padding-top:var(--space-4)"><h2 style="font-size:var(--fs-hero);line-height:1;letter-spacing:-.05em">Lune Design System</h2><p>v2.3.0 · Lune V6 og Lune Touch</p></div>
+      <div class="view-head" style="grid-column:1/-1;padding-top:var(--space-4)"><h2 style="font-size:var(--fs-hero);line-height:1;letter-spacing:-.05em">Lune Design System</h2><p>v2.3.1 · Lune V6 og Lune Touch</p></div>
       <p class="lead" style="grid-column:1/-1">Tokens, komponenter og regler til at bygge UI på ESP32: ren CSS og HTML, tilstand uden JavaScript, ingen eksterne ressourcer. Denne side bruger selve systemets CSS. Skift tema øverst til højre for at se begge temaer.</p>
       <section class="panel c4 principle"><h3>Et blik er nok</h3><p>Store tal, små labels under. Én hero-temperatur pr. visning.</p></section><section class="panel c4 principle"><h3>Farve betyder noget</h3><p>Neutralt, indtil der er noget at sige. Én betydning pr. farve.</p></section><section class="panel c4 principle"><h3>Samme sted, samme ting</h3><p>Zonestrimlen vælger hvad, tilstandspillen vælger hvordan.</p></section><section class="panel c4 principle"><h3>Få store paneler</h3><p>2–4 paneler pr. visning, altid åbne. Kun ekspert-tuning foldes.</p></section><section class="panel c4 principle"><h3>Tilstand uden JavaScript</h3><p>Radio, checkbox og details. JS kun til live-data.</p></section><section class="panel c4 principle"><h3>Tilgængelig fra start</h3><p>≥ 4,5:1 kontrast, ≥ 44 px trykflader, tastatur og fokus.</p></section>
       <header class="doc-h" id="arkitektur"><h2>Arkitektur</h2><p>Tre niveauer: Hjem (overblik og hverdagshandlinger), ark pr. ting (overblik, historik og tingens indstillinger) og System (det der gælder hele enheden). Erstatter Dashboard/Konfiguration. Fuld beskrivelse i DESIGN.md afsnit 15.</p></header>
@@ -2799,12 +2803,18 @@ if(sEl&&f.dataset.state!=="error")sEl.textContent=n===1?t("rt.unsaved.one",{n:1}
 else{delete f.dataset.dirty;if(b){b.setAttribute("aria-disabled","true");b.title=t("rt.nothingToSave")}
 if(sEl&&f.dataset.state!=="saved"&&f.dataset.state!=="error")sEl.textContent=""}
 cross()}
+/* Gør formularens nuværende værdier til standardværdier (reset/Fortryd vender tilbage hertil). */
+function adopt(f){f.querySelectorAll("input,select,textarea").forEach(function(el){
+if(el.type==="checkbox"||el.type==="radio")el.defaultChecked=el.checked;
+else if(el.tagName==="SELECT")[].forEach.call(el.options,function(o){o.defaultSelected=o.selected});
+else if(el.type!=="file")el.defaultValue=el.value})}
 function bind(f){
+if(f.dataset.js)return;
 f.dataset.js="1";f._snap=snap(f);f._label=(btn(f)||{}).textContent||"";
-f.luneResnap=function(){f._snap=snap(f);if(track(f)&&!auto(f))paint(f)};
+f.luneResnap=function(){adopt(f);f._snap=snap(f);if(track(f)&&!auto(f))paint(f)};
 f.luneSaved=function(ok,msg){
 var b=btn(f),sEl=st(f),a=f.querySelector(".autosave"),sid=(sEl||{}).id;delete f.dataset.state;if(b)b.removeAttribute("aria-busy");
-if(ok){f._snap=snap(f);if(auto(f)){if(a){a.textContent=t("rt.autoSaved");setTimeout(function(){if(a.textContent===t("rt.autoSaved"))a.textContent=""},2000)}return}
+if(ok){adopt(f);f._snap=snap(f);if(auto(f)){if(a){a.textContent=t("rt.autoSaved");setTimeout(function(){if(a.textContent===t("rt.autoSaved"))a.textContent=""},2000)}return}
 f.querySelectorAll("[data-dirty]").forEach(function(w){w.removeAttribute("data-dirty");if(sid&&w.getAttribute("aria-describedby")===sid)w.removeAttribute("aria-describedby")});
 f.dataset.state="saved";if(b)b.textContent=t("rt.savedOk")+" ✓";if(sEl)sEl.textContent="";delete f.dataset.dirty;cross();
 setTimeout(function(){delete f.dataset.state;if(b)b.textContent=f._label;paint(f)},3000)}
@@ -2812,6 +2822,8 @@ else if(auto(f)){if(a)a.innerHTML=t("rt.autoFailed")+' <button type="button" cla
 else{f.dataset.state="error";if(sEl)sEl.textContent=msg||t("rt.saveFailed");if(b)b.textContent=f._label;paint(f)}};
 if(track(f)&&!auto(f))paint(f)}
 document.querySelectorAll("form[data-save]").forEach(bind);
+/* Til bindere, der tegner formularer efter indlæsning (fx ark pr. rum). */
+window.luneForms={bind:bind,scan:function(root){(root||document).querySelectorAll("form[data-save]:not([data-js])").forEach(bind)},adopt:adopt};
 function onEdit(e){
 var f=e.target&&e.target.closest&&e.target.closest("form[data-save]");if(!f||!f.dataset.js)return;
 if(auto(f)){if(e.target.disabled)return;var a=f.querySelector(".autosave");if(a)a.textContent=t("rt.autoSaving");

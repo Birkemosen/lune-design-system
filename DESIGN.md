@@ -698,6 +698,8 @@ Uden JS: knappen er altid primær, Fortryd er synlig og nulstiller felterne.
 
 Submit sender `lune:save` med `{key, data, form, auto}`. API-laget kalder `form.luneSaved(true|false, besked?)`. Scriptet er `js/lune-forms.js`.
 
+**Standardværdier.** Når binderen har malet enhedens værdier i en formular, kalder den `form.luneResnap()`: værdierne bliver formularens standardværdier (`defaultValue`/`defaultChecked`/`defaultSelected`), så Fortryd og «kassér» ved lukning af et ark vender tilbage til enhedens værdier, ikke til HTML'ens eksempeldata. Det samme sker efter et vellykket gem. Formularer, der tegnes efter indlæsning (fx et ark pr. rum), bindes med `window.luneForms.bind(form)` eller `window.luneForms.scan(rod)`.
+
 **Delvis gem = patch.** Når én ressource vises to steder (fx varmekildens forbindelse på System og dens adfærd i Varme-arket), har hver formular sin undernøgle — `data-save="heat_source.connection"` og `data-save="heat_source.behavior"` — og `data-patch`. `lune:save` får så `resource` (`heat_source`), `part` (`connection`), `method: "PATCH"` og `changed` (kun de ændrede felter). API-laget sender en PATCH til ressourcens endpoint med `changed`; felter, formularen ikke viser, røres ikke. Formularer uden `data-patch` sender hele formularen (`method: "POST"`).
 
 **Autogem (Hjem/Dashboard).** Måltemperaturen (`.climate`) gemmes 1,5 s efter sidste ændring — ingen gem-knap. Status under målet (`.autosave`): `rt.autoSaving` → `rt.autoSaved` → tom; ved fejl `rt.autoFailed` + `rt.retry`.
@@ -807,7 +809,7 @@ Sprog vælges ved build, ikke i browseren.
 | CSS + `lune-forms.js` + én side pr. sprog, gzippet: V6 ≤ 60 kB i alt for to sprog (se budgettet nedenfor) | Flash-plads og indlæsningstid |
 | Ikoner som SVG-sprite (`<symbol>` + `<use>`) | Ét sted, genbrugt |
 | Tilstand i CSS (radio/checkbox, `<details>`) | Ingen JS-framework |
-| JS kun til: live-data, +/−, submit-hook, ugemt/gem og autogem (`js/lune-forms.js`), kopiér diagnostik, placering af hjælp- og bekræftelses-popover, luk dropdown | Virker uden JS |
+| JS kun til: live-data, +/−, submit-hook, ugemt/gem og autogem (`js/lune-forms.js`), kopiér diagnostik, placering af hjælp- og bekræftelses-popover, luk dropdown. `lune-forms.js` serveres som egen fil eller lægges i produktets binder (én kopi for alle sprog), aldrig inline i hver sprogside | Virker uden JS |
 | Grafer som SVG-punkter genereret på enheden eller i binderen | Intet chart-bibliotek |
 
 Geist er første valg i font-stakken, men hentes ikke. Ønskes den, kan en latin-subset (woff2, ca. 30 kB) lægges i flash med `@font-face` og `font-display: swap`.
@@ -1146,13 +1148,14 @@ Midten har altid de samme to punkter: **Hjem** og **System** (på Touch og i HA 
 - Glider ind fra højre (bredde **520 px**, svævende med 12 px afstand og radius 24), ark fra bunden på mobil. Native `popover` eller `<dialog>`; Esc og klik udenfor lukker.
 - Hoved: ikonbrik, navn, én linje med status (fx "1. sal · Z1 · 22,9° · 62 % åben"), luk-knap.
 - **Faner:** Overblik · Historik · Indstillinger. Åbnes fra et tal eller en graf → Overblik; fra et tandhjul eller et "Indstillinger"-link → Indstillinger.
+- **Kun faner med indhold.** Overblik er altid med; Historik kun når der findes historik (en graf eller en opsummering), Indstillinger kun når tingen har indstillinger. Et ark med kun Overblik viser ingen fanebjælke-tomhed: fanerne udelades eller står alene på Overblik. Opfind ikke en graf for at fylde en fane.
 - Indstillinger i arket bruger grupperede lister (15.5), én gem-bjælke nederst (klæber), farlige handlinger sidst.
 - Sjældne indstillinger åbner som en ny side **inde i** arket (med tilbage-pil), ikke i et nyt ark.
 
 ### 15.4 System-siden
 
 - To kolonner på bred skærm: kategoriliste til venstre (**240 px**, klæber), indhold til højre (**maks. 640 px**, venstrestillet). Mobil: kategorilisten er en side; tryk åbner kategorien.
-- Kategorier (V6): Enhed · Manifold og motorer · Forbindelser · Firmware og backup · Service. (Touch): Enhed · Styringer · Varmekilde · Cirkulationspumpe · Vejr · Netværk · Firmware og backup · Service. Udvikler kun i dev-builds, sidst.
+- Kategorier (V6): Enhed · Manifold og motorer · Forbindelser · Firmware og backup · Service. (Touch): Enhed · Styringer · Varmekilde · Elpris · Cirkulationspumpe · Vejr · Netværk · Firmware og backup · Service. Udvikler kun i dev-builds, sidst.
 - Én kategori ad gangen; én gem-bjælke pr. kategori.
 
 ### 15.5 Indstillinger præsenteres som grupperede lister — ikke kort
@@ -1296,5 +1299,5 @@ Touch' Hjem (15.7) bygges af tre komponenter (`@only touch` i CSS'en):
 - **`.home-tiles` › `button.home-tile`**: højst fire felter i en række (to på tablet, ét på mobil). Hvert felt er én ting og åbner tingens ark (`popovertarget`): `.chip-icon` + `b` titel + `.ht-status` (én linje) + `.ht-val` (ét hovedtal, evt. ét sekundært tal i `<small>`) + `.ht-viz` (én lille SVG). Valgfrit `.ht-price` til én ekstra linje, fx aktuel elpris med `.scale-chip[data-scale="1–5"]` (`scale-good-bad`). Uden data: `data-empty` skjuler visualiseringen, og tallet er «—».
 - **`.heatmap` › `.room-group`**: rum grupperet pr. styring. `button.room-group-head` (navn + `<small>` med M-id og fremløb → retur) åbner styringens ark; `.room-grid` har rummenes zonefelter (`button.tile`, 10-segment ventilbjælke + procent + afvigelses-chip, 5.2), som åbner rummets ark. Styring offline: `data-offline` dæmper de seneste værdier, og `.offline-note` siger «V6 er ikke tilgængelig · senest set …». En note (`.heatmap-note`) forklarer chip og bjælke.
 
-Rum-arket på Touch viser kun det, Touch ejer (medregn i hustemperaturen, vægt, vind, sol). V6' egne felter står som læseværdier i gruppen «Fra V6 (<styring>, Z<n>)» med «Redigér på V6 ›» (ny fane, `http://<v6>/#z<n>/indstillinger`); er V6'en offline, er gruppen dæmpet (`.setting-group[data-offline]`) med samme note.
+Rum-arket på Touch viser kun det, Touch ejer (medregn i hustemperaturen, vægt, vind, sol). V6' egne felter, som Touch' API leverer (areal, ydervægge), står som læseværdier (`.setting-value`) i gruppen «Fra V6 (<styring>, Z<n>)» med «Redigér på V6 ›» (ny fane, `http://<v6>/#z<n>/indstillinger`); er V6'en offline, er gruppen dæmpet (`.setting-group[data-offline]`) med samme note.
 

@@ -49,12 +49,18 @@ if(sEl&&f.dataset.state!=="error")sEl.textContent=n===1?t("rt.unsaved.one",{n:1}
 else{delete f.dataset.dirty;if(b){b.setAttribute("aria-disabled","true");b.title=t("rt.nothingToSave")}
 if(sEl&&f.dataset.state!=="saved"&&f.dataset.state!=="error")sEl.textContent=""}
 cross()}
+/* Gør formularens nuværende værdier til standardværdier (reset/Fortryd vender tilbage hertil). */
+function adopt(f){f.querySelectorAll("input,select,textarea").forEach(function(el){
+if(el.type==="checkbox"||el.type==="radio")el.defaultChecked=el.checked;
+else if(el.tagName==="SELECT")[].forEach.call(el.options,function(o){o.defaultSelected=o.selected});
+else if(el.type!=="file")el.defaultValue=el.value})}
 function bind(f){
+if(f.dataset.js)return;
 f.dataset.js="1";f._snap=snap(f);f._label=(btn(f)||{}).textContent||"";
-f.luneResnap=function(){f._snap=snap(f);if(track(f)&&!auto(f))paint(f)};
+f.luneResnap=function(){adopt(f);f._snap=snap(f);if(track(f)&&!auto(f))paint(f)};
 f.luneSaved=function(ok,msg){
 var b=btn(f),sEl=st(f),a=f.querySelector(".autosave"),sid=(sEl||{}).id;delete f.dataset.state;if(b)b.removeAttribute("aria-busy");
-if(ok){f._snap=snap(f);if(auto(f)){if(a){a.textContent=t("rt.autoSaved");setTimeout(function(){if(a.textContent===t("rt.autoSaved"))a.textContent=""},2000)}return}
+if(ok){adopt(f);f._snap=snap(f);if(auto(f)){if(a){a.textContent=t("rt.autoSaved");setTimeout(function(){if(a.textContent===t("rt.autoSaved"))a.textContent=""},2000)}return}
 f.querySelectorAll("[data-dirty]").forEach(function(w){w.removeAttribute("data-dirty");if(sid&&w.getAttribute("aria-describedby")===sid)w.removeAttribute("aria-describedby")});
 f.dataset.state="saved";if(b)b.textContent=t("rt.savedOk")+" ✓";if(sEl)sEl.textContent="";delete f.dataset.dirty;cross();
 setTimeout(function(){delete f.dataset.state;if(b)b.textContent=f._label;paint(f)},3000)}
@@ -62,6 +68,8 @@ else if(auto(f)){if(a)a.innerHTML=t("rt.autoFailed")+' <button type="button" cla
 else{f.dataset.state="error";if(sEl)sEl.textContent=msg||t("rt.saveFailed");if(b)b.textContent=f._label;paint(f)}};
 if(track(f)&&!auto(f))paint(f)}
 document.querySelectorAll("form[data-save]").forEach(bind);
+/* Til bindere, der tegner formularer efter indlæsning (fx ark pr. rum). */
+window.luneForms={bind:bind,scan:function(root){(root||document).querySelectorAll("form[data-save]:not([data-js])").forEach(bind)},adopt:adopt};
 function onEdit(e){
 var f=e.target&&e.target.closest&&e.target.closest("form[data-save]");if(!f||!f.dataset.js)return;
 if(auto(f)){if(e.target.disabled)return;var a=f.querySelector(".autosave");if(a)a.textContent=t("rt.autoSaving");

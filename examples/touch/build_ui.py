@@ -284,8 +284,8 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
           <button class="home-tile" type="button" popovertarget="sheet-plan">
             <span class="chip-icon" data-tone="violet" aria-hidden="true">{I["plan"]}</span><b>{T("tile.plan")}</b>
             <span class="ht-status">{T("tile.planStatus")}</span>
-            <span class="ht-val">{T("tile.planVal")} <small>≈ {T.num(8.1)} kWh</small></span>
-            <span class="ht-price">{T("tile.price", p=T.num(1.82, 2))} <span class="scale-chip" data-scale="2">{T("price.scale.2")}</span></span>
+            <span class="ht-val">{T("tile.planVal", a="06", b="09")} <small>≈ {T.num(8.1)} kWh</small></span>
+            <span class="ht-price">{T("tile.price", p=T.num(1.82, 2), unit=T("price.unit"))} <span class="scale-chip" data-scale="2">{T("price.scale.2")}</span></span>
             <svg class="ht-viz" viewBox="0 0 240 48" preserveAspectRatio="none" aria-hidden="true">{bars}</svg>
           </button>'''
     wx = series(7, 24, 9.5, 3.2, .3)
@@ -370,7 +370,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             {metric(T("heat.hpTemps"), f"{T.num(36.0)} → {T.num(29.0)}", "°C", "heat.hp", )}
           </dl>
           {kv([(T("heat.lastPush"), T("rt.secondsAgo", v=12)), (T("heat.targetRole"), T("heat.roleTouch")), (T("heat.controlledBy"), "Odin"),
-               (T("heat.odinLink"), T("status.ok"), "c-ok"), (T("heat.odinNow"), T("heat.odinNowVal"))])}
+               (T("heat.odinLink"), T("status.ok"), "c-ok"), (T("heat.odinNow"), T("heat.odinNowVal", t="06"))])}
           {sent}
         </div>'''
     hist_w = series(21, 48, 21.6, 0.5, .08)
@@ -414,7 +414,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         <div class="fc-legend" aria-hidden="true"><span><i class="lbar"></i>{T("plan.lHeat")}</span><span><i class="ldhw"></i>{T("plan.lDhw")}</span><span><i class="lleg"></i>{T("plan.lLeg")}</span><span><i class="llift"></i>{T("plan.lLift")}</span><span><i class="lpre"></i>{T("plan.preload")}</span><span><i class="lch"></i>{T("plan.charge")}</span><span><i class="lins"></i>{T("plan.insufficient")}</span></div>'''
     plan_over = f'''
         <dl class="metrics">
-          {metric(T("plan.next"), T("tile.planVal"), "")}
+          {metric(T("plan.next"), T("tile.planVal", a="06", b="09"), "")}
           {metric(T("plan.energy"), T.num(8.1), "kWh")}
           {metric(T("plan.priceNow"), T.num(1.82, 2), T("price.unit"))}
         </dl>
@@ -510,7 +510,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         status = T("sheet.roomStatus", m=m["name"], z=zn, temp=room_val(r), open=0 if level(r) == 0 else valve, state=ST[st])
         fault = st == "fault"
         nodata = temp is None
-        alert = (f'''<div class="panel alert"><div class="panel-head"><h3>{T("alert.motorFault")}</h3></div>
+        alert = (f'''<div class="panel alert"><div class="panel-head"><h3>{T("alert.motorFault", reason=T("fault.endstop"))}</h3></div>
           <p class="note">{T("alert.roomFaultBody")}</p>
           <div class="panel-foot"><a class="btn" href="http://{m["ip"]}/#z{zn}" target="_blank" rel="noopener">{T("v6.resetOnV6")}</a></div></div>''' if fault else "")
         nodata_msg = f'<p class="msg warn"><span><b>{T("room.noDataStrong")}</b> {T("room.noData")}</span></p>' if nodata else ""
@@ -531,7 +531,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         walls_txt = " · ".join(WF[w] for w in walls) if walls else T("common.none")
         off = "" if m["online"] else " data-offline"
         v6 = group(T("room.fromV6", m=m["name"], z=zn),
-                   rrow(T("room.area"), f"{T.num(area)} m²") + rrow(T("room.spacing"), f"{cc} mm") + rrow(T("room.pipe"), pipe) +
+                   rrow(T("room.area"), f"{T.num(area)} m²") +
                    rrow(T("room.walls"), walls_txt) +
                    srow(f"<span>{T('room.editOnV6Label')}</span>", f'<a class="btn" href="http://{m["ip"]}/#z{zn}/{T("hash.settings")}" target="_blank" rel="noopener">{T("room.editOnV6")}</a>'),
                    extra="" if m["online"] else f'<p class="offline-note">{T("v6.offline", h=m["seen"])}</p>', attrs=off)
@@ -611,7 +611,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         group(T("hs.mqttLogin"), sinput("mqtt_username", T("hs.mqttUser"), "", "w-sm") + sinput("mqtt_password", T("hs.mqttPass"), "", "w-sm", typ="password", extra=' autocomplete="new-password"') +
               sinput("mqtt_topic_prefix", T("hs.mqttPrefix"), "ecodan", "w-md") + sinput("mqtt_hp_id", T("hs.mqttHpId"), "", "w-sm")))
     test = f'''<div class="actions"><button class="btn" type="button" data-action="hs-test-read">{T("hs.testRead")}</button><button class="btn" type="button" data-action="hs-test-push">{T("hs.testPush")}</button></div>
-        <div class="test-result" aria-live="polite"><div class="msg ok"><span><b>{T("hs.testOk", time="14:32:05", code=200, ms=84)}</b>{T("hs.testOkBody", v=T.num(HOUSE_TEMP))}</span></div></div>'''
+        <div class="test-result" aria-live="polite"><div class="msg ok"><span><b>{T("hs.testOk", time="14:32:05", code=200, ms=84)}</b>{T("hs.testOkBody", v=T.num(HOUSE_TEMP), target="Virtual Thermostat Input z1")}</span></div></div>'''
     cats.append(("heatsource", T("cat.heatsource"), '<path d="M12 3c3 4 5 6.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-5 .5 2 1.5 3 3 3-1-3 0-6 0-8z"/>', f'''
       <form data-save="heat_source.connection" data-patch>
         {r_hs}
