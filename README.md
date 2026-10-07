@@ -2,6 +2,8 @@
 
 Fælles designsystem for **Lune V6** og **Lune Touch**: tokens, CSS-komponenter, regler og en visuel reference. Bygget til ESP32: ren CSS/HTML, tilstand uden JavaScript, ingen eksterne ressourcer.
 
+**Dokumentation:** [docs/README.md](docs/README.md) — indeks over designsystemets dokumenter, med links til Lune V6 og Lune Touch.
+
 **Repo:** https://github.com/Birkemosen/lune-design-system
 
 ![Lune Touch hus-dashboard — hierarkisk strimmel + varmekilde (Asgard)](docs/shots/touch-dashboard-1440.png)
