@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<title>Lune Design System 2.3.8</title>
+<title>Lune Design System 2.3.9</title>
 <style>
 /* ==========================================================================
    LUNE DESIGN SYSTEM 2 — fælles stylesheet for Lune V6 og Lune Touch
@@ -1187,8 +1187,8 @@
   .fc-legend .lsun { height: 8px; background: linear-gradient(color-mix(in srgb, var(--data-light) 45%, transparent), transparent); border-top: 1.2px solid var(--data-light); }
   .fc-legend .dir  { margin: 0; color: var(--data-return); }
   .fc-legend .lbar  { height: 10px; border-radius: 2px 2px 0 0; background: var(--heat-fill); }
-  .fc-legend .ldhw  { height: 10px; border-radius: 2px 2px 0 0; background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--accent) 55%, transparent) 0 1.5px, transparent 1.5px 5px); box-shadow: inset 0 0 0 1px var(--heat-fill); }
-  .fc-legend .lleg  { height: 10px; border-radius: 2px 2px 0 0; box-shadow: inset 0 0 0 1px var(--heat-fill);
+  :is(.fc-legend, .chart-legend) .ldhw  { height: 10px; border-radius: 2px 2px 0 0; background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--accent) 55%, transparent) 0 1.5px, transparent 1.5px 5px); box-shadow: inset 0 0 0 1px var(--heat-fill); }
+  :is(.fc-legend, .chart-legend) .lleg  { height: 10px; border-radius: 2px 2px 0 0; box-shadow: inset 0 0 0 1px var(--heat-fill);
     background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--accent) 60%, transparent) 0 1px, transparent 1px 3.5px),
                 repeating-linear-gradient(135deg, color-mix(in srgb, var(--accent) 60%, transparent) 0 1px, transparent 1px 3.5px); }
   .fc-legend .llift { border-top: 3px solid var(--violet); border-radius: var(--r-pill); }
@@ -1829,6 +1829,10 @@
   .hchart-y { grid-area: y; display: flex; flex-direction: column; justify-content: space-between; font-size: var(--fs-xs); color: var(--faint); text-align: right; font-variant-numeric: tabular-nums; }
   .trend .grid { stroke: var(--border); stroke-width: 1; vector-effect: non-scaling-stroke; }
   .trend .nowl { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }
+  /* Varmt vand / legionella (varmekildens driftsform): skraverede bånd bag linjerne, som i planen. */
+  .trend .dhw { fill: url(#lds-hatch-heat); }
+  .trend .leg { fill: url(#lds-hatch-heat-dense); }
+  .chart-legend :is(.ldhw, .lleg) { width: 14px; height: 10px; border-top: 0; }
   .hchart-panel[data-empty] { display: flex; }
   .hchart-panel[data-empty] .hchart-y { display: none; }
   .chart-legend { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: var(--fs-sm); color: var(--muted); }
@@ -2398,7 +2402,7 @@
 
   <div class="navbar-wrap wrap">
     <header class="header" style="grid-template-columns:1fr auto">
-      <div class="device"><summary style="pointer-events:none"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="var(--fg)"/><path d="M10 22V12M14 22V10M18 22V13M22 22V11" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/></svg><span class="name"><b>Lune Design System</b><small>v2.3.8</small></span></summary></div>
+      <div class="device"><summary style="pointer-events:none"><svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="var(--fg)"/><path d="M10 22V12M14 22V10M18 22V13M22 22V11" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/></svg><span class="name"><b>Lune Design System</b><small>v2.3.9</small></span></summary></div>
       <label class="icon-btn theme-btn" for="theme" title="Skift lyst/mørkt tema">
         <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg>
         <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
@@ -2409,7 +2413,7 @@
   <main class="content wrap">
     <div class="doc-layout"><nav class="doc-toc" aria-label="Indhold"><b>Grundlag</b><a href="#principper">Principper</a><a href="#arkitektur">Arkitektur</a><a href="#farver">Farver</a><a href="#grundelementer">Typografi og afstand</a><b>Komponenter</b><a href="#k-navigation">Navigation</a><a href="#k-hjem">Indhold på Hjem</a><a href="#k-indstillinger">Indstillinger</a><a href="#k-feedback">Feedback og handlinger</a><b>Mønstre</b><a href="#moenstre">Mønstre og indhold</a></nav>
     <div class="view"><span id="principper"></span>
-      <div class="view-head" style="grid-column:1/-1;padding-top:var(--space-4)"><h2 style="font-size:var(--fs-hero);line-height:1;letter-spacing:-.05em">Lune Design System</h2><p>v2.3.8 · Lune V6 og Lune Touch</p></div>
+      <div class="view-head" style="grid-column:1/-1;padding-top:var(--space-4)"><h2 style="font-size:var(--fs-hero);line-height:1;letter-spacing:-.05em">Lune Design System</h2><p>v2.3.9 · Lune V6 og Lune Touch</p></div>
       <p class="lead" style="grid-column:1/-1">Tokens, komponenter og regler til at bygge UI på ESP32: ren CSS og HTML, tilstand uden JavaScript, ingen eksterne ressourcer. Denne side bruger selve systemets CSS. Skift tema øverst til højre for at se begge temaer.</p>
       <section class="panel c4 principle"><h3>Et blik er nok</h3><p>Store tal, små labels under. Én hero-temperatur pr. visning.</p></section><section class="panel c4 principle"><h3>Farve betyder noget</h3><p>Neutralt, indtil der er noget at sige. Én betydning pr. farve.</p></section><section class="panel c4 principle"><h3>Samme sted, samme ting</h3><p>Zonestrimlen vælger hvad, tilstandspillen vælger hvordan.</p></section><section class="panel c4 principle"><h3>Få store paneler</h3><p>2–4 paneler pr. visning, altid åbne. Kun ekspert-tuning foldes.</p></section><section class="panel c4 principle"><h3>Tilstand uden JavaScript</h3><p>Radio, checkbox og details. JS kun til live-data.</p></section><section class="panel c4 principle"><h3>Tilgængelig fra start</h3><p>≥ 4,5:1 kontrast, ≥ 44 px trykflader, tastatur og fokus.</p></section>
       <header class="doc-h" id="arkitektur"><h2>Arkitektur</h2><p>Tre niveauer: Hjem (overblik og hverdagshandlinger), ark pr. ting (overblik, historik og tingens indstillinger) og System (det der gælder hele enheden). Erstatter Dashboard/Konfiguration. Fuld beskrivelse i DESIGN.md afsnit 15.</p></header>
