@@ -1,0 +1,113 @@
+/* Preview mod Apex-paletten.
+   Flader og statusfarver er Apex' egne. Advarsel som tekst er mørkere,
+   fordi #FCAA2D ikke kan læses på de lyse kort. */
+
+@layer tokens {
+  .app {
+    --bg: light-dark(#f5f5f0, #1e1e1b);
+    --card: light-dark(#eaeae5, #151513);
+    --raised: light-dark(#d5d5d0, #2a2a26);
+    --field: light-dark(#ffffff, #1a1a1a);
+    --fg: light-dark(#1a1a1a, #f5f5f0);
+    --muted: light-dark(#6b6b6b, #a3a39c);
+    --faint: light-dark(#6b6b6b, #8e8e88);
+    --border: light-dark(#d5d5d0, rgb(255 255 255 / .08));
+    --field-edge: light-dark(#d5d5d0, rgb(255 255 255 / .1));
+    --card-edge-c: light-dark(transparent, transparent);
+    --accent: #e8630a;
+    --accent-ink: light-dark(#a54e20, #e8630a);
+    --accent-glow: rgb(232 99 10 / .4);
+    --info: light-dark(#2e72a0, #7eb6d6);
+    --ok: light-dark(#358028, #7dba6a);
+    --warn: light-dark(#825e2e, #fcaa2d);
+    --danger: light-dark(#b83838, #e08a86);
+    --violet: light-dark(#7050b4, #a78bdb);
+    --info-bg: light-dark(#f4f8fb, #1a2833);
+    --ok-bg: light-dark(#f2f9f0, #1a2c18);
+    --warn-bg: light-dark(#fef3d6, #2c2614);
+    --danger-bg: light-dark(#fcf0f0, #301816);
+    --violet-bg: light-dark(#f4effc, #241c34);
+    --focus: rgb(232 99 10 / .9);
+  }
+}
+
+@layer components {
+  /* Plan er en kølig reference, faktisk varme er en lysende søjle.
+     Grå + flad orange læses som den samme kedelige masse. */
+  .bars-plot {
+    height: 120px;
+    align-items: end;
+    gap: 6px;
+    padding: 10px 8px 0;
+    border-radius: 12px;
+    background:
+      repeating-linear-gradient(
+        to top,
+        color-mix(in srgb, var(--fg) 8%, transparent) 0 1px,
+        transparent 1px 25%
+      );
+  }
+  .bars-plot .col { gap: 3px; }
+  .bars-plot .col i {
+    border-radius: 6px 6px 2px 2px;
+    min-height: 3px;
+  }
+  .bars-plot .col i.plan {
+    opacity: 1;
+    background: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--info) 55%, transparent),
+      color-mix(in srgb, var(--info) 18%, transparent)
+    );
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--info) 75%, transparent);
+  }
+  .bars-plot .col i.act {
+    background: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--accent) 78%, #1a1a1a),
+      var(--accent) 42%,
+      color-mix(in srgb, var(--accent) 48%, white)
+    );
+    box-shadow: 0 8px 16px color-mix(in srgb, var(--accent) 32%, transparent);
+  }
+  .bars-legend .lp {
+    opacity: 1;
+    background: color-mix(in srgb, var(--info) 55%, transparent);
+    box-shadow: inset 0 0 0 1.5px var(--info);
+  }
+  .bars-legend .la {
+    background: linear-gradient(to top, color-mix(in srgb, var(--accent) 78%, #1a1a1a), color-mix(in srgb, var(--accent) 48%, white));
+  }
+
+  .tile.tile-manifold .mini i:not([data-level="0"]):not([data-state="off"]):not([data-state="fault"]):not([data-state="blocked"]):not([data-state="learning"]) {
+    background: linear-gradient(to top, color-mix(in srgb, var(--accent) 80%, #1a1a1a), color-mix(in srgb, var(--accent) 40%, white));
+    box-shadow: 0 0 8px var(--accent-glow);
+    border-radius: 3px;
+  }
+
+  .spark .t { stroke: var(--accent); stroke-width: 2.2; }
+  .spark .a { fill: color-mix(in srgb, var(--accent) 32%, transparent); }
+  .spark .g { stroke: var(--info); opacity: .7; }
+  .trend { height: 148px; }
+  .trend .f { stroke-width: 2.6; }
+  .trend .r { stroke-width: 2.4; }
+  .trend .dt { opacity: .28; }
+  .zchart .t { stroke-width: 2.6; }
+  .zchart .pb { opacity: .32; }
+  .zchart .pj { stroke-width: 2; }
+  .fc .wa { opacity: .34; }
+  .fc .wl { stroke-width: 2.2; }
+  .fc .sa { opacity: .32; }
+  .fc .tl { stroke-width: 2.6; }
+
+  /* Apex-gul som flade. Tekst-tokenet er mørkere, så tal på kort kan læses. */
+  .tile.tile-manifold .mini i[data-state="blocked"],
+  .tile[data-state="blocked"] .lvl i:last-child,
+  .tile[data-charge="insufficient"]::after,
+  .tile[data-learn="needed"]::after,
+  .tile-sys[data-lease="refused"]::after,
+  .tile-sys[data-lease="none"]::after {
+    background: #fcaa2d;
+    color: #1a1a1a;
+  }
+}
