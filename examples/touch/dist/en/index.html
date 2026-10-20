@@ -77,12 +77,15 @@
             <p>The house is 0.9° above target, and 2 rooms call for heat. Odin plans the next heating at 06:00, and the wind picks up tonight.</p>
           </div>
           <form class="thermo" data-save="house-target">
+            <dl class="thermo-facts">
+              <div><dt>House now</dt><dd>21.9°</dd></div>
+              <div><dt>Outside</dt><dd>8.4°</dd></div>
+            </dl>
             <div class="thermo-ring" style="--v:60;--now:69" data-min="15" data-max="25">
               <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="42" pathLength="100"/><circle class="arc" cx="50" cy="50" r="42" pathLength="100"/><circle class="knob" cx="50" cy="50" r="42" pathLength="100"/><circle class="now" cx="50" cy="50" r="48.5" pathLength="100"/></svg>
               <div class="thermo-val">
                 <small>Target</small>
                 <label class="thermo-target"><input type="text" inputmode="decimal" id="house_target" name="house_target" value="21.0" data-min="5" data-max="30" data-step-size="0.5" autocomplete="off" aria-label="house target"><span class="unit" aria-hidden="true">°</span></label>
-                <span>House now 21.9°</span><span>outside 8.4°</span>
               </div>
               <div class="thermo-steps">
                 <button type="button" data-step="-1" aria-label="Decrease house target">−</button>
