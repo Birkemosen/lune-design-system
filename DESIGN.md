@@ -265,7 +265,7 @@ Mørk orange *er* brun. Varme farver med lav dækning oven på en mørk flade bl
 
 ### 3.2.2 Farver i grafer: gradienter og blanding
 
-- **Ingen gradienter mellem to kulører** (fx blå → orange). Komplementære farver blandes til en grå, mudret midte på skærmen. Gradienter går kun inden for én kulør: fra farven til gennemsigtig (glød) eller fra lys til mørk tone.
+- **Ingen gradienter mellem to kulører** (fx blå → orange). Komplementære farver blandes til en grå, mudret midte på skærmen. Gradienter går kun inden for én kulør: fra farven til gennemsigtig (glød) eller fra lys til mørk tone. **Én undtagelse:** buen fra frem til retur i Varme-feltet (`.ht-fr .fr-arc`, gradient `lds-fr`), der viser vandet, der køler af. Den er en tynd streg, ikke en flade, og mellemstoppene er blandet i OKLab (`color-mix(in oklab, …)`), så midten ikke bliver mudret.
 - **Divergerende skalaer** (koldere/varmere end mål) er to énfarvede ramper, der mødes i neutral: blå ← neutral → orange. Vis dem som trin (fx 5 felter), ikke som én glidende gradient. Skal der interpoleres, så i OKLab (`linear-gradient(in oklab, …)` i CSS; SVG-gradienter interpolerer i sRGB, så tilføj mellemtrin beregnet i OKLab).
 - **Kun én fyldt serie pr. graf.** Andre serier er linjer. Overlappende flader i forskellige farver blandes til gråviolet.
 - **Serier i samme domæne adskilles med mønster (solid, skraveret, kant), ikke kulør.** Rumvarme, varmt vand og legionella er alle varme: solid `heat-fill`, skravering (`url(#lds-hatch-heat)`) + 1 px kant, og tæt kryds-skravering (`url(#lds-hatch-heat-dense)`) + kant. En anden kulør ville sige, at det er en anden slags ting.
