@@ -369,12 +369,15 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             <p>{T("home.sentence", d=T.num(HOUSE_TEMP - HOUSE_TARGET), n=calling)}</p>
           </div>
           <form class="thermo" data-save="house-target">
+            <dl class="thermo-facts">
+              <div><dt>{T("thermo.house")}</dt><dd>{T.num(HOUSE_TEMP)}°</dd></div>
+              <div><dt>{T("thermo.outsideLabel")}</dt><dd>{T.num(8.4)}°</dd></div>
+            </dl>
             <div class="thermo-ring" style="--v:{v};--now:{now}" data-min="15" data-max="25">
               <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="42" pathLength="100"/><circle class="arc" cx="50" cy="50" r="42" pathLength="100"/><circle class="knob" cx="50" cy="50" r="42" pathLength="100"/><circle class="now" cx="50" cy="50" r="48.5" pathLength="100"/></svg>
               <div class="thermo-val">
                 <small>{T("climate.target")}</small>
                 <label class="thermo-target"><input type="text" inputmode="decimal" id="house_target" name="house_target" value="{T.num(HOUSE_TARGET)}" data-min="5" data-max="30" data-step-size="0.5" autocomplete="off" aria-label="{ta}"><span class="unit" aria-hidden="true">°</span></label>
-                <span>{T("thermo.now", t=T.num(HOUSE_TEMP))}</span><span>{T("thermo.outside", t=T.num(8.4))}</span>
               </div>
               <div class="thermo-steps">
                 <button type="button" data-step="-1" aria-label="{T("common.decrease", x=ta)}">−</button>
