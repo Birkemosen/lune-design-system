@@ -308,7 +308,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
           <button class="home-tile" type="button" popovertarget="sheet-heat">
             <span class="chip-icon" aria-hidden="true">{I["heat"]}</span><b>{T("tile.heat")}</b>
             <span class="ht-status">{T("tile.heatStatus")}</span>
-            <span class="ht-val">{T.num(36.0)}° → {T.num(29.0)}° <small>{T("tile.heatSub")}</small></span>
+            <span class="ht-fr"><small>{T("tile.flow")}</small><b>{T.num(36.0)}°</b><svg class="fr-arc" viewBox="0 0 12 40" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="lds-fr" x1="0" y1="0" x2="0" y2="1"><stop offset="0"/><stop offset=".25"/><stop offset=".5"/><stop offset=".75"/><stop offset="1"/></linearGradient></defs><path d="M1 1 A 11 19 0 0 1 1 39"/></svg><span class="fr-dt"><small>ΔT</small><b>{T.num(7.0)}°</b></span><small>{T("tile.return")}</small><b>{T.num(29.0)}°</b></span>
             <svg class="ht-viz" viewBox="0 0 240 64" preserveAspectRatio="none" aria-hidden="true"><path class="a" d="M0,64 L{pts(hf, 240, 64, lo_, hi_).replace(" ", " L")} L240,64Z"/><polyline class="f" points="{pts(hf, 240, 64, lo_, hi_)}"/><polyline class="r" points="{pts(hr, 240, 64, lo_, hi_)}"/></svg>
           </button>'''
     plan_kwh = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2.1, 3.4, 2.6, 0, 0, 0, 0, 0, 0, 0]

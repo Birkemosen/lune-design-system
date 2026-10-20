@@ -111,6 +111,8 @@
   "tile.heat": "Varme",
   "tile.heatStatus": "Hviler · Odin styrer",
   "tile.heatSub": "fremløb → retur",
+  "tile.flow": "Frem",
+  "tile.return": "Retur",
   "tile.plan": "Næste varme",
   "tile.planStatus": "Planlagt af Odin",
   "tile.planVal": "kl. {a}–{b}",

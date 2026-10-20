@@ -111,6 +111,8 @@
   "tile.heat": "Heat",
   "tile.heatStatus": "Idle · Odin in control",
   "tile.heatSub": "flow → return",
+  "tile.flow": "Flow",
+  "tile.return": "Return",
   "tile.plan": "Next heating",
   "tile.planStatus": "Planned by Odin",
   "tile.planVal": "{a}:00–{b}:00",
