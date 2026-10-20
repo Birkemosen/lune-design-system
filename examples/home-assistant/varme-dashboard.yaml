@@ -1,441 +1,453 @@
 # Eksempel: varme-dashboard i Home Assistant (DESIGN.md 14.3) — Overblik + Historik.
 # Lavet til en Mitsubishi Ecodan via Asgard, en Grundfos Alpha2 GO og to Lune V6
-# (stueetage og 1. sal). Erstat entity-id'erne med dine egne. Kræver temaet "Lune".
+# (stueetage og 1. sal). Erstat entity-id'erne med dine egne.
+# Dashboardet sætter ikke selv et tema: det følger det tema, brugeren har valgt i HA
+# (vælg "Lune" i profilen for LDS-farverne).
+# sensor.alpha2_flow_l_min er en template-hjælper, der regner Alpha2's m³/h om til l/min,
+# så primær- og sekundærflow kan stå i samme graf:
+#   {% set f = states('sensor.grundfos_alpha2_go_pump_flow') %}
+#   {{ (f | float * 1000 / 60) | round(1) if is_number(f) else none }}
 # Gem med HA's websocket: lovelace/config/save {url_path, config} (eller indsæt i
 # "Rediger dashboard › Rå konfiguration").
-title: "Varme"
+title: Varme
 views:
-  - title: "Overblik"
-    path: "overblik"
-    icon: "mdi:home-thermometer"
-    type: "sections"
-    max_columns: 4
-    theme: "Lune"
-    sections:
-      - type: "grid"
-        cards:
-          - type: "heading"
-            heading: "Huset"
-            icon: "mdi:home"
-          - type: "tile"
-            entity: "climate.ecodan_heatpump_virtual_thermostat_z1"
-            name: "Huset"
-            color: "deep-orange"
-            state_content:
-              - "current_temperature"
-              - "temperature"
-            features:
-              - type: "target-temperature"
-            features_position: "bottom"
-            grid_options:
-              columns: 12
-          - type: "tile"
-            entity: "sensor.ecodan_heatpump_outside_temp"
-            name: "Ude"
-            color: "blue"
-          - type: "tile"
-            entity: "weather.forecast_home"
-            name: "Vejret"
-          - type: "weather-forecast"
-            entity: "weather.forecast_home"
-            forecast_type: "hourly"
-            show_current: false
-            show_forecast: true
-            grid_options:
-              columns: 12
-      - type: "grid"
-        cards:
-          - type: "heading"
-            heading: "Varmepumpen"
-            icon: "mdi:heat-pump"
-          - type: "tile"
-            entity: "sensor.ecodan_heatpump_feed_temp"
-            name: "Fremløb"
-            color: "deep-orange"
-          - type: "tile"
-            entity: "sensor.ecodan_heatpump_return_temp"
-            name: "Retur"
-            color: "blue"
-          - type: "tile"
-            entity: "sensor.ecodan_heatpump_delta_t"
-            name: "ΔT"
-          - type: "tile"
-            entity: "sensor.ecodan_heatpump_output_power"
-            name: "Effekt"
-            color: "deep-orange"
-          - type: "tile"
-            entity: "sensor.ecodan_heatpump_compressor_frequency"
-            name: "Kompressor"
-          - type: "tile"
-            entity: "sensor.ecodan_heatpump_flow_rate"
-            name: "Primærflow"
-            color: "blue"
-          - type: "tile"
-            entity: "sensor.ecodan_heatpump_operation_mode"
-            name: "Drift"
-          - type: "tile"
-            entity: "sensor.ecodan_heatpump_heating_cop"
-            name: "COP i dag"
-            color: "green"
-      - type: "grid"
-        cards:
-          - type: "heading"
-            heading: "Cirkulation"
-            icon: "mdi:pump"
-          - type: "tile"
-            entity: "sensor.grundfos_alpha2_go_pump_flow"
-            name: "Sekundærflow"
-            color: "blue"
-          - type: "tile"
-            entity: "sensor.grundfos_alpha2_go_pump_head_pressure"
-            name: "Løftehøjde"
-          - type: "tile"
-            entity: "sensor.grundfos_alpha2_go_pump_power"
-            name: "Pumpeeffekt"
-          - type: "tile"
-            entity: "sensor.ecodan_heatpump_heating_delivered"
-            name: "Varme i dag"
-            color: "deep-orange"
-      - type: "grid"
-        cards:
-          - type: "heading"
-            heading: "Stueetage"
-            icon: "mdi:floor-plan"
-          - type: "tile"
-            entity: "climate.lune_v6_stueetage_zone_1"
-            name: "Kontor"
-            color: "deep-orange"
-            state_content:
-              - "current_temperature"
-              - "temperature"
-            vertical: false
-          - type: "tile"
-            entity: "climate.lune_v6_stueetage_zone_2"
-            name: "Hobbyrum"
-            color: "deep-orange"
-            state_content:
-              - "current_temperature"
-              - "temperature"
-            vertical: false
-          - type: "tile"
-            entity: "climate.lune_v6_stueetage_zone_3"
-            name: "Bryggers"
-            color: "deep-orange"
-            state_content:
-              - "current_temperature"
-              - "temperature"
-            vertical: false
-          - type: "tile"
-            entity: "climate.lune_v6_stueetage_zone_4"
-            name: "Køkken"
-            color: "deep-orange"
-            state_content:
-              - "current_temperature"
-              - "temperature"
-            vertical: false
-          - type: "tile"
-            entity: "climate.lune_v6_stueetage_zone_5"
-            name: "Pejsestue"
-            color: "deep-orange"
-            state_content:
-              - "current_temperature"
-              - "temperature"
-            vertical: false
-          - type: "tile"
-            entity: "climate.lune_v6_stueetage_zone_6"
-            name: "Bad"
-            color: "deep-orange"
-            state_content:
-              - "current_temperature"
-              - "temperature"
-            vertical: false
-      - type: "grid"
-        cards:
-          - type: "heading"
-            heading: "1. sal"
-            icon: "mdi:floor-plan"
-          - type: "tile"
-            entity: "climate.lune_v6_1_sal_zone_1"
-            name: "Josephine"
-            color: "deep-orange"
-            state_content:
-              - "current_temperature"
-              - "temperature"
-            vertical: false
-          - type: "tile"
-            entity: "climate.lune_v6_1_sal_zone_2"
-            name: "Laura"
-            color: "deep-orange"
-            state_content:
-              - "current_temperature"
-              - "temperature"
-            vertical: false
-          - type: "tile"
-            entity: "climate.lune_v6_1_sal_zone_3"
-            name: "Toilet"
-            color: "deep-orange"
-            state_content:
-              - "current_temperature"
-              - "temperature"
-            vertical: false
-          - type: "tile"
-            entity: "climate.lune_v6_1_sal_zone_4"
-            name: "Stue Repo"
-            color: "deep-orange"
-            state_content:
-              - "current_temperature"
-              - "temperature"
-            vertical: false
-          - type: "tile"
-            entity: "climate.lune_v6_1_sal_zone_5"
-            name: "Stue"
-            color: "deep-orange"
-            state_content:
-              - "current_temperature"
-              - "temperature"
-            vertical: false
-          - type: "tile"
-            entity: "climate.lune_v6_1_sal_zone_6"
-            name: "Soveværelse"
-            color: "deep-orange"
-            state_content:
-              - "current_temperature"
-              - "temperature"
-            vertical: false
-      - type: "grid"
-        column_span: 2
-        cards:
-          - type: "heading"
-            heading: "Sidste 24 timer"
-            icon: "mdi:chart-line"
-          - type: "history-graph"
-            title: "Frem, retur og ude"
-            hours_to_show: 24
-            entities:
-              - entity: "sensor.ecodan_heatpump_feed_temp"
-                name: "Fremløb"
-              - entity: "sensor.ecodan_heatpump_return_temp"
-                name: "Retur"
-              - entity: "sensor.ecodan_heatpump_outside_temp"
-                name: "Ude"
-            grid_options:
-              columns: "full"
-          - type: "history-graph"
-            title: "Kompressor og effekt"
-            hours_to_show: 24
-            entities:
-              - entity: "sensor.ecodan_heatpump_compressor_frequency"
-                name: "Kompressor"
-              - entity: "sensor.ecodan_heatpump_output_power"
-                name: "Effekt"
-            grid_options:
-              columns: "full"
-  - title: "Historik"
-    path: "historik"
-    icon: "mdi:chart-timeline-variant"
-    type: "sections"
-    max_columns: 2
-    theme: "Lune"
-    sections:
-      - type: "grid"
-        column_span: 2
-        cards:
-          - type: "heading"
-            heading: "Frem, retur og ude – 7 døgn"
-            icon: "mdi:thermometer-lines"
-          - type: "history-graph"
-            hours_to_show: 168
-            entities:
-              - entity: "sensor.ecodan_heatpump_feed_temp"
-                name: "Fremløb"
-              - entity: "sensor.ecodan_heatpump_return_temp"
-                name: "Retur"
-              - entity: "sensor.ecodan_heatpump_zone_1_setpoint_value"
-                name: "Fremløbsmål"
-              - entity: "sensor.ecodan_heatpump_outside_temp"
-                name: "Ude"
-            grid_options:
-              columns: "full"
-      - type: "grid"
-        column_span: 2
-        cards:
-          - type: "heading"
-            heading: "Rum, stueetage – 7 døgn"
-            icon: "mdi:floor-plan"
-          - type: "history-graph"
-            hours_to_show: 168
-            entities:
-              - entity: "sensor.lune_v6_stueetage_zone_1_temperature"
-                name: "Kontor"
-              - entity: "sensor.lune_v6_stueetage_zone_2_temperature"
-                name: "Hobbyrum"
-              - entity: "sensor.lune_v6_stueetage_zone_3_temperature"
-                name: "Bryggers"
-              - entity: "sensor.lune_v6_stueetage_zone_4_temperature"
-                name: "Køkken"
-              - entity: "sensor.lune_v6_stueetage_zone_5_temperature"
-                name: "Pejsestue"
-              - entity: "sensor.lune_v6_stueetage_zone_6_temperature"
-                name: "Bad"
-            grid_options:
-              columns: "full"
-      - type: "grid"
-        column_span: 2
-        cards:
-          - type: "heading"
-            heading: "Rum, 1. sal – 7 døgn"
-            icon: "mdi:floor-plan"
-          - type: "history-graph"
-            hours_to_show: 168
-            entities:
-              - entity: "sensor.lune_v6_1_sal_zone_1_temperature"
-                name: "Josephine"
-              - entity: "sensor.lune_v6_1_sal_zone_2_temperature"
-                name: "Laura"
-              - entity: "sensor.lune_v6_1_sal_zone_3_temperature"
-                name: "Toilet"
-              - entity: "sensor.lune_v6_1_sal_zone_4_temperature"
-                name: "Stue Repo"
-              - entity: "sensor.lune_v6_1_sal_zone_5_temperature"
-                name: "Stue"
-              - entity: "sensor.lune_v6_1_sal_zone_6_temperature"
-                name: "Soveværelse"
-            grid_options:
-              columns: "full"
-      - type: "grid"
-        cards:
-          - type: "heading"
-            heading: "Ventiler, stueetage – 48 t"
-            icon: "mdi:valve"
-          - type: "history-graph"
-            hours_to_show: 48
-            entities:
-              - entity: "sensor.lune_v6_stueetage_zone_1_valve_position"
-                name: "Kontor"
-              - entity: "sensor.lune_v6_stueetage_zone_2_valve_position"
-                name: "Hobbyrum"
-              - entity: "sensor.lune_v6_stueetage_zone_3_valve_position"
-                name: "Bryggers"
-              - entity: "sensor.lune_v6_stueetage_zone_4_valve_position"
-                name: "Køkken"
-              - entity: "sensor.lune_v6_stueetage_zone_5_valve_position"
-                name: "Pejsestue"
-              - entity: "sensor.lune_v6_stueetage_zone_6_valve_position"
-                name: "Bad"
-            grid_options:
-              columns: "full"
-      - type: "grid"
-        cards:
-          - type: "heading"
-            heading: "Ventiler, 1. sal – 48 t"
-            icon: "mdi:valve"
-          - type: "history-graph"
-            hours_to_show: 48
-            entities:
-              - entity: "sensor.lune_v6_1_sal_zone_1_valve_position"
-                name: "Josephine"
-              - entity: "sensor.lune_v6_1_sal_zone_2_valve_position"
-                name: "Laura"
-              - entity: "sensor.lune_v6_1_sal_zone_3_valve_position"
-                name: "Toilet"
-              - entity: "sensor.lune_v6_1_sal_zone_4_valve_position"
-                name: "Stue Repo"
-              - entity: "sensor.lune_v6_1_sal_zone_5_valve_position"
-                name: "Stue"
-              - entity: "sensor.lune_v6_1_sal_zone_6_valve_position"
-                name: "Soveværelse"
-            grid_options:
-              columns: "full"
-      - type: "grid"
-        column_span: 2
-        cards:
-          - type: "heading"
-            heading: "Varmepumpen – 48 t"
-            icon: "mdi:heat-pump"
-          - type: "history-graph"
-            title: "Kompressor og effekt"
-            hours_to_show: 48
-            entities:
-              - entity: "sensor.ecodan_heatpump_compressor_frequency"
-                name: "Kompressor"
-              - entity: "sensor.ecodan_heatpump_output_power"
-                name: "Effekt"
-            grid_options:
-              columns: "full"
-          - type: "history-graph"
-            title: "Drift"
-            hours_to_show: 48
-            entities:
-              - entity: "sensor.ecodan_heatpump_operation_mode"
-                name: "Drift"
-              - entity: "binary_sensor.ecodan_heatpump_compressor"
-                name: "Kompressor"
-              - entity: "binary_sensor.ecodan_heatpump_defrost"
-                name: "Afrimning"
-            grid_options:
-              columns: "full"
-      - type: "grid"
-        cards:
-          - type: "heading"
-            heading: "Primærflow – 48 t"
-            icon: "mdi:waves-arrow-right"
-          - type: "history-graph"
-            hours_to_show: 48
-            entities:
-              - entity: "sensor.ecodan_heatpump_flow_rate"
-                name: "Primærflow"
-            grid_options:
-              columns: "full"
-      - type: "grid"
-        cards:
-          - type: "heading"
-            heading: "Cirkulationspumpen – 48 t"
-            icon: "mdi:pump"
-          - type: "history-graph"
-            hours_to_show: 48
-            entities:
-              - entity: "sensor.grundfos_alpha2_go_pump_flow"
-                name: "Sekundærflow"
-            grid_options:
-              columns: "full"
-          - type: "history-graph"
-            hours_to_show: 48
-            entities:
-              - entity: "sensor.grundfos_alpha2_go_pump_power"
-                name: "Pumpeeffekt"
-            grid_options:
-              columns: "full"
-      - type: "grid"
-        column_span: 2
-        cards:
-          - type: "heading"
-            heading: "Energi pr. døgn – 30 dage"
-            icon: "mdi:lightning-bolt"
-          - type: "statistics-graph"
-            title: "Rumvarme"
-            chart_type: "bar"
-            period: "day"
-            days_to_show: 30
-            stat_types:
-              - "change"
-            entities:
-              - entity: "sensor.ecodan_heatpump_total_heating_consumed"
-                name: "Strøm"
-              - entity: "sensor.ecodan_heatpump_total_heating_delivered"
-                name: "Varme"
-            grid_options:
-              columns: "full"
-          - type: "statistics-graph"
-            title: "Varmt vand"
-            chart_type: "bar"
-            period: "day"
-            days_to_show: 30
-            stat_types:
-              - "change"
-            entities:
-              - entity: "sensor.ecodan_heatpump_total_dhw_consumed"
-                name: "Strøm"
-              - entity: "sensor.ecodan_heatpump_total_dhw_delivered"
-                name: "Varme"
-            grid_options:
-              columns: "full"
+- title: Overblik
+  path: overblik
+  icon: mdi:home-thermometer
+  type: sections
+  max_columns: 4
+  sections:
+  - type: grid
+    cards:
+    - type: heading
+      heading: Huset
+      icon: mdi:home
+    - type: tile
+      entity: climate.ecodan_heatpump_virtual_thermostat_z1
+      name: Huset
+      color: deep-orange
+      state_content:
+      - current_temperature
+      - temperature
+      features:
+      - type: target-temperature
+      features_position: bottom
+      grid_options:
+        columns: 12
+    - type: tile
+      entity: sensor.ecodan_heatpump_outside_temp
+      name: Ude
+      color: blue
+    - type: tile
+      entity: weather.forecast_home
+      name: Vejret
+    - type: weather-forecast
+      entity: weather.forecast_home
+      forecast_type: hourly
+      show_current: false
+      show_forecast: true
+      grid_options:
+        columns: 12
+  - type: grid
+    cards:
+    - type: heading
+      heading: Varmepumpen
+      icon: mdi:heat-pump
+    - type: tile
+      entity: sensor.ecodan_heatpump_feed_temp
+      name: Fremløb
+      color: deep-orange
+    - type: tile
+      entity: sensor.ecodan_heatpump_return_temp
+      name: Retur
+      color: blue
+    - type: tile
+      entity: sensor.ecodan_heatpump_delta_t
+      name: ΔT
+    - type: tile
+      entity: sensor.ecodan_heatpump_output_power
+      name: Effekt
+      color: deep-orange
+    - type: tile
+      entity: sensor.ecodan_heatpump_compressor_frequency
+      name: Kompressor
+    - type: tile
+      entity: sensor.ecodan_heatpump_flow_rate
+      name: Primærflow
+      color: blue
+    - type: tile
+      entity: sensor.ecodan_heatpump_operation_mode
+      name: Drift
+    - type: tile
+      entity: sensor.ecodan_heatpump_heating_cop
+      name: COP i dag
+      color: green
+  - type: grid
+    cards:
+    - type: heading
+      heading: Cirkulation
+      icon: mdi:pump
+    - type: tile
+      entity: sensor.alpha2_flow_l_min
+      name: Sekundærflow
+      color: blue
+    - type: tile
+      entity: sensor.grundfos_alpha2_go_pump_head_pressure
+      name: Løftehøjde
+    - type: tile
+      entity: sensor.grundfos_alpha2_go_pump_power
+      name: Pumpeeffekt
+    - type: tile
+      entity: sensor.ecodan_heatpump_heating_delivered
+      name: Varme i dag
+      color: deep-orange
+  - type: grid
+    cards:
+    - type: heading
+      heading: Stueetage
+      icon: mdi:floor-plan
+    - type: tile
+      entity: climate.lune_v6_stueetage_zone_1
+      name: Kontor
+      color: deep-orange
+      state_content:
+      - current_temperature
+      - temperature
+      vertical: false
+    - type: tile
+      entity: climate.lune_v6_stueetage_zone_2
+      name: Hobbyrum
+      color: deep-orange
+      state_content:
+      - current_temperature
+      - temperature
+      vertical: false
+    - type: tile
+      entity: climate.lune_v6_stueetage_zone_3
+      name: Bryggers
+      color: deep-orange
+      state_content:
+      - current_temperature
+      - temperature
+      vertical: false
+    - type: tile
+      entity: climate.lune_v6_stueetage_zone_4
+      name: Køkken
+      color: deep-orange
+      state_content:
+      - current_temperature
+      - temperature
+      vertical: false
+    - type: tile
+      entity: climate.lune_v6_stueetage_zone_5
+      name: Pejsestue
+      color: deep-orange
+      state_content:
+      - current_temperature
+      - temperature
+      vertical: false
+    - type: tile
+      entity: climate.lune_v6_stueetage_zone_6
+      name: Bad
+      color: deep-orange
+      state_content:
+      - current_temperature
+      - temperature
+      vertical: false
+  - type: grid
+    cards:
+    - type: heading
+      heading: 1. sal
+      icon: mdi:floor-plan
+    - type: tile
+      entity: climate.lune_v6_1_sal_zone_1
+      name: Josephine
+      color: deep-orange
+      state_content:
+      - current_temperature
+      - temperature
+      vertical: false
+    - type: tile
+      entity: climate.lune_v6_1_sal_zone_2
+      name: Laura
+      color: deep-orange
+      state_content:
+      - current_temperature
+      - temperature
+      vertical: false
+    - type: tile
+      entity: climate.lune_v6_1_sal_zone_3
+      name: Toilet
+      color: deep-orange
+      state_content:
+      - current_temperature
+      - temperature
+      vertical: false
+    - type: tile
+      entity: climate.lune_v6_1_sal_zone_4
+      name: Stue Repo
+      color: deep-orange
+      state_content:
+      - current_temperature
+      - temperature
+      vertical: false
+    - type: tile
+      entity: climate.lune_v6_1_sal_zone_5
+      name: Stue
+      color: deep-orange
+      state_content:
+      - current_temperature
+      - temperature
+      vertical: false
+    - type: tile
+      entity: climate.lune_v6_1_sal_zone_6
+      name: Soveværelse
+      color: deep-orange
+      state_content:
+      - current_temperature
+      - temperature
+      vertical: false
+  - type: grid
+    column_span: 2
+    cards:
+    - type: heading
+      heading: Sidste 24 timer
+      icon: mdi:chart-line
+    - type: history-graph
+      title: Frem, retur og ude
+      hours_to_show: 24
+      entities:
+      - entity: sensor.ecodan_heatpump_feed_temp
+        name: Fremløb
+      - entity: sensor.ecodan_heatpump_return_temp
+        name: Retur
+      - entity: sensor.ecodan_heatpump_outside_temp
+        name: Ude
+      grid_options:
+        columns: full
+    - type: history-graph
+      title: Kompressor og effekt
+      hours_to_show: 24
+      entities:
+      - entity: sensor.ecodan_heatpump_compressor_frequency
+        name: Kompressor
+      - entity: sensor.ecodan_heatpump_output_power
+        name: Effekt
+      grid_options:
+        columns: full
+    - type: history-graph
+      title: 'Flow: varmepumpe og cirkulation'
+      hours_to_show: 24
+      entities:
+      - entity: sensor.ecodan_heatpump_flow_rate
+        name: Varmepumpe (primær)
+      - entity: sensor.alpha2_flow_l_min
+        name: Cirkulation (sekundær)
+      grid_options:
+        columns: full
+- title: Historik
+  path: historik
+  icon: mdi:chart-timeline-variant
+  type: sections
+  max_columns: 2
+  sections:
+  - type: grid
+    column_span: 2
+    cards:
+    - type: heading
+      heading: Frem, retur og ude – 7 døgn
+      icon: mdi:thermometer-lines
+    - type: history-graph
+      hours_to_show: 168
+      entities:
+      - entity: sensor.ecodan_heatpump_feed_temp
+        name: Fremløb
+      - entity: sensor.ecodan_heatpump_return_temp
+        name: Retur
+      - entity: sensor.ecodan_heatpump_zone_1_setpoint_value
+        name: Fremløbsmål
+      - entity: sensor.ecodan_heatpump_outside_temp
+        name: Ude
+      grid_options:
+        columns: full
+  - type: grid
+    column_span: 2
+    cards:
+    - type: heading
+      heading: Rum, stueetage – 7 døgn
+      icon: mdi:floor-plan
+    - type: history-graph
+      hours_to_show: 168
+      entities:
+      - entity: sensor.lune_v6_stueetage_zone_1_temperature
+        name: Kontor
+      - entity: sensor.lune_v6_stueetage_zone_2_temperature
+        name: Hobbyrum
+      - entity: sensor.lune_v6_stueetage_zone_3_temperature
+        name: Bryggers
+      - entity: sensor.lune_v6_stueetage_zone_4_temperature
+        name: Køkken
+      - entity: sensor.lune_v6_stueetage_zone_5_temperature
+        name: Pejsestue
+      - entity: sensor.lune_v6_stueetage_zone_6_temperature
+        name: Bad
+      grid_options:
+        columns: full
+  - type: grid
+    column_span: 2
+    cards:
+    - type: heading
+      heading: Rum, 1. sal – 7 døgn
+      icon: mdi:floor-plan
+    - type: history-graph
+      hours_to_show: 168
+      entities:
+      - entity: sensor.lune_v6_1_sal_zone_1_temperature
+        name: Josephine
+      - entity: sensor.lune_v6_1_sal_zone_2_temperature
+        name: Laura
+      - entity: sensor.lune_v6_1_sal_zone_3_temperature
+        name: Toilet
+      - entity: sensor.lune_v6_1_sal_zone_4_temperature
+        name: Stue Repo
+      - entity: sensor.lune_v6_1_sal_zone_5_temperature
+        name: Stue
+      - entity: sensor.lune_v6_1_sal_zone_6_temperature
+        name: Soveværelse
+      grid_options:
+        columns: full
+  - type: grid
+    cards:
+    - type: heading
+      heading: Ventiler, stueetage – 48 t
+      icon: mdi:valve
+    - type: history-graph
+      hours_to_show: 48
+      entities:
+      - entity: sensor.lune_v6_stueetage_zone_1_valve_position
+        name: Kontor
+      - entity: sensor.lune_v6_stueetage_zone_2_valve_position
+        name: Hobbyrum
+      - entity: sensor.lune_v6_stueetage_zone_3_valve_position
+        name: Bryggers
+      - entity: sensor.lune_v6_stueetage_zone_4_valve_position
+        name: Køkken
+      - entity: sensor.lune_v6_stueetage_zone_5_valve_position
+        name: Pejsestue
+      - entity: sensor.lune_v6_stueetage_zone_6_valve_position
+        name: Bad
+      grid_options:
+        columns: full
+  - type: grid
+    cards:
+    - type: heading
+      heading: Ventiler, 1. sal – 48 t
+      icon: mdi:valve
+    - type: history-graph
+      hours_to_show: 48
+      entities:
+      - entity: sensor.lune_v6_1_sal_zone_1_valve_position
+        name: Josephine
+      - entity: sensor.lune_v6_1_sal_zone_2_valve_position
+        name: Laura
+      - entity: sensor.lune_v6_1_sal_zone_3_valve_position
+        name: Toilet
+      - entity: sensor.lune_v6_1_sal_zone_4_valve_position
+        name: Stue Repo
+      - entity: sensor.lune_v6_1_sal_zone_5_valve_position
+        name: Stue
+      - entity: sensor.lune_v6_1_sal_zone_6_valve_position
+        name: Soveværelse
+      grid_options:
+        columns: full
+  - type: grid
+    column_span: 2
+    cards:
+    - type: heading
+      heading: Varmepumpen – 48 t
+      icon: mdi:heat-pump
+    - type: history-graph
+      title: Kompressor og effekt
+      hours_to_show: 48
+      entities:
+      - entity: sensor.ecodan_heatpump_compressor_frequency
+        name: Kompressor
+      - entity: sensor.ecodan_heatpump_output_power
+        name: Effekt
+      grid_options:
+        columns: full
+    - type: history-graph
+      title: Drift
+      hours_to_show: 48
+      entities:
+      - entity: sensor.ecodan_heatpump_operation_mode
+        name: Drift
+      - entity: binary_sensor.ecodan_heatpump_compressor
+        name: Kompressor
+      - entity: binary_sensor.ecodan_heatpump_defrost
+        name: Afrimning
+      grid_options:
+        columns: full
+  - type: grid
+    column_span: 2
+    cards:
+    - type: heading
+      heading: 'Flow: varmepumpe og cirkulation – 48 t'
+      icon: mdi:waves-arrow-right
+    - type: markdown
+      content: Ligger cirkulationen (sekundær) over varmepumpen (primær), mens den kører rumvarme, løber retur ind i fremløbet gennem buffertanken. Målet er sekundær lidt under primær (ca. 90 %).
+      grid_options:
+        columns: full
+    - type: history-graph
+      hours_to_show: 48
+      entities:
+      - entity: sensor.ecodan_heatpump_flow_rate
+        name: Varmepumpe (primær)
+      - entity: sensor.alpha2_flow_l_min
+        name: Cirkulation (sekundær)
+      grid_options:
+        columns: full
+    - type: history-graph
+      title: Cirkulationspumpen
+      hours_to_show: 48
+      entities:
+      - entity: sensor.grundfos_alpha2_go_pump_power
+        name: Pumpeeffekt
+      - entity: sensor.grundfos_alpha2_go_pump_head_pressure
+        name: Løftehøjde
+      grid_options:
+        columns: full
+  - type: grid
+    column_span: 2
+    cards:
+    - type: heading
+      heading: Energi pr. døgn – 30 dage
+      icon: mdi:lightning-bolt
+    - type: statistics-graph
+      title: Rumvarme
+      chart_type: bar
+      period: day
+      days_to_show: 30
+      stat_types:
+      - change
+      entities:
+      - entity: sensor.ecodan_heatpump_total_heating_consumed
+        name: Strøm
+      - entity: sensor.ecodan_heatpump_total_heating_delivered
+        name: Varme
+      grid_options:
+        columns: full
+    - type: statistics-graph
+      title: Varmt vand
+      chart_type: bar
+      period: day
+      days_to_show: 30
+      stat_types:
+      - change
+      entities:
+      - entity: sensor.ecodan_heatpump_total_dhw_consumed
+        name: Strøm
+      - entity: sensor.ecodan_heatpump_total_dhw_delivered
+        name: Varme
+      grid_options:
+        columns: full
