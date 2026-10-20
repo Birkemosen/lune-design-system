@@ -367,24 +367,21 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             <small>{T("home.greeting")}</small>
             <h2 id="h-home">{T("home.headline")} <span class="sub">{T("home.headline2")}</span></h2>
             <p>{T("home.sentence", d=T.num(HOUSE_TEMP - HOUSE_TARGET), n=calling)}</p>
-            <div class="hero-facts">
-              <button class="hero-fact" type="button" popovertarget="sheet-heat"><span class="chip-icon" aria-hidden="true">{I["heat"]}</span><small>{T("hero.heat")}</small><b>{T.num(36.0)}° → {T.num(29.0)}°</b><span>{T("hero.heatSub")}</span></button>
-              <button class="hero-fact" type="button" popovertarget="sheet-plan"><span class="chip-icon" data-tone="violet" aria-hidden="true">{I["plan"]}</span><small>{T("tile.plan")}</small><b>{T("tile.planVal", a="06", b="09")}</b><span>≈ {T.num(8.1)} kWh</span></button>
-            </div>
           </div>
           <form class="thermo" data-save="house-target">
-            <div class="thermo-ring" style="--v:{v};--now:{now}" role="img" aria-label="{T("thermo.aria", t=T.num(HOUSE_TEMP), g=T.num(HOUSE_TARGET))}">
-              <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="44" pathLength="100"/><circle class="arc" cx="50" cy="50" r="44" pathLength="100"/><circle class="knob" cx="50" cy="50" r="44" pathLength="100"/></svg>
-              <div class="thermo-val"><span>{T("thermo.house")}</span><b data-bind="house.temp">{T.num(HOUSE_TEMP)}<small>°</small></b><span>{T("thermo.outside", t=T.num(8.4))}</span></div>
-            </div>
-            <div class="climate">
-              <div class="target">
+            <div class="thermo-ring" style="--v:{v};--now:{now}" data-min="15" data-max="25">
+              <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="42" pathLength="100"/><circle class="arc" cx="50" cy="50" r="42" pathLength="100"/><circle class="knob" cx="50" cy="50" r="42" pathLength="100"/><circle class="now" cx="50" cy="50" r="48.5" pathLength="100"/></svg>
+              <div class="thermo-val">
+                <small>{T("climate.target")}</small>
+                <label class="thermo-target"><input type="text" inputmode="decimal" id="house_target" name="house_target" value="{T.num(HOUSE_TARGET)}" data-min="5" data-max="30" data-step-size="0.5" autocomplete="off" aria-label="{ta}"><span class="unit" aria-hidden="true">°</span></label>
+                <span>{T("thermo.now", t=T.num(HOUSE_TEMP))}</span><span>{T("thermo.outside", t=T.num(8.4))}</span>
+              </div>
+              <div class="thermo-steps">
                 <button type="button" data-step="-1" aria-label="{T("common.decrease", x=ta)}">−</button>
-                <label class="value"><small>{T("climate.target")}</small><input type="text" inputmode="decimal" id="house_target" name="house_target" value="{T.num(HOUSE_TARGET)}" data-min="5" data-max="30" data-step-size="0.5" autocomplete="off"><span class="unit" aria-hidden="true">°</span></label>
                 <button type="button" data-step="1" aria-label="{T("common.increase", x=ta)}">+</button>
               </div>
-              <p class="autosave" aria-live="polite"></p>
             </div>
+            <p class="autosave" aria-live="polite"></p>
           </form>
         </section>
         <header class="home-head"><small>{T("home.nowEyebrow")}</small><h3>{T("home.nowTitle")}</h3></header>

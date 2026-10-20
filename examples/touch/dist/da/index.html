@@ -75,24 +75,21 @@
             <small>God morgen</small>
             <h2 id="h-home">Varmt nok overalt. <span class="sub">Varmepumpen hviler.</span></h2>
             <p>Huset er 0,9° over målet, og 2 rum kalder på varme. Odin planlægger næste varme kl. 06, og vinden øges i nat.</p>
-            <div class="hero-facts">
-              <button class="hero-fact" type="button" popovertarget="sheet-heat"><span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3c3 4 5 6.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-5 .5 2 1.5 3 3 3-1-3 0-6 0-8z"/></svg></span><small>Varmepumpe</small><b>36,0° → 29,0°</b><span>hviler · Odin styrer</span></button>
-              <button class="hero-fact" type="button" popovertarget="sheet-plan"><span class="chip-icon" data-tone="violet" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span><small>Næste varme</small><b>kl. 06–09</b><span>≈ 8,1 kWh</span></button>
-            </div>
           </div>
           <form class="thermo" data-save="house-target">
-            <div class="thermo-ring" style="--v:60;--now:69" role="img" aria-label="Huset er 21,9 °C, målet er 21,0 °C">
-              <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="44" pathLength="100"/><circle class="arc" cx="50" cy="50" r="44" pathLength="100"/><circle class="knob" cx="50" cy="50" r="44" pathLength="100"/></svg>
-              <div class="thermo-val"><span>Huset nu</span><b data-bind="house.temp">21,9<small>°</small></b><span>ude 8,4°</span></div>
-            </div>
-            <div class="climate">
-              <div class="target">
+            <div class="thermo-ring" style="--v:60;--now:69" data-min="15" data-max="25">
+              <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="42" pathLength="100"/><circle class="arc" cx="50" cy="50" r="42" pathLength="100"/><circle class="knob" cx="50" cy="50" r="42" pathLength="100"/><circle class="now" cx="50" cy="50" r="48.5" pathLength="100"/></svg>
+              <div class="thermo-val">
+                <small>Mål</small>
+                <label class="thermo-target"><input type="text" inputmode="decimal" id="house_target" name="house_target" value="21,0" data-min="5" data-max="30" data-step-size="0.5" autocomplete="off" aria-label="husets mål"><span class="unit" aria-hidden="true">°</span></label>
+                <span>Huset nu 21,9°</span><span>ude 8,4°</span>
+              </div>
+              <div class="thermo-steps">
                 <button type="button" data-step="-1" aria-label="Sænk husets mål">−</button>
-                <label class="value"><small>Mål</small><input type="text" inputmode="decimal" id="house_target" name="house_target" value="21,0" data-min="5" data-max="30" data-step-size="0.5" autocomplete="off"><span class="unit" aria-hidden="true">°</span></label>
                 <button type="button" data-step="1" aria-label="Hæv husets mål">+</button>
               </div>
-              <p class="autosave" aria-live="polite"></p>
             </div>
+            <p class="autosave" aria-live="polite"></p>
           </form>
         </section>
         <header class="home-head"><small>Lige nu</small><h3>Varme, plan og vejr</h3></header>
