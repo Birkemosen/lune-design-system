@@ -62,3 +62,6 @@ eller som godkendt af projektet.
 
 Lune udvikles i fritiden for egne penge. Vil du give noget igen, kan du sponsorere det via
 [GitHub Sponsors](https://github.com/sponsors/Birkemosen).
+
+Bruger du designsystemet, er et lille engangs-tak velkomment, men aldrig forventet.
+Sponsorater giver ingen modydelser eller løfter: Lune bygges i sit eget tempo.
