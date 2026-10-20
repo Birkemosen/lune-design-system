@@ -223,6 +223,8 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
   </div>'''
 
     I = {  # ikoner (stroke, currentColor)
+        "outside": '<svg viewBox="0 0 24 24"><path d="M8.5 3.5v1.5M3.6 5.6l1.1 1.1M2 10.5h1.5M13.4 5.6l-1.1 1.1"/><path d="M5.4 12.6A3.5 3.5 0 1 1 11.8 9"/><path d="M9 20h8.5a3.5 3.5 0 0 0 .4-7 5 5 0 0 0-9.4 1.3A2.9 2.9 0 0 0 9 20z"/></svg>',
+        "house": '<svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/></svg>',
         "heat": '<svg viewBox="0 0 24 24"><path d="M12 3c3 4 5 6.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-5 .5 2 1.5 3 3 3-1-3 0-6 0-8z"/></svg>',
         "plan": '<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>',
         "wx": '<svg viewBox="0 0 24 24"><path d="M3 9h11a3 3 0 1 0-3-3M3 14h15a3 3 0 1 1-3 3M3 19h7"/></svg>',
@@ -370,8 +372,8 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
           </div>
           <form class="thermo" data-save="house-target">
             <dl class="thermo-facts">
-              <div><dt>{T("thermo.house")}</dt><dd>{T.num(HOUSE_TEMP)}°</dd></div>
-              <div><dt>{T("thermo.outsideLabel")}</dt><dd>{T.num(8.4)}°</dd></div>
+              <div><dt><span class="chip-icon" aria-hidden="true">{I["house"]}</span><span>{T("thermo.house")}</span></dt><dd>{T.num(HOUSE_TEMP)}°</dd></div>
+              <div><dt><span class="chip-icon" data-tone="info" aria-hidden="true">{I["outside"]}</span><span>{T("thermo.outsideLabel")}</span></dt><dd>{T.num(8.4)}°</dd></div>
             </dl>
             <div class="thermo-ring" style="--v:{v};--now:{now}" data-min="15" data-max="25">
               <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="42" pathLength="100"/><circle class="arc" cx="50" cy="50" r="42" pathLength="100"/><circle class="knob" cx="50" cy="50" r="42" pathLength="100"/><circle class="now" cx="50" cy="50" r="48.5" pathLength="100"/></svg>
