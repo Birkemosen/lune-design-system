@@ -1,5 +1,9 @@
 # Changelog — Lune Design System
 
+## 2.3.17
+
+- Termostat-ringen: den stiplede linje fra «huset nu»-mærket til kortet er fjernet igen; mærket på ringen og kortene til højre bliver.
+
 ## 2.3.16
 
 - `.ht-fr`: frem og retur i Varme-feltet står over hinanden med en halvbue fra frem til retur og ΔT ud for buens midte. Buen er en dokumenteret undtagelse fra 3.2.2 (gradient varme → blå med OKLab-mellemstop). Erstatter «x° → y°».
