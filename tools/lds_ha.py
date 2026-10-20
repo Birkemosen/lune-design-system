@@ -58,6 +58,21 @@ MAP = {  # HA-variabel: LDS-token (se tokens.$semantic for de tre lag)
     "energy-grid-consumption-color": "dom-cool", "energy-battery-in-color": "dom-plan", "energy-battery-out-color": "dom-plan",
     "energy-gas-color": "dom-heat", "energy-water-color": "dom-water",
 }
+# Bubble Card (HACS) læser sine egne --bubble-*-variabler; med Lune-temaet får dens
+# kort og pop-ups (= LDS-ark) samme flader som LDS: kort på bg, ikonbrik raised, ark på bg.
+BUBBLE = {
+    "bubble-main-background-color": "card", "bubble-secondary-background-color": "raised",
+    "bubble-icon-background-color": "raised", "bubble-sub-button-background-color": "raised",
+    "bubble-pop-up-background-color": "bg", "bubble-pop-up-main-background-color": "card",
+    "bubble-accent-color": "accent", "bubble-line-background-color": "seg-off",
+    "bubble-state-climate-heat-color": "dom-heat", "bubble-climate-accent-color": "heat-fill",
+    "bubble-slider-fill-color": "fg",
+}
+# LDS-farver til kort, der vil bruge LDS' betydning direkte (fx ikonbrikker i Bubble Card):
+# var(--lune-heat-fill, var(--deep-orange-color)) — med fallback, så kortet også virker i andre temaer.
+LUNE = ["heat-fill", "water-fill", "info-fill", "violet-fill", "ok-fill", "warn-fill", "danger-fill",
+        "on-fill", "on-warn-fill", "raised", "dom-heat", "dom-water", "data-return"]
+
 RGB = [k for k in MAP if k.startswith("state-") and k != "state-switch-active-color" and k != "state-input_boolean-on-color"] + ["primary-color", "accent-color", "error-color", "warning-color", "success-color", "info-color"]
 
 def mode(th):
@@ -68,6 +83,10 @@ def mode(th):
     for k in RGB:
         val = v(MAP[k], th)
         if val.startswith("#"): out.append(f"      rgb-{k}: {q(rgb(val))}")
+    for k, tok in BUBBLE.items():
+        out.append(f"      {k}: {q(v(tok, th))}")
+    for tok in LUNE:
+        out.append(f"      lune-{tok}: {q(v(tok, th))}")
     edge = v("card-edge-c", th)
     out.append(f"      ha-card-border-color: {q(edge if edge != 'transparent' else 'rgba(0, 0, 0, 0)')}")
     return "\n".join(out)
@@ -140,6 +159,13 @@ Lune:
   ha-card-box-shadow: "none"
   ha-dialog-border-radius: "24px"
   ha-badge-border-radius: "999px"
+  # Bubble Card: LDS-radier (kort 16, ikonbrik 12, knapper/piller 999, ark 24) og ingen skygger på kort
+  bubble-border-radius: "16px"
+  bubble-icon-border-radius: "12px"
+  bubble-button-border-radius: "999px"
+  bubble-sub-button-border-radius: "999px"
+  bubble-pop-up-border-radius: "24px"
+  bubble-box-shadow: "none"
 {UIX}
   modes:
     light:
@@ -149,4 +175,4 @@ Lune:
 """
 out = L.ROOT/"dist/home-assistant/themes"; out.mkdir(parents=True, exist_ok=True)
 (out/"lune.yaml").write_text(yaml, encoding="utf-8")
-print(f"→ {out/'lune.yaml'}  ({len(MAP)} variabler pr. tilstand)")
+print(f"→ {out/'lune.yaml'}  ({len(MAP) + len(BUBBLE) + len(LUNE)} variabler pr. tilstand)")
