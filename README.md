@@ -20,6 +20,7 @@ Designændringer lander **her først**, derefter genbyg i produkterne. Ret aldri
 | `tools/lds_build.py` | Bygger `dist/<projekt>/lune-ui.css` og tjekker kontrast |
 | `tools/build_docs.py` | Bygger `docs/design-system.html` |
 | `tools/lds_ha.py` | Bygger Home Assistant-temaet (`dist/home-assistant/`) |
+| `tools/lds_shots.py` | README-skærmbillede: en preview i lyst og mørkt, delt diagonalt (`python tools/lds_shots.py PREVIEW.html OUT.png --height 1430`) |
 | `tools/lds_display.py` | Bygger vægskærmens LVGL-tema (`dist/display/lune_theme.h` og ESPHome-pakke); `--install` skriver firmwarefilerne i produktrepoet |
 | `tools/lds_brand.py`, `tokens/brand.json` | Brand-mærker (seksrørs-halo) som PNG/SVG |
 | `tools/md_toc.py` | Indholdsfortegnelser i Markdown (`<!-- toc -->`), fx i `DESIGN.md` og manualerne |
