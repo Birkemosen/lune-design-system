@@ -1,5 +1,12 @@
 # Changelog — Lune Design System
 
+## 2.3.29
+
+- `.zcards` / `.zcard` (V6 Hjem): ét kort pr. zone med aktuel/mål, åbning og en lav 24 t-graf (`.zc.mini`) — temperatur, mål som trappe og varmeperioder skraveret. Afløser komfortlisten på V6' Hjem; `.comfort` bliver i Touch.
+- `.legend .lh`: skravering for varme i panelhovedets forklaring.
+- `.panel > .trend-wrap`: fremløb/retur-grafen vokser til panelets højde, når naboen er højere.
+- V6-eksemplet viser zonekortene.
+
 ## 2.3.28
 
 - `.panel.alert` som formular (fx V6' fejlguide): den primære knap («Nulstil fejl») er altid rød og aldrig «clean»-grå, og de øvrige knapper i en alarm med en primær handling er neutrale.
