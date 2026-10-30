@@ -423,7 +423,13 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
         <form class="panel alert" data-save="zone/{i}/recovery">
           <div class="panel-head"><h3>{T("zdash.faultTitle")}</h3></div>
           <p class="note">{T("zdash.faultBody")}</p>
-          <div class="panel-foot"><button class="btn" type="submit" name="action" value="reset_fault">{T("common.resetFault")}</button></div>
+          <p class="note">{T("zdash.faultCheck")}</p>
+          {group(T("zdash.backOff"), srow(f'<span>{T("zdash.backOffFor")}</span>', seg(f"z{i}_back_s", [("5","5 s"),("10","10 s"),("20","20 s")], "10", T("zdash.backOffFor"))),
+                 f'<p class="note">{T("zdash.backOffNote")}</p>'
+                 f'<div class="actions"><button class="btn" type="submit" name="action" value="back_off">{T("zdash.backOffBtn")}</button></div>')}
+          {group(T("zdash.resetStep"), srow(f'<span>{T("zdash.valveNow")}</span>', seg(f"z{i}_valve_now", [("closed",T("zdash.valveClosed")),("middle",T("zdash.valveMiddle")),("open",T("zdash.valveOpen")),("unknown",T("zdash.valveUnknown"))], "unknown", T("zdash.valveNow"))),
+                 f'<p class="note">{T("zdash.valveNote")}</p>')}
+          <div class="panel-foot"><button class="btn primary" type="submit" name="action" value="reset_fault">{T("common.resetFault")}</button></div>
         </form>''' if fault else ""
         dis=' disabled' if member else ''
         ta=T("zdash.targetAria")

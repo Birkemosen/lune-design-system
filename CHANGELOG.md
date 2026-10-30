@@ -1,5 +1,10 @@
 # Changelog — Lune Design System
 
+## 2.3.28
+
+- `.panel.alert` som formular (fx V6' fejlguide): den primære knap («Nulstil fejl») er altid rød og aldrig «clean»-grå, og de øvrige knapper i en alarm med en primær handling er neutrale.
+- Mobil (< 600 px): et `.seg` i en indstillingsrække står under labelen i fuld bredde med smallere piller, så fire valg kan stå ved siden af hinanden uden at blive skåret af.
+
 ## 2.3.27
 
 - `.hchart` med fortid og prognose: intervallet `48h` (ud over `24h` / `7d`), `.trend .future` (svag flade efter «nu»), `.t` / `.tf` (temperatur, prognose stiplet), `.sp` (mål som trappekurve), `.o` / `.of` (ude), `.vb` (ventilåbning), `.heat` (timer med varme), `.pl` / `.ac` / `.acw` (planlagt, leveret, heraf varmt vand). `.axis.at` placerer x-mærker efter tid (`--x`). `.hchart-panel.pair`: øverste af to paneler med hver sin skala, uden x-akse. Forklaring: `.lt`, `.ltf`, `.lsp`, `.lo`, `.lof`, `.lpl`, `.lac`, `.lfut`.
