@@ -1743,8 +1743,9 @@
   .hchart-panel.pair + .hchart-panel .trend { height: 100px; }
   .axis.at { position: relative; display: block; height: 1.5em; }
   .axis.at span { position: absolute; left: calc(var(--x, 0) * 1%); transform: translateX(-50%); white-space: nowrap; }
-  .axis.at span:first-child { transform: none; }
-  .axis.at span:last-child { transform: translateX(-100%); }
+  .axis.at span.s { transform: none; }                 /* mærke ved venstre kant */
+  .axis.at span.e { transform: translateX(-100%); }    /* mærke ved højre kant */
+  .axis.at b { color: var(--fg); }
   .chart-legend .lt  { border-color: var(--fg); }
   .chart-legend .ltf { border-top: 2px dashed var(--fg); }
   .chart-legend .lsp { border-top: 1.4px dashed var(--muted); }
@@ -1895,7 +1896,13 @@
   .seg { display: inline-flex; width: fit-content; max-width: 100%; min-height: var(--hit); padding: 4px; border-radius: var(--r-pill); background: var(--raised); }
   .seg label { flex: 0 0 auto; display: grid; }
   .seg span { padding: 0 var(--space-4) !important; }
-  @media (max-width: 599.98px) { .seg { display: flex; width: auto; } .seg label { flex: 1; } }
+  /* Mobil: segmentet fylder rækken under labelen, og pillerne er smallere, så fire valg kan stå side om side. */
+  @media (max-width: 599.98px) {
+    .seg { display: flex; width: auto; } .seg label { flex: 1; }
+    .seg span { padding: 0 var(--space-2) !important; }
+    .setting-control:has(> .seg) { flex: 1 1 100%; margin-left: 0; }
+    .setting-control > .seg { width: 100%; }
+  }
   .seg input { position: absolute; opacity: 0; pointer-events: none; }
   .seg span { display: grid; place-items: center; white-space: nowrap; padding: 0 var(--space-3); border-radius: var(--r-pill); font-size: var(--fs-sm); font-weight: 500; color: var(--muted); cursor: pointer; text-align: center; }
   .seg input:checked + span { background: var(--inv-bg); color: var(--inv-fg); }
@@ -1951,8 +1958,9 @@
   .btn.primary { background: var(--inv-bg); color: var(--inv-fg); }
   .btn.primary:hover { background: color-mix(in srgb, var(--inv-bg) 85%, transparent); }
   /* Gem (DESIGN.md 6.1). Clean: gem-knappen er synlig men neutral — aldrig disabled/skjult. */
-  form[data-js]:not([data-dirty]):not([data-state="saving"]):not([data-state="saved"]) > .panel-foot > .btn.primary,
-  form[data-js]:not([data-dirty]):not([data-state="saving"]):not([data-state="saved"]) > .panel-foot > .btn.primary:hover { background: var(--raised); color: var(--muted); }
+  /* En alarm-formular (.panel.alert) er en handling, ikke en gem: dens primære knap er aldrig «clean». */
+  form[data-js]:not(.alert):not([data-dirty]):not([data-state="saving"]):not([data-state="saved"]) > .panel-foot > .btn.primary,
+  form[data-js]:not(.alert):not([data-dirty]):not([data-state="saving"]):not([data-state="saved"]) > .panel-foot > .btn.primary:hover { background: var(--raised); color: var(--muted); }
   form[data-js]:not([data-dirty]) > .panel-foot > button[type="reset"] { display: none; }
   .panel-foot .foot-start { margin-right: auto; display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; min-width: 0; }
   .panel-foot > .save-status { margin-right: auto; }
@@ -1987,6 +1995,9 @@
   /* Knap på inverteret panel */
   .panel.alert .btn { background: var(--danger-fill); color: var(--on-fill); }
   .panel.alert .btn:hover { background: color-mix(in oklab, var(--danger-fill) 85%, black); color: var(--on-fill); }
+  /* Alarm med en primær handling (fx Nulstil fejl): de øvrige knapper er neutrale, så kun den primære er rød. */
+  .panel.alert:has(.btn.primary) .btn:not(.primary) { background: var(--card); color: var(--fg); box-shadow: inset 0 0 0 1px var(--border); }
+  .panel.alert:has(.btn.primary) .btn:not(.primary):hover { background: var(--inv-bg); color: var(--inv-fg); }
   form:has(:user-invalid) .btn.primary { opacity: .4; pointer-events: none; }
 
   /* Bekræftelse uden modal */

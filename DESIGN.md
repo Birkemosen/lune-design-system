@@ -531,7 +531,7 @@ Varianter:
 
 | Klasse | Brug |
 |---|---|
-| `.panel.alert` | Fejl der kræver handling nu. Kompakt: titel og tekst til venstre, knap til højre (én linje på bred skærm). Baggrund `danger-surface`, solid rød kant (`danger-fill`), rød ikonbrik med "!", titel i normal tekstfarve, knap i `danger-fill` med hvid tekst. Maks. én pr. visning, altid øverst. |
+| `.panel.alert` | Fejl der kræver handling nu. Kompakt: titel og tekst til venstre, knap til højre (én linje på bred skærm). Baggrund `danger-surface`, solid rød kant (`danger-fill`), rød ikonbrik med "!", titel i normal tekstfarve, knap i `danger-fill` med hvid tekst. Maks. én pr. visning, altid øverst. Som formular med en guide (fx V6' «Nulstil fejl»): den primære knap er rød og aldrig «clean», de øvrige knapper er neutrale. En spærret zone (`blocked`) tæller som fejl og giver alarmen, selvom zonefeltet er gult. |
 | `.panel.tone-info` | Informativ fremhævning (sjælden). |
 | `form.panel` | Formular. Én gem-knap i footeren. |
 
