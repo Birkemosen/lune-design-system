@@ -868,6 +868,25 @@
   .comfort [data-state="blocked"] :is(.id, .val) { color: var(--warn); }
   .comfort [data-state="learning"] :is(.id, .val) { color: var(--violet); }
 
+  /* Zonekort (V6 Hjem): ét kort pr. zone med tal og en lav 24 t-graf (.zc.mini) — temperatur,
+     mål som trappekurve og perioder med varme skraveret. Kortet er en knap, der åbner zonens ark.
+     2 kort pr. række i et c7-panel, 1 på mobil. Tom historik → data-empty: grafen klapper sammen til .empty. */
+  .zcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: var(--space-3); }
+  .zcard { display: grid; gap: var(--space-2); align-content: start; width: 100%; padding: var(--space-3) var(--space-4); border: 0; border-radius: var(--r-tile); background: var(--raised); color: inherit; font: inherit; text-align: inherit; cursor: pointer; }
+  .zcard:hover { box-shadow: inset 0 0 0 1px var(--border); }
+  .zcard-head { display: flex; align-items: baseline; gap: var(--space-2); min-width: 0; }
+  .zcard .id { font-size: var(--fs-xs); font-weight: 600; color: var(--muted); }
+  .zcard .name { flex: 1; min-width: 0; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .zcard-open { font-size: var(--fs-xs); color: var(--muted); white-space: nowrap; }
+  .zcard .val { font-size: var(--fs-sm); color: var(--muted); white-space: nowrap; }
+  .zcard .val b { font-size: var(--fs-lg); font-weight: 600; color: var(--fg); }
+  .zcard[data-state="fault"] :is(.id, .val) { color: var(--danger); }
+  .zcard[data-state="blocked"] :is(.id, .val) { color: var(--warn); }
+  .zcard[data-state="learning"] :is(.id, .val) { color: var(--violet); }
+  .zc.mini { grid-template-columns: 28px minmax(0, 1fr); row-gap: 4px; }
+  .zc.mini :is(.zc-y, .zc-plot) { height: 72px; }
+  .zc.mini .zc-x span { visibility: visible; }
+
   @container (min-width: 560px) {
     .comfort > :is(label, button) {
       grid-template-columns: 40px minmax(90px, 140px) minmax(0, 1fr) 112px;  /* fast værdikolonne → graferne flugter */
@@ -885,6 +904,9 @@
   /* Fremløb/retur-trend i "Varme nu": fylder panelets bund, så kortet
      står lige så højt som komfortlisten ved siden af uden tom luft */
   .trend-wrap { margin-top: auto; }
+  /* Står panelet ved siden af et højere (fx zonekortene), vokser grafen i stedet for tom luft. */
+  .panel > .trend-wrap:not([data-empty]) { flex: 1 1 auto; display: flex; flex-direction: column; }
+  .panel > .trend-wrap:not([data-empty]) > .trend { flex: 1 1 auto; }
   .trend-wrap h4 { display: flex; align-items: center; }
   .trend { display: block; width: 100%; height: 120px; overflow: visible; }
   .trend .f  { fill: none; stroke: var(--accent); stroke-width: 1.8; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
@@ -1182,6 +1204,7 @@
   .legend i { display: inline-block; width: 14px; height: 0; margin-left: 6px; }
   .legend .lt { border-top: 1.6px solid var(--fg); }
   .legend .lg { border-top: 1px dashed var(--muted); }
+  .legend .lh { width: 14px; height: 10px; border-radius: 2px 2px 0 0; background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--accent) 55%, transparent) 0 1.5px, transparent 1.5px 5px); box-shadow: inset 0 0 0 1px var(--heat-fill); }
   @media (max-width: 599.98px) { .legend { display: none; } }
 
   /* ---- 4.6 Klima-kontrol (Tesla-inspireret) ---------------------------

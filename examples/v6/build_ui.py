@@ -236,6 +236,31 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
             if k and v!=tgt[k-1]: gp.append(f"{X(k)},{Y(tgt[k-1])}")
             gp.append(f"{X(k)},{Y(v)}")
         return f'<svg class="spark" viewBox="0 0 {W} {Hh}" preserveAspectRatio="none" aria-hidden="true" data-bind-spark="z{z[0]}"><polygon class="a" points="{tp} {" ".join(reversed(gp))}"/><polyline class="g" points="{" ".join(gp)}"/><polyline class="t" points="{tp}"/></svg>'
+    def zcard(z):
+        """Zonekort (LDS .zcard): tal + 24 t-graf. Varme = halvtimer hvor rummet lå under målet."""
+        tgt,tmp=history(z); W,Hh=240,100
+        vals=tgt+tmp; lo=math.floor(min(vals)-.3); hi=math.ceil(max(vals)+.3)
+        if hi-lo<3: mid=(lo+hi)/2; lo=math.floor(mid-1.5); hi=lo+3
+        X=lambda k: round(k*W/47,1); Y=lambda v: round(Hh-(v-lo)/(hi-lo)*Hh,1)
+        heat="".join(f'<rect class="pre" x="{X(k)}" y="0" width="{round(W/47,1)}" height="{Hh}"/>' for k in range(47) if tmp[k]<tgt[k])
+        t="M"+"L".join(f"{X(k)},{Y(v)}" for k,v in enumerate(tmp))
+        sp=f"M0,{Y(tgt[0])}"+"".join(f"H{X(k)}V{Y(v)}" for k,v in enumerate(tgt) if k and v!=tgt[k-1])+f"H{W}"
+        grid="".join(f'<line class="gl" x1="0" x2="{W}" y1="{y}" y2="{y}"/>' for y in (0,50,100))
+        lab=lambda v: T.num(v,0) if float(v).is_integer() else T.num(v)
+        fault=z[4]=='fault'
+        val=f'<b>{ST["fault"]}</b>' if fault else f'<b>{T.num(z[2])}°</b> / {T.num(z[3])}°'
+        open_=f'<span class="zcard-open">{T("zcard.open",pct=z[5])}</span>' if not fault and len(z)>5 and isinstance(z[5],(int,float)) else '<span class="zcard-open"></span>'
+        return f'''
+            <button class="zcard" type="button" popovertarget="sheet-z{z[0]}" data-state="{z[4]}">
+              <span class="zcard-head"><span class="id">{rid(z)}</span><span class="name">{z[1]}</span>{open_}</span>
+              <span class="val">{val}</span>
+              <span class="zc mini" aria-hidden="true">
+                <span class="zc-y"><span>{lab(hi)}°</span><span>{lab((hi+lo)/2)}°</span><span>{lab(lo)}°</span></span>
+                <span class="zc-plot"><svg viewBox="0 0 {W} {Hh}" preserveAspectRatio="none" data-bind-zcard="z{z[0]}">{grid}{heat}<path class="sp" d="{sp}"/><path class="t" d="{t}"/></svg></span>
+                <span class="zc-x"><span style="left:0">−24 {H}</span><span style="left:50%">−12 {H}</span><span class="n" style="left:100%">{T("trend.now")}</span></span>
+              </span>
+              <span class="empty">{T("zcard.empty")}</span>
+            </button>'''
     def trend():
         random.seed(3); W,Hh=240,80; f=[];r=[]; cf=33; cr=29
         for k in range(48):
@@ -283,13 +308,7 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
         </section>'''
 
     # ---- dashboard: manifold
-    comfort="".join(f'''
-            <button type="button" popovertarget="sheet-z{z[0]}" data-state="{z[4]}">
-              <span class="id">{rid(z)}</span>
-              <span class="name">{z[1]}</span>
-              <span class="val">{f'<b class="bad">{ST["fault"]}</b>' if z[4]=='fault' else f'<b class="{"c-warn" if z[3]-z[2]>0.5 else ""}">{T.num(z[2])}°</b> / {T.num(z[3])}°'}</span>
-              {spark(z)}
-            </button>''' for z in Z)
+    comfort="".join(zcard(z) for z in Z)
     balrows=[("1,00","1,08","1,08"),("0,85","0,81","0,81"),("0,40","0,44","0,44"),("1,00","0,97","0,97"),("1,00","0,97","0,97"),("0,85","—","0,85")]
     bal="".join(f'<tr><td>{rid(z)}</td>'+"".join(f'<td class="num{" c-violet" if j==1 else ""}">{v.replace(",",T.meta("_dec"))}</td>' for j,v in enumerate(r))+'</tr>' for z,r in zip(Z,balrows))
     faultz=Z[5]
@@ -321,8 +340,8 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
         </section>
 
         <section class="panel c7">
-          <header class="panel-head"><h3>{T("comfort.title")}</h3><p>{T("trend.title")}</p><span class="legend" aria-hidden="true"><i class="lt"></i>{T("legend.temp")}<i class="lg"></i>{T("legend.target")}</span></header>
-          <div class="comfort">{comfort}
+          <header class="panel-head"><h3>{T("comfort.title")}</h3><p>{T("trend.title")}</p><span class="legend" aria-hidden="true"><i class="lt"></i>{T("legend.temp")}<i class="lg"></i>{T("legend.target")}<i class="lh"></i>{T("legend.heating")}</span></header>
+          <div class="zcards">{comfort}
           </div>
         </section>
 

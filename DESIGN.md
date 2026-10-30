@@ -608,6 +608,8 @@ Alle zoner med aktuel/mål og 24-timers graf. Hver række er et `<label>` for zo
 - Værdien bliver gul (`c-warn`), når temperaturen er > 0,5 °C under målet.
 - Smalt panel: grafen under navnet. Bredt panel (≥ 560 px): på samme række; værdikolonnen har fast bredde, så graferne flugter.
 
+**Zonekort (`.zcards` / `.zcard`, V6 Hjem fra 2.3.29).** På V6' Hjem afløser zonekortene komfortlisten: én `button.zcard` pr. zone (åbner zonens ark) med id, navn og åbning (`.zcard-open`, «åben 8 %») øverst, aktuel/mål i `.val` og en lav 24 t-graf (`.zc.mini`, 72 px) med y-akse i HTML: temperatur (`.t`), mål som trappe (`.sp`) og perioder hvor zonen kaldte på varme skraveret (`.pre`, `url(#lds-hatch-heat)`). Grafen placeres efter tid, så en kort historik efter en genstart starter midt i grafen. Kortene står i et gitter (`repeat(auto-fill, minmax(260px, 1fr))`): 2 pr. række i et c7-panel, 1 på mobil. Under to temperaturpunkter får kortet `data-empty`, og grafen afløses af `.empty`. Tilstand på kortet (`data-state`) farver id og værdi som i komfortlisten. Står «Varme nu» ved siden af, vokser dens fremløb/retur-graf (`.panel > .trend-wrap`) til panelets højde i stedet for tom luft. Forklaringen i panelhovedet får `.lh` (skravering) for varme. Komfortlisten (`.comfort`) bruges fortsat i Touch' manifoldark.
+
 ### 5.9 Grafer
 
 Alle grafer er inline-SVG uden bibliotek.
