@@ -631,7 +631,9 @@ Regler:
 
 **Søjler med aflæsning (`.bars[data-readout]`, Touch):** fx dagens elpris. Hover eller tryk på en søjle fremhæver den (`.col[data-active]`, `--fg`) og viser time og værdi i `.bars-readout` over plottet (`aria-live`); den aktuelle time står lidt kraftigere (`.col[data-now]`). Teksten kommer fra `data-label` på søjlen (i18n), ikke fra `title`.
 
-**Fordeling (`.dist`, Touch):** omtrentlig andel af pumpens flow pr. manifold. Flow er en mængde, og bjælker er aldrig flerfarvede (3.2.2): `.dist-bar` med `.dist-seg` (`--w` = andel i %) i `--fg` med faldende styrke (`data-i` 0–3) og en tynd skillelinje. Under den `.dist-rows`: nøgle (`.dist-key`, samme styrke), navn, %, l/min og en tynd bjælke (`.dist-bar--thin`) med manifoldens zoner. `.dist-note` forklarer, at tallene er omtrentlige (beregnet ud fra ventilåbning).
+**Fordeling (`.dist`, Touch):** omtrentlig andel af pumpens flow pr. manifold. Flow er pumpens vand, så bjælken er i én kulør (`--data-pump`) med faldende styrke pr. manifold (`data-i` 0–3, samme nuancer som donutten i Cirkulation-feltet, `.ht-dist`) og en tynd skillelinje; aldrig flere kulører (3.2.2). Under den `.dist-rows`: nøgle (`.dist-key`, samme nuance), navn, %, l/min og en tynd bjælke (`.dist-bar--thin`) med manifoldens zoner i manifoldens nuance. `.dist-note` forklarer, at tallene er omtrentlige (beregnet ud fra ventilåbning).
+
+**Flowbehov (`.need`, Touch, fra 2.3.30):** sekundært flow ved fuld last pr. varmebehov. Bjælkerne er neutrale; «Dette hus» (`data-house`) i `--data-pump`. To lodrette mærker på alle bjælker, adskilt på både kulør og streg: varmepumpens flow (`data-lim`, stiplet i `--accent`, varme) og pumpen nu (`data-now`, fuld i `--data-pump`). Mærkerne er 3 px med en `--card`-kant, så de står frem over bjælkerne. `.need-legend` forklarer begge i tekst.
 
 **Plan vs. virkelighed (`.bars`)**: planlagt varme neutral (`.plan`, `--seg-off`), faktisk i `--accent` (`.act`). Højder via `--plan` / `--act` (0–100). Akser og forklaring i HTML (`.bars-legend`). Antal kolonner: `--bars-n`. Bruges på Touch' hus-dashboard, når varmekilden er Asgard (Odin).
 

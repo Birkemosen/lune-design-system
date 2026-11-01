@@ -1169,21 +1169,22 @@
   .plan-x .d { color: var(--fg); font-weight: 600; }
   .plan-empty-lane { grid-column: 2; font-size: var(--fs-xs); color: var(--faint); }
 
-  /* Fordeling (.dist, Touch): omtrentlig andel af pumpens flow pr. manifold. Flow er en
-     mængde → neutral, og bjælker er aldrig flerfarvede (3.2.2): segmenterne er --fg i
-     faldende styrke (data-i 0–3) med en tynd skillelinje. Rækkerne under bærer navn,
-     % og l/min, så tonen aldrig er eneste signal. */
+  /* Fordeling (.dist, Touch): omtrentlig andel af pumpens flow pr. manifold. Flow er pumpens
+     vand → én kulør (data-pump) i faldende styrke pr. manifold (data-i 0–3), som donutten i
+     Cirkulation-feltet (.ht-dist). Aldrig flere kulører (3.2.2). Rækkerne under bærer nøgle,
+     navn, % og l/min, og manifoldens tynde zonebjælke har samme nuance, så tonen aldrig er
+     eneste signal. */
   .dist { display: grid; gap: var(--space-3); }
   .dist-bar { display: flex; height: 22px; overflow: hidden; border-radius: var(--r-pill); background: var(--seg-off); }
   .dist-bar--thin { height: 8px; }
-  .dist-seg { flex: 0 0 calc(var(--w, 0) * 1%); min-width: 0; background: color-mix(in srgb, var(--fg) var(--k, 100%), transparent); }
+  .dist-seg { flex: 0 0 calc(var(--w, 0) * 1%); min-width: 0; background: color-mix(in srgb, var(--data-pump) var(--k, 100%), var(--card)); }
   .dist-seg + .dist-seg { box-shadow: inset 2px 0 0 var(--card); }
   .dist [data-i="0"] { --k: 100%; }
-  .dist [data-i="1"] { --k: 72%; }
-  .dist [data-i="2"] { --k: 50%; }
-  .dist [data-i="3"] { --k: 32%; }
+  .dist [data-i="1"] { --k: 58%; }
+  .dist [data-i="2"] { --k: 32%; }
+  .dist [data-i="3"] { --k: 18%; }
   .dist-rows { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: var(--space-2) var(--space-4); align-items: center; font-size: var(--fs-sm); }
-  .dist-key { width: 10px; height: 10px; border-radius: 3px; background: color-mix(in srgb, var(--fg) var(--k, 100%), transparent); }
+  .dist-key { width: 10px; height: 10px; border-radius: 3px; background: color-mix(in srgb, var(--data-pump) var(--k, 100%), var(--card)); }
   .dist-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .dist-rows .num { text-align: right; color: var(--muted); }
   .dist-rows .dist-bar--thin { grid-column: 2 / -1; margin-top: -4px; }
@@ -1191,9 +1192,10 @@
 
   /* Flowbehov (.need, Touch): sekundært flow ved fuld last pr. varmebehov (W/m²). Flow er
      en mængde → neutrale bjælker; «Dette hus» (data-house) i pumpens datafarve. To lodrette
-     mærker på alle bjælker: varmepumpens flow (data-lim, stiplet = grænse for opblanding)
-     og pumpen nu (data-now, fuld). Binderen sætter --v (bjælke), --lim og --now i % af
-     skalaen. Tal og forklaring i HTML (.need-legend), så stregtypen aldrig er eneste signal. */
+     mærker på alle bjælker, adskilt på både kulør og streg: varmepumpens flow (data-lim,
+     stiplet i varme, --accent = grænse for korte cykler) og pumpen nu (data-now, fuld i
+     data-pump). Mærkerne har en --card-kant, så de står frem over bjælkerne. Binderen sætter
+     --v (bjælke), --lim og --now i % af skalaen. Tal og forklaring i HTML (.need-legend). */
   .need { display: grid; gap: var(--space-3); }
   .need-rows { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-3) var(--space-3); align-items: center; font-size: var(--fs-sm); }
   .need-row { display: contents; }
@@ -1206,15 +1208,15 @@
   .need-row[data-house] .num { color: var(--fg); }
   .need-row[data-house] .need-track > i { background: var(--data-pump); }
   .need[data-lim] .need-track::before,
-  .need[data-now] .need-track::after { content: ""; position: absolute; top: -4px; bottom: -4px; z-index: 1; }
-  .need[data-lim] .need-track::before { left: calc(clamp(0, var(--lim, 0), 100) * 1%); border-left: 2px dashed var(--fg); }
-  .need[data-now] .need-track::after { left: calc(clamp(0, var(--now, 0), 100) * 1%); border-left: 2px solid var(--data-pump); }
+  .need[data-now] .need-track::after { content: ""; position: absolute; top: -5px; bottom: -5px; z-index: 1; width: 3px; margin-left: -1.5px; border-radius: 1px; box-shadow: 0 0 0 2px var(--card); }
+  .need[data-lim] .need-track::before { left: calc(clamp(0, var(--lim, 0), 100) * 1%); background: repeating-linear-gradient(to bottom, var(--accent) 0 4px, transparent 4px 7px); }
+  .need[data-now] .need-track::after { left: calc(clamp(0, var(--now, 0), 100) * 1%); background: var(--data-pump); }
   .need-legend { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); font-size: var(--fs-xs); color: var(--muted); }
   .need-legend > span { display: inline-flex; align-items: center; gap: var(--space-2); }
   .need-legend > span[hidden] { display: none; }
-  .need-key { width: 0; height: 12px; }
-  .need-key.lim { border-left: 2px dashed var(--fg); }
-  .need-key.now { border-left: 2px solid var(--data-pump); }
+  .need-key { width: 3px; height: 14px; border-radius: 1px; }
+  .need-key.lim { background: repeating-linear-gradient(to bottom, var(--accent) 0 4px, transparent 4px 7px); }
+  .need-key.now { background: var(--data-pump); }
   @media (max-width: 519.98px) {
     .need-name small { display: block; margin-left: 0; }
   }
@@ -1733,8 +1735,8 @@
   .ht-dist svg { flex: none; width: 88px; height: 88px; transform: rotate(-90deg); }
   .ht-dist circle { fill: none; stroke-width: 6; }
   .ht-dist .trk { stroke: var(--seg-off); }
-  .ht-dist :is(circle, i)[data-i="0"] { --k: 100%; } .ht-dist :is(circle, i)[data-i="1"] { --k: 62%; }
-  .ht-dist :is(circle, i)[data-i="2"] { --k: 40%; } .ht-dist :is(circle, i)[data-i="3"] { --k: 26%; }
+  .ht-dist :is(circle, i)[data-i="0"] { --k: 100%; } .ht-dist :is(circle, i)[data-i="1"] { --k: 58%; }
+  .ht-dist :is(circle, i)[data-i="2"] { --k: 32%; } .ht-dist :is(circle, i)[data-i="3"] { --k: 18%; }
   .ht-dist circle[data-i] { stroke: color-mix(in srgb, var(--data-pump) var(--k), var(--card)); }
   .ht-dist ul { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; font-size: var(--fs-sm); min-width: 0; }
   .ht-dist li { display: flex; align-items: center; gap: var(--space-2); white-space: nowrap; }
