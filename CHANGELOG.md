@@ -1,5 +1,10 @@
 # Changelog — Lune Design System
 
+## 2.3.30
+
+- `.dist`: fordelingen pr. manifold er i pumpens kulør (`--data-pump`) i nuancer pr. manifold som `.ht-dist`, i stedet for hvid/grå, og trinene er spredt mere (100/58/32/18 %, også i `.ht-dist`). Nøgle og zonebjælke følger manifoldens nuance.
+- `.need`: varmepumpens mærke er stiplet i varme (`--accent`) og pumpens mærke fuldt i `--data-pump`; begge 3 px med `--card`-kant, så de ikke forsvinder i bjælkerne eller i hinanden.
+
 ## 2.3.29
 
 - `.zcards` / `.zcard` (V6 Hjem): ét kort pr. zone med aktuel/mål, åbning og en lav 24 t-graf (`.zc.mini`) — temperatur, mål som trappe og varmeperioder skraveret. Afløser komfortlisten på V6' Hjem; `.comfort` bliver i Touch.
