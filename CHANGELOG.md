@@ -1,5 +1,9 @@
 # Changelog — Lune Design System
 
+## 2.3.31
+
+- Ventiler vises som **flow** (% af sløjfens fulde flow), ikke som pinnens åbning: ventilindsatser åbner hurtigt, så 20 % åbning kan være 80 % flow. Bjælker, felter og statuslinjer bruger flow; pinnens position står som sekundær tekst («62 % flow · ventil 22 %»), hvor der er plads (rummets/zonens ark), ikke i små felter. Heatmappens nøgle hedder «flow».
+
 ## 2.3.30
 
 - `.dist`: fordelingen pr. manifold er i pumpens kulør (`--data-pump`) i nuancer pr. manifold som `.ht-dist`, i stedet for hvid/grå, og trinene er spredt mere (100/58/32/18 %, også i `.ht-dist`). Nøgle og zonebjælke følger manifoldens nuance.
