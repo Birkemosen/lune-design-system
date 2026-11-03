@@ -477,7 +477,14 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
           <div><dt>{T("zdash.motor")}</dt><dd class="{'c-warn' if fault else 'c-ok'}">{T("common.needsLearning") if fault else T("common.learned")}</dd></div>
           <div><dt>{T("zdash.offsetNow")}</dt><dd class="{'c-info' if i in (1,5) else ''}">{"+"+T.num(0.4) if i in (1,5) else T.num(0.0)} °C</dd></div>
           <div><dt>{T("zdash.tempFrom")}</dt><dd class="c-info">{T("src.ble") if src=="ble" else T("src.probe")}</dd></div>
-        </dl>'''
+        </dl>{"" if fault else f'''
+        <div class="sub mtrace">
+          <h4>{T("lab.vc.title")} <span class="legend">{T("zdash.vcFull",v=T.num(1.9))}</span></h4>
+          <div class="mtrace-row square"><div class="mtrace-y" aria-hidden="true"><span>100 <small>%</small></span><span>50</span><span>0</span></div>
+            <svg class="trend" viewBox="0 0 600 100" preserveAspectRatio="none" role="img" aria-label="{T("lab.vc.aria")}"><path class="vpos" d="M{0.22*600:.1f},0V100"/><path class="vc" d="M0,100H{0.12*600:.1f}L{0.34*600:.1f},0H600"/></svg></div>
+          <div class="axis" aria-hidden="true"><span>0 %</span><span>{T("lab.vc.axis")}</span><span>100 %</span></div>
+          <p class="note">{T("lab.vc.note",start=12,full=34,src=T("lab.vc.measured",date="3.11.2026"),pos=22,flow=45)}</p>
+        </div>'''}'''
         # Indstillinger
         merge=f'<option value="">{T("common.none")}</option>'+"".join(f'<option value="{y[0]}"{" selected" if (i==5 and y[0]==4) else ""}>Z{y[0]} {y[1]}</option>' for y in Z if y[0]!=i)
         pipes="".join(f'<option{" selected" if p==pipe else ""}>{p}</option>' for p in PIPES)

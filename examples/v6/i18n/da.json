@@ -402,6 +402,7 @@
   "lab.vc.measured": "målt af Lune Touch {date}",
   "lab.vc.default": "standardkurve",
   "lab.vc.meta": "Z{z}",
+  "zdash.vcFull": "fuldt flow {v} l/min",
   "hash.manifold": "manifold",
   "hash.connections": "forbindelser",
   "hash.firmware": "firmware",
