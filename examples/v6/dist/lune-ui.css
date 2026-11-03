@@ -1572,19 +1572,19 @@
   #m-sys:checked ~ .app :is(.strip, .substrip, .boards) { display: none; }
   /* System: valgt kategori (radioer lige før .sys eller før .app) */
   #c-device:checked ~ :is(.app, .sys) .sys-cat[data-cat="device"],
-  #c-manifold:checked ~ :is(.app, .sys) .sys-cat[data-cat="manifold"],
+  #c-motors:checked ~ :is(.app, .sys) .sys-cat[data-cat="motors"],
   #c-connections:checked ~ :is(.app, .sys) .sys-cat[data-cat="connections"],
   #c-firmware:checked ~ :is(.app, .sys) .sys-cat[data-cat="firmware"],
   #c-service:checked ~ :is(.app, .sys) .sys-cat[data-cat="service"],
   #c-motorlab:checked ~ :is(.app, .sys) .sys-cat[data-cat="motorlab"] { display: grid; }
   #c-device:checked ~ :is(.app, .sys) .sys-nav label[for="c-device"],
-  #c-manifold:checked ~ :is(.app, .sys) .sys-nav label[for="c-manifold"],
+  #c-motors:checked ~ :is(.app, .sys) .sys-nav label[for="c-motors"],
   #c-connections:checked ~ :is(.app, .sys) .sys-nav label[for="c-connections"],
   #c-firmware:checked ~ :is(.app, .sys) .sys-nav label[for="c-firmware"],
   #c-service:checked ~ :is(.app, .sys) .sys-nav label[for="c-service"],
   #c-motorlab:checked ~ :is(.app, .sys) .sys-nav label[for="c-motorlab"] { background: var(--card); color: var(--fg); }
   #c-device:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-device"],
-  #c-manifold:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-manifold"],
+  #c-motors:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-motors"],
   #c-connections:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-connections"],
   #c-firmware:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-firmware"],
   #c-service:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-service"],

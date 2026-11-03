@@ -532,9 +532,9 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
           </table></div></div>
         <div class="sub"><h4>{T("csys.probeLive")}</h4>
           <dl class="metrics">
-            {metric(T("csys.probeMapped",n=1,owner=T("csys.ownerFlow")),T.num(34.2),"°C")}
-            {metric(T("csys.probeMapped",n=2,owner=T("csys.ownerReturn")),T.num(29.8),"°C")}
-            {"".join(metric(T("csys.probeMapped",n=z[0]+2,owner=z[1]),T.num(z[6]),"°C") for z in Z)}
+            {metric(T("csys.probe",n=1)+f' <span class="badge">{T("csys.ownerFlow")}</span>',T.num(34.2),"°C")}
+            {metric(T("csys.probe",n=2)+f' <span class="badge">{T("csys.ownerReturn")}</span>',T.num(29.8),"°C")}
+            {"".join(metric(T("csys.probe",n=z[0]+2)+f' <span class="badge">{z[1]}</span>',T.num(z[6]),"°C") for z in Z)}
           </dl></div>'''
         history=f'''
         <div class="sub trend-wrap">
