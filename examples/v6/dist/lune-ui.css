@@ -1392,6 +1392,8 @@
 
   /* V6: varmepumpe-grænser gælder kun i varmepumpe-tilstand (seg-radioer i formularen). */
   form:has(input[name="heat_mode"]):not(:has(input[name="heat_mode"][value="heat_pump"]:checked)) .hp-limits { opacity: .4; pointer-events: none; }
+  /* …og omvendt: indstillinger, der kun gælder i normal tilstand. */
+  form:has(input[name="heat_mode"][value="heat_pump"]:checked) .normal-only { opacity: .4; pointer-events: none; }
 
   /* V6 med 2 prober: kun manifold frem/retur — skjul zone-returfelter og ekstra prober. */
   .app[data-probe-layout="2"] .zone-ret { display: none; }

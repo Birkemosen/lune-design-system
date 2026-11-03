@@ -249,7 +249,7 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
         lab=lambda v: T.num(v,0) if float(v).is_integer() else T.num(v)
         fault=z[4]=='fault'
         val=f'<b>{ST["fault"]}</b>' if fault else f'<b>{T.num(z[2])}°</b> / {T.num(z[3])}°'
-        open_=f'<span class="zcard-open">{T("zcard.open",pct=z[5])}</span>' if not fault and len(z)>5 and isinstance(z[5],(int,float)) else '<span class="zcard-open"></span>'
+        open_=f'<span class="zcard-open">{T("zcard.flowRet",pct=z[5],ret=T.num(z[6]))}</span>' if not fault and len(z)>5 and isinstance(z[5],(int,float)) else '<span class="zcard-open"></span>'
         return f'''
             <button class="zcard" type="button" popovertarget="sheet-z{z[0]}" data-state="{z[4]}">
               <span class="zcard-head"><span class="id">{rid(z)}</span><span class="name">{z[1]}</span>{open_}</span>
@@ -529,7 +529,13 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
           <div class="table-wrap"><table class="table">
             <thead><tr><th>{T("bal.zone")}</th><th class="num">{T("bal.prior")}</th><th class="num">{T("bal.learned")}</th><th class="num">{T("bal.effective")}</th></tr></thead>
             <tbody>{bal}</tbody>
-          </table></div></div>'''
+          </table></div></div>
+        <div class="sub"><h4>{T("csys.probeLive")}</h4>
+          <dl class="metrics">
+            {metric(T("csys.probeMapped",n=1,owner=T("csys.ownerFlow")),T.num(34.2),"°C")}
+            {metric(T("csys.probeMapped",n=2,owner=T("csys.ownerReturn")),T.num(29.8),"°C")}
+            {"".join(metric(T("csys.probeMapped",n=z[0]+2,owner=z[1]),T.num(z[6]),"°C") for z in Z)}
+          </dl></div>'''
         history=f'''
         <div class="sub trend-wrap">
           <h4>{T("trend.title")} <span class="legend"><i class="lf"></i>{T("m.supply")}<i class="lr"></i>{T("m.return")}</span></h4>
@@ -537,7 +543,12 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
           <div class="axis" aria-hidden="true"><span>−24 {H}</span><span>−12 {H}</span><span>{T("trend.now")}</span></div>
         </div>'''
         settings=f'''
-        <form data-save="regulation">
+        <form data-save="regulation" data-patch>
+          {group(T("csys.manifold"),
+               srow(f'<span>{T("csys.valveType")}</span>',seg("manifold_type",[("no",T("csys.no")),("nc",T("csys.nc"))],"nc",T("csys.valveType")))+
+               srow(lab("probe_flow",T("csys.supplyProbe")),probes(1,"probe_flow"))+
+               srow(lab("probe_return",T("csys.returnProbe")),probes(2,"probe_return"))+
+                 srow(f'<span>{T("csys.probeMode")}</span>',seg("return_probe_mode",[("2",T("csys.probeMode2")),("8",T("csys.probeMode8"))],"8",T("csys.probeMode"))))}
           {group(T("csys.heating"),
                  srow(f'<span>{T("csys.heatMode")}</span>',seg("heat_mode",[("normal",T("csys.heatNormal")),("heat_pump",T("csys.heatPump"))],"heat_pump",T("csys.heatMode")))+
                  srow(lab("heat_min_open",T("csys.minOpening")),stepper("heat_min_open",0,0,100,1,"%",label=T("csys.minOpening"),dec=0),T("csys.minOpeningHint"),cls="normal-only"))}
@@ -570,7 +581,7 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
         return (f'<section class="sys-cat" data-cat="{cat}" aria-labelledby="h-c-{cat}"><label class="sys-back" for="c-none">{T("sys.title")}</label>'
                 f'<header><div><small>{T("sys.title")}</small><h2 id="h-c-{cat}">{title}</h2></div>{badge}</header>{body}</section>')
     CATS=[("device",T("cat.device"),'<path d="M4 11l8-7 8 7v9H4z"/>'),
-          ("manifold",T("csys.mm"),'<path d="M4 7h16M4 12h16M4 17h16"/>'),
+          ("motors",T("csys.motors"),'<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/>'),
           ("connections",T("cat.connections"),'<path d="M9 15l6-6M7 13l-2 2a3 3 0 0 0 4 4l2-2M17 11l2-2a3 3 0 0 0-4-4l-2 2"/>'),
           ("firmware",T("cat.firmware"),'<path d="M12 4v10M8 10l4 4 4-4M5 19h14"/>'),
           ("service",T("csys.service"),'<path d="M14 6a4 4 0 0 0-5 5l-5 5 3 3 5-5a4 4 0 0 0 5-5l-2 2-3-3z"/>')]
@@ -586,12 +597,8 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
         {group(T("dev.bleClock"),sswitch("ble_clock",T("dev.bleClockSw"),T("dev.bleClockSub"),True))}
         {savebar("device")}
       </form>'''))
-    cats_html.append(syscat("manifold",T("csys.mm"),f'''
-      <form data-save="manifold">
-        {group(T("csys.manifold"),
-               srow(f'<span>{T("csys.valveType")}</span>',seg("manifold_type",[("no",T("csys.no")),("nc",T("csys.nc"))],"nc",T("csys.valveType")))+
-               srow(lab("probe_flow",T("csys.supplyProbe")),probes(7,"probe_flow"))+
-               srow(lab("probe_return",T("csys.returnProbe")),probes(8,"probe_return")))}
+    cats_html.append(syscat("motors",T("csys.motors"),f'''
+      <form data-save="motors">
         {ggroup(T("csys.motors"),sswitch("motor_drivers",T("csys.drivers"),T("csys.driversSub"),True),
                 srow(lab("motor_type",T("csys.motorType")),'<select class="select" id="motor_type" name="motor_type"><option>Generic</option><option selected>HmIP VdMot</option></select>')+
                 sstep("m_runtime",T("csys.maxRun"),45,10,120,5,"s",dec=0))}
@@ -603,7 +610,7 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
                subpage(T("csys.relearn"),T("sys.relearnVal",n=200),group(T("csys.relearn"),
                    sstep("m_relmov",T("csys.afterMoves"),200,10,2000,10,"",dec=0)+sstep("m_relh",T("csys.afterHours"),168,1,720,1,H,dec=0)+sstep("m_minsamp",T("csys.minSamples"),3,1,20,1,"",dec=0)+sstep("m_maxdev",T("csys.maxDev"),0.15,0.01,1,0.01,"",dec=2))),
                f'<p class="note">{T("csys.limitsMsg")}</p>')}
-        {savebar("manifold")}
+        {savebar("motors")}
       </form>'''))
     cats_html.append(syscat("connections",T("cat.connections"),f'''
       <form data-save="connections" data-state="approved">
