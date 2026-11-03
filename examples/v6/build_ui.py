@@ -575,6 +575,51 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
         </form>'''
         return sheet("manifold",T("hash.manifold"),I_MANI,"",T("scope.manifold"),status,overview,history,settings)
 
+    # ---- Motorlab (dev): eksempel med et optaget åbneslag (.mtrace, .phase-strip, .layers)
+    def motorlab():
+        # Syntetisk åbneslag: fri vandring 0–18 s, pin-kontakt 18–22 s, belastning 22–26 s, stop 26–26,5 s.
+        ts=[i*0.25 for i in range(107)]
+        def cur(t): return 24+0.6*math.sin(t*3) if t<18 else 24+(t-18)*2.6 if t<22 else 34.4+(t-22)*2.4 if t<26 else 44
+        def cad(t): return 98-0.4*t if t<18 else 90-(t-18)*6 if t<22 else 66-(t-22)*9 if t<26 else 30
+        def ph(t): return "free" if t<18 else "contact" if t<22 else "load" if t<26 else "stopping"
+        def path(f,lo,hi): return "M"+"L".join(f"{t/ts[-1]*600:.1f},{100-(f(t)-lo)/(hi-lo)*100:.1f}" for t in ts)
+        slope=lambda t: (cur(t+0.5)-cur(t))/0.5
+        segs=[("free",18),("contact",4),("load",4),("stopping",0.5)]
+        strip="".join(f'<span data-phase="{k}" style="--w:{w}">{T("lab.phase."+k)}</span>' for k,w in segs)
+        def row(layer,cls,d,y,unit,aria):
+            a=f' data-layer="{layer}"' if layer else ""
+            return (f'<div class="mtrace-row"{a}><div class="mtrace-y" aria-hidden="true"><span>{y[0]} <small>{unit}</small></span><span>{y[1]}</span><span>{y[2]}</span></div>'
+                    f'<svg class="trend" viewBox="0 0 600 100" preserveAspectRatio="none" role="img" aria-label="{aria}"><path class="{cls}" d="{d}"/></svg></div>')
+        def step(n,k,when,done):
+            badge=f'<span class="badge ok">{T("lab.done")}</span>' if done else ""
+            return srow(f'<span>{n}. {T("lab."+k+".title")}</span>',badge+f'<button class="btn" type="button" data-show-when="{when}">{T("lab."+k+".action")}</button>',T("lab."+k+".hint"))
+        return f'''
+      <div class="lab" data-state="opened">
+        <p class="msg warn"><span>{T("motorlab.note")}</span></p>
+        {group(T("lab.motor"),
+               srow(lab("lab_zone",T("lab.motor")),'<select class="select w-md" id="lab_zone" disabled><option>Z1 Josephine</option></select>')+
+               srow(f'<span>{T("lab.status")}</span>',f'<span class="badge">{T("lab.state.opened")}</span>'),
+               f'<p class="note">{T("lab.intro")}</p>')}
+        {group(T("lab.steps"),step(1,"arm","setup halted",True)+step(2,"seat","armed",True)+step(3,"open","seated closed",True)+step(4,"close","opened",False))}
+        <div class="actions"><button class="btn danger-solid" type="button">{T("lab.estop")}</button><button class="btn" type="button" data-show-when="armed seated opened closed halted">{T("lab.finish")}</button></div>
+        <div class="sub"><h4>{T("lab.live")}</h4>
+          <dl class="metrics">{metric(T("lab.current"),T.num(23.8),"mA")}{metric(T("lab.mean"),T.num(27.1),"mA")}{metric(T("lab.peak"),T.num(44.0),"mA")}{metric(T("lab.runtime"),T.num(26.5),"s")}{metric(T("lab.ripples"),"1826","")}</dl></div>
+        <div class="sub mtrace">
+          <h4>{T("lab.chart.title")} <span class="legend">{T("lab.chartMeta",dir=T("lab.dir.open"),s=T.num(26.5),n=663)}</span></h4>
+          <div class="layers" role="group" aria-label="{T("lab.chart.layers")}">
+            <label><input class="sr-only" type="checkbox" value="phase" checked>{T("lab.chart.phase")}</label>
+            <label><input class="sr-only" type="checkbox" value="cadence" checked><i class="lcad"></i>{T("lab.chart.cadence")}</label>
+            <label><input class="sr-only" type="checkbox" value="slope"><i class="lslp"></i>{T("lab.chart.slope")}</label>
+          </div>
+          {row("","mc",path(cur,0,48),("48","24","0"),"mA",T("lab.chart.current"))}
+          {row("cadence","cad",path(cad,0,110),("110","55","0"),"Hz",T("lab.chart.cadenceAria"))}
+          {row("slope","slp",path(slope,-2,4),("4","1","−2"),"mA/s",T("lab.chart.slopeAria"))}
+          <div class="phase-strip">{strip}</div>
+          <div class="axis" aria-hidden="true"><span>0 s</span><span>{T.num(13.3)} s</span><span>{T.num(26.5)} s</span></div>
+          <div class="actions"><button class="btn" type="button">{T("lab.csv")}</button></div>
+        </div>
+      </div>'''
+
     # ---- System (DESIGN.md 15.4)
     zone_opts="".join(f'<option value="{z[0]}">Z{z[0]} {z[1]}</option>' for z in Z)
     def syscat(cat,title,body,badge=""):
@@ -656,7 +701,7 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
         </div>
       </form>'''))
     if dev:
-        cats_html.append(syscat("motorlab",T("cat.motorlab"),f'<p class="msg warn"><span>{T("motorlab.note")}</span></p>'))
+        cats_html.append(syscat("motorlab",T("cat.motorlab"),motorlab()))
     sys_radios=f'<input class="state" type="radio" name="syscat" id="c-none" checked aria-label="{T("sys.cats")}">'+"".join(
         f'<input class="state" type="radio" name="syscat" id="c-{c}" data-hash="{T("hash."+c)}" aria-label="{t}">' for c,t,_ in CATS)
     sys_nav="".join(f'<label for="c-{c}"><svg viewBox="0 0 24 24" aria-hidden="true">{ic}</svg>{t}</label>' for c,t,ic in CATS)
