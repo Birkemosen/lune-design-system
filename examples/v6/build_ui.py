@@ -600,7 +600,7 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
                srow(lab("lab_zone",T("lab.motor")),'<select class="select w-md" id="lab_zone" disabled><option>Z1 Josephine</option></select>')+
                srow(f'<span>{T("lab.status")}</span>',f'<span class="badge">{T("lab.state.opened")}</span>'),
                f'<p class="note">{T("lab.intro")}</p>')}
-        {group(T("lab.steps"),step(1,"arm","setup halted",True)+step(2,"seat","armed",True)+step(3,"open","seated closed",True)+step(4,"close","opened",False))}
+        {group(T("lab.steps"),step(1,"arm","setup halted",True)+step(2,"seat","armed",True)+step(3,"open","seated closed",True)+step(4,"close","opened",False)+sstep("lab_ms",T("lab.manual.duration"),10,1,45,1,"s",dec=0,hint=T("lab.manual.hint")))}
         <div class="actions"><button class="btn danger-solid" type="button">{T("lab.estop")}</button><button class="btn" type="button" data-show-when="armed seated opened closed halted">{T("lab.finish")}</button></div>
         <div class="sub"><h4>{T("lab.live")}</h4>
           <dl class="metrics">{metric(T("lab.current"),T.num(23.8),"mA")}{metric(T("lab.mean"),T.num(27.1),"mA")}{metric(T("lab.peak"),T.num(44.0),"mA")}{metric(T("lab.runtime"),T.num(26.5),"s")}{metric(T("lab.ripples"),"1826","")}</dl></div>
@@ -617,6 +617,41 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
           <div class="phase-strip">{strip}</div>
           <div class="axis" aria-hidden="true"><span>0 s</span><span>{T.num(13.3)} s</span><span>{T.num(26.5)} s</span></div>
           <div class="actions"><button class="btn" type="button">{T("lab.csv")}</button></div>
+        </div>
+        <div class="sub mtrace">
+          <h4>{T("lab.thr.title")} <span class="legend">{T("lab.thr.meta",dir=T("lab.dir.open"),src=T("lab.thr.capture"))}</span></h4>
+          {seg("lab_src",[("capture",T("lab.thr.capture")),("reference",T("lab.thr.reference"))],"capture",T("lab.thr.source"))}
+          <p class="note">{T("lab.thr.verdictFirst",name=T("lab.path.openStop"),t=T.num(25.6)+" s",ma=T.num(40.2)+" mA")}</p>
+          <div class="actions"><span class="hint">{T("lab.thr.suggestText",name=T("lab.p.openFactor"),v=T.num(1.35,2))}</span><button class="btn" type="button">{T("lab.thr.useSuggest")}</button></div>
+          <div class="mtrace-row"><div class="mtrace-y" aria-hidden="true"><span>55 <small>mA</small></span><span>28</span><span>0</span></div>
+            <svg class="trend" viewBox="0 0 600 100" preserveAspectRatio="none" role="img" aria-label="{T("lab.thr.chartAria")}">
+              <path class="cap" d="M0,{100-40/55*100:.1f}H600"/><path class="cap" d="M0,{100-24/55*100:.1f}H600"/>
+              <path class="thr" d="M{0.4/26.5*600:.1f},{100-30/55*100:.1f}H600"/>
+              <path class="mc" d="{path(cur,0,55)}"/>
+              <path class="trip" d="M{23.4/26.5*600:.1f},0V100"/><path class="trip first" d="M{25.6/26.5*600:.1f},0V100"/></svg></div>
+          <div class="axis" aria-hidden="true"><span>0 s</span><span>{T.num(13.3)} s</span><span>{T.num(26.5)} s</span></div>
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th>{T("lab.thr.col.path")}</th><th class="num">{T("lab.thr.col.threshold")}</th><th class="num">{T("lab.thr.col.fires")}</th><th class="num">{T("lab.thr.col.counts")}</th></tr></thead>
+            <tbody>
+              <tr><td>{T("lab.path.threshold")}</td><td class="num">{T.num(30.0)} mA</td><td class="num">{T.num(23.4)} s</td><td class="num">1702</td></tr>
+              <tr class="first"><td>{T("lab.path.openStop")} <span class="badge">{T("lab.thr.first")}</span></td><td class="num">40 mA</td><td class="num">{T.num(25.6)} s</td><td class="num">1810</td></tr>
+              <tr><td>{T("lab.path.stall")}</td><td class="num">65 mA</td><td class="num">{T("lab.thr.notReached")}</td><td class="num">—</td></tr>
+              <tr><td>{T("lab.path.circuit")}</td><td class="num">85 mA</td><td class="num">{T("lab.thr.notReached")}</td><td class="num">—</td></tr>
+            </tbody></table></div>
+        </div>
+        <form data-save="lab-thr" data-patch>
+          <p class="note">{T("lab.p.intro")}</p>
+          {group(T("lab.g.close"),sstep("close_threshold_multiplier",T("lab.p.closeFactor"),1.45,1.05,2.5,0.05,"×",dec=2)+sstep("close_trailing_step_ma",T("lab.p.trailStep"),2.5,0.5,20,0.1,"mA",dec=1)+sstep("close_trailing_ref_ms",T("lab.p.trailWindow"),2000,250,10000,50,"ms",dec=0)+sstep("close_trailing_sustain_ms",T("lab.p.trailSustain"),1000,0,10000,50,"ms",dec=0))}
+          {group(T("lab.g.openCeiling"),sstep("open_endstop_current_factor",T("lab.p.openFactor"),1.25,1.0,5.0,0.05,"×",dec=2)+sstep("open_endstop_stall_fraction",T("lab.p.stallFraction"),0.3,0.1,0.6,0.05,"",dec=2)+sstep("close_runtime_limit_counts",T("lab.p.closeCounts"),2600,1,3000,10,"",dec=0))}
+          {group(T("lab.g.caps"),sstep("cap_close_seat_ma",T("lab.p.seat"),34,5,140,1,"mA",dec=0)+sstep("cap_close_seat_frames",T("lab.p.seatFrames"),4,1,20,1,"",dec=0)+sstep("cap_close_popoff_ma",T("lab.p.popoff"),36,5,140,1,"mA",dec=0)+sstep("cap_open_stop_ma",T("lab.p.openStop"),40,5,140,1,"mA",dec=0)+sstep("cap_stall_ma",T("lab.p.stall"),65,5,140,1,"mA",dec=0)+sstep("cap_circuit_fault_ma",T("lab.p.circuit"),85,5,140,1,"mA",dec=0))}
+          {savebar("lab-thr")}
+        </form>
+        <div class="sub mtrace">
+          <h4>{T("lab.vc.title")} <span class="legend">{T("lab.vc.meta",z=1)}</span></h4>
+          <div class="mtrace-row square"><div class="mtrace-y" aria-hidden="true"><span>100 <small>%</small></span><span>50</span><span>0</span></div>
+            <svg class="trend" viewBox="0 0 600 100" preserveAspectRatio="none" role="img" aria-label="{T("lab.vc.aria")}"><path class="vpos" d="M{0.31*600:.1f},0V100"/><path class="vc" d="M0,100H{0.12*600:.1f}L{0.34*600:.1f},0H600"/></svg></div>
+          <div class="axis" aria-hidden="true"><span>0 %</span><span>{T("lab.vc.axis")}</span><span>100 %</span></div>
+          <p class="note">{T("lab.vc.note",start=12,full=34,src=T("lab.vc.measured",date="3.11.2026"),pos=31,flow=87)}</p>
         </div>
       </div>'''
 
