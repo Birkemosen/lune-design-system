@@ -294,6 +294,7 @@
   "csys.heatMode": "Mode",
   "csys.heatNormal": "Normal",
   "csys.heatPump": "Heat pump",
+  "csys.minOpeningHint": "Normal mode only. In heat pump mode every loop always has flow.",
   "csys.minOpening": "Min. total opening",
   "csys.heatPumpLimits": "Heat pump limits",
   "csys.hpDemand": "Opening when calling",

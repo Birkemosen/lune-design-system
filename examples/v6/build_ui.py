@@ -540,7 +540,7 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
         <form data-save="regulation">
           {group(T("csys.heating"),
                  srow(f'<span>{T("csys.heatMode")}</span>',seg("heat_mode",[("normal",T("csys.heatNormal")),("heat_pump",T("csys.heatPump"))],"heat_pump",T("csys.heatMode")))+
-                 sstep("heat_min_open",T("csys.minOpening"),0,0,100,1,"%",dec=0))}
+                 srow(lab("heat_min_open",T("csys.minOpening")),stepper("heat_min_open",0,0,100,1,"%",label=T("csys.minOpening"),dec=0),T("csys.minOpeningHint"),cls="normal-only"))}
           <section class="setting-group hp-limits"><h4>{T("csys.heatPumpLimits")}</h4><div class="setting-list">
                  {sstep("hp_demand",T("csys.hpDemand"),80,30,100,1,"%",dec=0)}
                  {sstep("hp_base",T("csys.hpBase"),60,30,100,1,"%",dec=0)}

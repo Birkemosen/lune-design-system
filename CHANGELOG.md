@@ -3,6 +3,7 @@
 ## 2.3.31
 
 - Ventiler vises som **flow** (% af sløjfens fulde flow), ikke som pinnens åbning: ventilindsatser åbner hurtigt, så 20 % åbning kan være 80 % flow. Bjælker, felter og statuslinjer bruger flow; pinnens position står som sekundær tekst («62 % flow · ventil 22 %»), hvor der er plads (rummets/zonens ark), ikke i små felter. Heatmappens nøgle hedder «flow».
+- `.normal-only` (V6): modstykket til `.hp-limits`; en indstilling, der kun gælder i normal tilstand (fx «Min. samlet åbning»), er dæmpet i varmepumpetilstand og siger det i sin hint-tekst.
 
 ## 2.3.30
 

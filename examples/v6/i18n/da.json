@@ -294,6 +294,7 @@
   "csys.heatMode": "Tilstand",
   "csys.heatNormal": "Normal",
   "csys.heatPump": "Varmepumpe",
+  "csys.minOpeningHint": "Kun i normal tilstand. I varmepumpetilstand har alle sløjfer altid flow.",
   "csys.minOpening": "Min. samlet åbning",
   "csys.heatPumpLimits": "Varmepumpegrænser",
   "csys.hpDemand": "Åbning ved varmebehov",
