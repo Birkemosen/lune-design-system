@@ -563,6 +563,7 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
                  {sstep("hp_demand",T("csys.hpDemand"),80,30,100,1,"%",dec=0)}
                  {sstep("hp_base",T("csys.hpBase"),60,30,100,1,"%",dec=0)}
                  {sstep("hp_overheat",T("csys.hpOverheat"),1.0,0.3,3.0,0.1,"°C")}
+                 {sstep("hp_move",T("csys.hpMove"),0.5,0,3.0,0.1,"°C")}
                  {sstep("hp_trim",T("csys.hpTrim"),35,0,100,1,"%",dec=0)}</div></section>
           {group(T("csys.balancing"),
                  srow(f'<span>{T("csys.mode")}</span>',seg("bal_mode",[("static",T("csys.static")),("adaptive",T("csys.adaptive"))],"adaptive",T("csys.mode")))+

@@ -432,6 +432,7 @@
   "csys.hpDemand": "Åbning ved varmebehov",
   "csys.hpBase": "Basisåbning",
   "csys.hpOverheat": "Overhedningsmargin",
+  "csys.hpMove": "Varmeflytning",
   "csys.hpTrim": "Trimgulv",
   "sys.title": "System",
   "sys.cats": "Kategorier",

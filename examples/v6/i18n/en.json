@@ -432,6 +432,7 @@
   "csys.hpDemand": "Opening when calling",
   "csys.hpBase": "Base opening",
   "csys.hpOverheat": "Overheat margin",
+  "csys.hpMove": "Heat moving",
   "csys.hpTrim": "Trim floor",
   "sys.title": "System",
   "sys.cats": "Categories",
