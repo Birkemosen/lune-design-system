@@ -129,6 +129,28 @@ def cond(h):
     if hod in (12,15): return "partly"
     return "cloud"
 
+def phys_sub(T, i, area):
+    """Zone sheet: heat loss (UA) and time constant (τ = C/UA), calculated / learned / used.
+    Zone 1 shows a learned UA; the others are not learned yet («—»)."""
+    ua=area*0.71; c=area*0.076; learned=ua*1.12 if i==1 else None
+    used=learned or ua
+    wk=lambda v: T("zdash.phys.wk",v=T.num(round(v,1))) if v else "—"
+    hrs=lambda v: T("zdash.phys.h",v=str(int(round(v)))) if v else "—"
+    note=(T("zdash.phys.noteLearned",c=T.num(round(c,2)),d=9,p=80) if learned
+          else T("zdash.phys.notePrior",c=T.num(round(c,2))))
+    return f'''
+        <div class="sub">
+          <h4>{T("zdash.phys.title")}</h4>
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th></th><th class="num">{T("zdash.phys.calc")}</th><th class="num">{T("zdash.phys.learned")}</th><th class="num">{T("zdash.phys.used")}</th></tr></thead>
+            <tbody>
+              <tr><td>{T("zdash.phys.ua")}</td><td class="num">{wk(ua)}</td><td class="num">{wk(learned)}</td><td class="num">{wk(used)}</td></tr>
+              <tr><td>{T("zdash.phys.tau")}</td><td class="num">{hrs(c*1000/ua)}</td><td class="num">—</td><td class="num">{hrs(c*1000/used)}</td></tr>
+            </tbody>
+          </table></div>
+          <p class="note">{note}</p>
+        </div>'''
+
 # ---------------------------------------------------------------- render ---
 def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
     ST={k:T(f"state.{k}") for k in ("calling","idle","fault","off")}
@@ -484,7 +506,7 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
             <svg class="trend" viewBox="0 0 600 100" preserveAspectRatio="none" role="img" aria-label="{T("lab.vc.aria")}"><path class="vpos" d="M{0.22*600:.1f},0V100"/><path class="vc" d="M0,100H{0.12*600:.1f}L{0.34*600:.1f},0H600"/></svg></div>
           <div class="axis" aria-hidden="true"><span>0 %</span><span>{T("lab.vc.axis")}</span><span>100 %</span></div>
           <p class="note">{T("lab.vc.note",start=12,full=34,src=T("lab.vc.measured",date="3.11.2026"),pos=22,flow=45)}</p>
-        </div>'''}'''
+        </div>'''}{phys_sub(T,i,area)}'''
         # Indstillinger
         merge=f'<option value="">{T("common.none")}</option>'+"".join(f'<option value="{y[0]}"{" selected" if (i==5 and y[0]==4) else ""}>Z{y[0]} {y[1]}</option>' for y in Z if y[0]!=i)
         pipes="".join(f'<option{" selected" if p==pipe else ""}>{p}</option>' for p in PIPES)

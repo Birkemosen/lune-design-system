@@ -1403,10 +1403,72 @@
 
   /* V6: varmepumpe-grænser gælder kun i varmepumpe-tilstand (seg-radioer i formularen). */
   form:has(input[name="heat_mode"]):not(:has(input[name="heat_mode"][value="heat_pump"]:checked)) .hp-limits { opacity: .4; pointer-events: none; }
+  /* …og omvendt: indstillinger, der kun gælder i normal tilstand. */
+  form:has(input[name="heat_mode"][value="heat_pump"]:checked) .normal-only { opacity: .4; pointer-events: none; }
 
   /* V6 med 2 prober: kun manifold frem/retur — skjul zone-returfelter og ekstra prober. */
   .app[data-probe-layout="2"] .zone-ret { display: none; }
   .app[data-probe-layout="2"] .metric[data-probe]:not([data-probe="1"]):not([data-probe="2"]) { display: none; }
+
+  /* Motorlab (V6, kun dev-builds): ét slag på én motor. .mtrace stabler rækker med hver sin skala
+     (y-labels i HTML, kurven i SVG) over én fælles tidsakse: strøm altid, kadence og hældning som lag,
+     der slås til/fra med .layers (checkbokse, ingen JS). Under kurverne viser .phase-strip slagets
+     faser som én neutral tone i trin (fri vandring → pin-kontakt → under belastning → stopper),
+     med navnet i HTML. Strømmen er hovedkurven (--fg); kadence er en sensor (--info); hældning er
+     afledt og stiplet. */
+  .sys-cat .lab { display: grid; gap: var(--space-5); min-width: 0; }
+  .lab > *, .mtrace > * { min-width: 0; }
+  .lab .actions { flex-wrap: wrap; }
+  .lab .actions .hint { align-self: center; font-size: var(--fs-sm); color: var(--muted); }
+  .mtrace { display: grid; gap: var(--space-2); }
+  .mtrace-row { display: grid; grid-template-columns: 3.5em minmax(0, 1fr); gap: var(--space-3); }
+  .mtrace-row .trend { height: 180px; }
+  .mtrace-row[data-layer] .trend { height: 90px; }
+  .mtrace-y { display: flex; flex-direction: column; justify-content: space-between; font-size: var(--fs-xs); color: var(--faint); text-align: right; font-variant-numeric: tabular-nums; }
+  .mtrace-y small { color: var(--faint); }
+  .mtrace .axis, .mtrace .phase-strip { margin-left: calc(3.5em + var(--space-3)); }
+  .trend .mc  { fill: none; stroke: var(--fg); stroke-width: 1.8; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .trend .cad { fill: none; stroke: var(--info); stroke-width: 1.4; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .trend .slp { fill: none; stroke: var(--muted); stroke-width: 1.4; stroke-dasharray: 4 3; vector-effect: non-scaling-stroke; }
+  .trend .zero { stroke: var(--border); stroke-width: 1; stroke-dasharray: 2 3; vector-effect: non-scaling-stroke; }
+  .phase-strip { display: flex; height: 22px; border-radius: var(--r-field); overflow: hidden; background: var(--raised); }
+  .phase-strip span { display: block; min-width: 0; padding: 0 var(--space-1); overflow: hidden; line-height: 22px; text-align: center; font-size: var(--fs-xs); color: var(--muted); white-space: nowrap; text-overflow: ellipsis;
+    flex: var(--w, 1) 1 0; border-right: 1px solid var(--card); }
+  .phase-strip span:last-child { border-right: 0; }
+  .phase-strip [data-phase="contact"]  { background: color-mix(in srgb, var(--fg) 14%, var(--raised)); color: var(--fg); }
+  .phase-strip [data-phase="load"]     { background: color-mix(in srgb, var(--fg) 26%, var(--raised)); color: var(--fg); }
+  .phase-strip [data-phase="stopping"] { background: color-mix(in srgb, var(--fg) 40%, var(--raised)); color: var(--fg); }
+  .layers { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .layers label { display: inline-flex; align-items: center; gap: var(--space-2); min-height: calc(var(--hit) - 8px); padding: 0 var(--space-3);
+    border-radius: var(--r-pill); background: var(--raised); font-size: var(--fs-sm); color: var(--muted); cursor: pointer; }
+  .layers label:has(input:checked) { background: var(--inv-bg); color: var(--inv-fg); }
+  .layers label:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .layers i { display: inline-block; width: 14px; border-top: 2px solid; border-radius: 2px; }
+  .layers .lcad { border-color: var(--info); }
+  .layers .lslp { border-top-style: dashed; border-color: currentColor; }
+  .mtrace:has(.layers input[value="cadence"]:not(:checked)) .mtrace-row[data-layer="cadence"],
+  .mtrace:has(.layers input[value="slope"]:not(:checked)) .mtrace-row[data-layer="slope"],
+  .mtrace:has(.layers input[value="phase"]:not(:checked)) .phase-strip { display: none; }
+  .mtrace[data-empty] :is(.layers, .mtrace-row, .phase-strip, .actions, .note, .table-wrap) { display: none; }
+  /* Endestop-explorer: tærskler som linjer over strømmen — den dynamiske tærskel stiplet, de absolutte
+     grænser prikket — og en lodret streg, hvor hver vej ville stoppe motoren; den, der stopper først, er fuldt optrukket.
+     Navne og tider står i tabellen under (HTML). Ventilkurven er flow mod åbning i vandets farve. */
+  .trend .thr  { fill: none; stroke: var(--muted); stroke-width: 1.4; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; }
+  .trend .cap  { stroke: var(--faint); stroke-width: 1; stroke-dasharray: 1 3; vector-effect: non-scaling-stroke; }
+  .trend .trip { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 3; vector-effect: non-scaling-stroke; }
+  .trend .trip.first { stroke: var(--fg); stroke-width: 1.5; stroke-dasharray: none; }
+  .trend .vc   { fill: none; stroke: var(--data-pump); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .trend .vpos { stroke: var(--fg); stroke-width: 1; stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }
+  .mtrace-row.square .trend { height: 160px; }
+  .table tr.first td:first-child { font-weight: 600; }
+  /* Motorlabbets forløb: handlinger efter tilstand (DESIGN.md 6.1b) med labbets egne tilstande. */
+  [data-state="setup"]   [data-show-when~="setup"],
+  [data-state="armed"]   [data-show-when~="armed"],
+  [data-state="seated"]  [data-show-when~="seated"],
+  [data-state="opened"]  [data-show-when~="opened"],
+  [data-state="closed"]  [data-show-when~="closed"],
+  [data-state="running"] [data-show-when~="running"],
+  [data-state="halted"]  [data-show-when~="halted"] { display: var(--show-display, block); }
 
   /* Segmenteret valg — pille, aktiv inverteret */
   .seg { display: inline-flex; width: fit-content; max-width: 100%; min-height: var(--hit); padding: 4px; border-radius: var(--r-pill); background: var(--raised); }
@@ -1581,19 +1643,19 @@
   #m-sys:checked ~ .app :is(.strip, .substrip, .boards) { display: none; }
   /* System: valgt kategori (radioer lige før .sys eller før .app) */
   #c-device:checked ~ :is(.app, .sys) .sys-cat[data-cat="device"],
-  #c-manifold:checked ~ :is(.app, .sys) .sys-cat[data-cat="manifold"],
+  #c-motors:checked ~ :is(.app, .sys) .sys-cat[data-cat="motors"],
   #c-connections:checked ~ :is(.app, .sys) .sys-cat[data-cat="connections"],
   #c-firmware:checked ~ :is(.app, .sys) .sys-cat[data-cat="firmware"],
   #c-service:checked ~ :is(.app, .sys) .sys-cat[data-cat="service"],
   #c-motorlab:checked ~ :is(.app, .sys) .sys-cat[data-cat="motorlab"] { display: grid; }
   #c-device:checked ~ :is(.app, .sys) .sys-nav label[for="c-device"],
-  #c-manifold:checked ~ :is(.app, .sys) .sys-nav label[for="c-manifold"],
+  #c-motors:checked ~ :is(.app, .sys) .sys-nav label[for="c-motors"],
   #c-connections:checked ~ :is(.app, .sys) .sys-nav label[for="c-connections"],
   #c-firmware:checked ~ :is(.app, .sys) .sys-nav label[for="c-firmware"],
   #c-service:checked ~ :is(.app, .sys) .sys-nav label[for="c-service"],
   #c-motorlab:checked ~ :is(.app, .sys) .sys-nav label[for="c-motorlab"] { background: var(--card); color: var(--fg); }
   #c-device:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-device"],
-  #c-manifold:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-manifold"],
+  #c-motors:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-motors"],
   #c-connections:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-connections"],
   #c-firmware:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-firmware"],
   #c-service:focus-visible ~ :is(.app, .sys) .sys-nav label[for="c-service"],
@@ -1878,9 +1940,9 @@
             <div class="metric"><dt>Fremløb</dt><dd data-bind="manifold.flow">34,2 <small>°C</small></dd></div>
             <div class="metric"><dt>Retur</dt><dd data-bind="manifold.return">29,8 <small>°C</small></dd></div>
             <div class="metric"><dt>ΔT</dt><dd data-bind="manifold.dt">4,4 <small>K</small></dd></div>
-            <div class="metric"><dt>Samlet åbning</dt><dd data-bind="manifold.opening">32 <small>%</small></dd></div>
+            <div class="metric"><dt>Samlet flow</dt><dd data-bind="manifold.opening">32 <small>%</small></dd></div>
           </dl>
-          <div class="bar" style="--v:32%" role="meter" aria-valuenow="32" aria-valuemin="0" aria-valuemax="100" aria-label="Samlet ventilåbning"><i></i></div>
+          <div class="bar" style="--v:32%" role="meter" aria-valuenow="32" aria-valuemin="0" aria-valuemax="100" aria-label="Samlet flow gennem sløjferne"><i></i></div>
           <div class="sub trend-wrap">
             <h4>Sidste 24 timer <span class="legend"><i class="lf"></i>Fremløb<i class="lr"></i>Retur</span></h4>
             <svg class="trend" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="Fremløb og retur, sidste 24 timer" data-bind-trend="manifold"><polygon class="dt" points="0.0,37.3 5.1,37.1 10.2,36.0 15.3,37.3 20.4,37.5 25.5,35.0 30.6,33.5 35.7,33.1 40.9,32.7 46.0,32.9 51.1,32.4 56.2,31.8 61.3,32.9 66.4,31.7 71.5,31.4 76.6,31.1 81.7,32.0 86.8,32.6 91.9,31.4 97.0,33.3 102.1,31.7 107.2,31.6 112.3,32.0 117.4,33.0 122.6,29.1 127.7,25.7 132.8,22.3 137.9,20.3 143.0,18.0 148.1,16.0 153.2,15.1 158.3,13.9 163.4,15.0 168.5,13.8 173.6,15.6 178.7,15.9 183.8,16.6 188.9,14.9 194.0,14.6 199.1,14.0 204.3,16.5 209.4,20.0 214.5,23.4 219.6,25.2 224.7,28.0 229.8,28.8 234.9,31.5 240.0,32.6 240.0,58.3 234.9,59.2 229.8,60.1 224.7,59.0 219.6,58.4 214.5,56.4 209.4,54.2 204.3,54.2 199.1,54.1 194.0,54.0 188.9,53.1 183.8,51.9 178.7,52.6 173.6,51.6 168.5,52.3 163.4,53.8 158.3,52.9 153.2,53.2 148.1,52.6 143.0,52.9 137.9,54.4 132.8,53.9 127.7,55.8 122.6,58.0 117.4,60.7 112.3,61.1 107.2,60.9 102.1,60.5 97.0,60.3 91.9,59.5 86.8,58.0 81.7,58.8 76.6,59.3 71.5,60.4 66.4,61.5 61.3,61.8 56.2,60.7 51.1,61.1 46.0,59.9 40.9,60.5 35.7,61.7 30.6,61.0 25.5,61.1 20.4,61.2 15.3,60.6 10.2,61.7 5.1,60.8 0.0,61.2"/><polyline class="f" points="0.0,37.3 5.1,37.1 10.2,36.0 15.3,37.3 20.4,37.5 25.5,35.0 30.6,33.5 35.7,33.1 40.9,32.7 46.0,32.9 51.1,32.4 56.2,31.8 61.3,32.9 66.4,31.7 71.5,31.4 76.6,31.1 81.7,32.0 86.8,32.6 91.9,31.4 97.0,33.3 102.1,31.7 107.2,31.6 112.3,32.0 117.4,33.0 122.6,29.1 127.7,25.7 132.8,22.3 137.9,20.3 143.0,18.0 148.1,16.0 153.2,15.1 158.3,13.9 163.4,15.0 168.5,13.8 173.6,15.6 178.7,15.9 183.8,16.6 188.9,14.9 194.0,14.6 199.1,14.0 204.3,16.5 209.4,20.0 214.5,23.4 219.6,25.2 224.7,28.0 229.8,28.8 234.9,31.5 240.0,32.6"/><polyline class="r" points="0.0,61.2 5.1,60.8 10.2,61.7 15.3,60.6 20.4,61.2 25.5,61.1 30.6,61.0 35.7,61.7 40.9,60.5 46.0,59.9 51.1,61.1 56.2,60.7 61.3,61.8 66.4,61.5 71.5,60.4 76.6,59.3 81.7,58.8 86.8,58.0 91.9,59.5 97.0,60.3 102.1,60.5 107.2,60.9 112.3,61.1 117.4,60.7 122.6,58.0 127.7,55.8 132.8,53.9 137.9,54.4 143.0,52.9 148.1,52.6 153.2,53.2 158.3,52.9 163.4,53.8 168.5,52.3 173.6,51.6 178.7,52.6 183.8,51.9 188.9,53.1 194.0,54.0 199.1,54.1 204.3,54.2 209.4,54.2 214.5,56.4 219.6,58.4 224.7,59.0 229.8,60.1 234.9,59.2 240.0,58.3"/></svg>
@@ -1893,7 +1955,7 @@
           <header class="panel-head"><h3>Komfort pr. zone</h3><p>Sidste 24 timer</p><span class="legend" aria-hidden="true"><i class="lt"></i>Temperatur<i class="lg"></i>Mål<i class="lh"></i>Varme</span></header>
           <div class="zcards">
             <button class="zcard" type="button" popovertarget="sheet-z1" data-state="calling">
-              <span class="zcard-head"><span class="id">Z1</span><span class="name">Josephine</span><span class="zcard-open">åben 62 %</span></span>
+              <span class="zcard-head"><span class="id">Z1</span><span class="name">Josephine</span><span class="zcard-open">flow 62 % · retur 29,1°</span></span>
               <span class="val"><b>21,4°</b> / 22,0°</span>
               <span class="zc mini" aria-hidden="true">
                 <span class="zc-y"><span>23°</span><span>21,5°</span><span>20°</span></span>
@@ -1903,7 +1965,7 @@
               <span class="empty">Historikken vises ca. 10 minutter efter en genstart.</span>
             </button>
             <button class="zcard" type="button" popovertarget="sheet-z2" data-state="idle">
-              <span class="zcard-head"><span class="id">Z2</span><span class="name">Laura</span><span class="zcard-open">åben 18 %</span></span>
+              <span class="zcard-head"><span class="id">Z2</span><span class="name">Laura</span><span class="zcard-open">flow 18 % · retur 28,2°</span></span>
               <span class="val"><b>20,8°</b> / 21,0°</span>
               <span class="zc mini" aria-hidden="true">
                 <span class="zc-y"><span>22°</span><span>20,5°</span><span>19°</span></span>
@@ -1913,7 +1975,7 @@
               <span class="empty">Historikken vises ca. 10 minutter efter en genstart.</span>
             </button>
             <button class="zcard" type="button" popovertarget="sheet-z3" data-state="idle">
-              <span class="zcard-head"><span class="id">Z3</span><span class="name">Toilet</span><span class="zcard-open">åben 6 %</span></span>
+              <span class="zcard-head"><span class="id">Z3</span><span class="name">Toilet</span><span class="zcard-open">flow 6 % · retur 28,9°</span></span>
               <span class="val"><b>22,6°</b> / 22,0°</span>
               <span class="zc mini" aria-hidden="true">
                 <span class="zc-y"><span>23°</span><span>21,5°</span><span>20°</span></span>
@@ -1923,7 +1985,7 @@
               <span class="empty">Historikken vises ca. 10 minutter efter en genstart.</span>
             </button>
             <button class="zcard" type="button" popovertarget="sheet-z4" data-state="calling">
-              <span class="zcard-head"><span class="id">Z4–5</span><span class="name">Stue rum 1</span><span class="zcard-open">åben 54 %</span></span>
+              <span class="zcard-head"><span class="id">Z4–5</span><span class="name">Stue rum 1</span><span class="zcard-open">flow 54 % · retur 28,4°</span></span>
               <span class="val"><b>21,1°</b> / 21,5°</span>
               <span class="zc mini" aria-hidden="true">
                 <span class="zc-y"><span>22°</span><span>20,5°</span><span>19°</span></span>
@@ -1933,7 +1995,7 @@
               <span class="empty">Historikken vises ca. 10 minutter efter en genstart.</span>
             </button>
             <button class="zcard" type="button" popovertarget="sheet-z5" data-state="calling">
-              <span class="zcard-head"><span class="id">Z5</span><span class="name">Stue rum 2</span><span class="zcard-open">åben 54 %</span></span>
+              <span class="zcard-head"><span class="id">Z5</span><span class="name">Stue rum 2</span><span class="zcard-open">flow 54 % · retur 28,5°</span></span>
               <span class="val"><b>21,0°</b> / 21,5°</span>
               <span class="zc mini" aria-hidden="true">
                 <span class="zc-y"><span>22°</span><span>20,5°</span><span>19°</span></span>
@@ -1982,21 +2044,20 @@
       </section>
       <section class="view" id="v-sys" aria-labelledby="h-sys">
         <h2 class="sr-only" id="h-sys">System</h2>
-        <input class="state" type="radio" name="syscat" id="c-none" checked aria-label="Kategorier"><input class="state" type="radio" name="syscat" id="c-device" data-hash="enhed" aria-label="Enhed"><input class="state" type="radio" name="syscat" id="c-manifold" data-hash="manifold" aria-label="Manifold og motorer"><input class="state" type="radio" name="syscat" id="c-connections" data-hash="forbindelser" aria-label="Forbindelser"><input class="state" type="radio" name="syscat" id="c-firmware" data-hash="firmware" aria-label="Firmware og backup"><input class="state" type="radio" name="syscat" id="c-service" data-hash="service" aria-label="Service">
+        <input class="state" type="radio" name="syscat" id="c-none" checked aria-label="Kategorier"><input class="state" type="radio" name="syscat" id="c-device" data-hash="enhed" aria-label="Enhed"><input class="state" type="radio" name="syscat" id="c-motors" data-hash="motorer" aria-label="Motorer"><input class="state" type="radio" name="syscat" id="c-connections" data-hash="forbindelser" aria-label="Forbindelser"><input class="state" type="radio" name="syscat" id="c-firmware" data-hash="firmware" aria-label="Firmware og backup"><input class="state" type="radio" name="syscat" id="c-service" data-hash="service" aria-label="Service">
         <div class="sys">
-          <nav class="sys-nav" aria-label="Kategorier"><label for="c-device"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"/></svg>Enhed</label><label for="c-manifold"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Manifold og motorer</label><label for="c-connections"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 15l6-6M7 13l-2 2a3 3 0 0 0 4 4l2-2M17 11l2-2a3 3 0 0 0-4-4l-2 2"/></svg>Forbindelser</label><label for="c-firmware"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10M8 10l4 4 4-4M5 19h14"/></svg>Firmware og backup</label><label for="c-service"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6a4 4 0 0 0-5 5l-5 5 3 3 5-5a4 4 0 0 0 5-5l-2 2-3-3z"/></svg>Service</label></nav>
+          <nav class="sys-nav" aria-label="Kategorier"><label for="c-device"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"/></svg>Enhed</label><label for="c-motors"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>Motorer</label><label for="c-connections"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 15l6-6M7 13l-2 2a3 3 0 0 0 4 4l2-2M17 11l2-2a3 3 0 0 0-4-4l-2 2"/></svg>Forbindelser</label><label for="c-firmware"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10M8 10l4 4 4-4M5 19h14"/></svg>Firmware og backup</label><label for="c-service"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6a4 4 0 0 0-5 5l-5 5 3 3 5-5a4 4 0 0 0 5-5l-2 2-3-3z"/></svg>Service</label></nav>
           <div class="sys-main"><section class="sys-cat" data-cat="device" aria-labelledby="h-c-device"><label class="sys-back" for="c-none">System</label><header><div><small>System</small><h2 id="h-c-device">Enhed</h2></div></header>
       <form data-save="device">
         <section class="setting-group"><h4>Identitet</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="device_name">Navn</label></div><div class="setting-control"><input class="input w-sm" id="device_name" name="device_name" value="Stueetage" maxlength="24"></div></div></div></section>
         <section class="setting-group"><h4>Placering</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="fc_lat">Breddegrad</label></div><div class="setting-control"><input class="input w-sm" id="fc_lat" name="fc_lat" type="number" inputmode="decimal" step="0.0001" min="-90" max="90" value="55.2700"></div></div><div class="setting"><div class="setting-label"><label for="fc_lon">Længdegrad</label></div><div class="setting-control"><input class="input w-sm" id="fc_lon" name="fc_lon" type="number" inputmode="decimal" step="0.0001" min="-180" max="180" value="9.9000"></div></div></div><p class="note">Bruges til vejrudsigten.</p></section>
         <section class="setting-group"><h4>BLE-ur</h4><div class="setting-list"><label class="setting switch"><span class="setting-label"><b>Udsend tid til BLE-sensorer</b><small>Shelly BLU H&T viser klokkeslæt</small></span><input type="checkbox" role="switch" name="ble_clock" checked></label></div></section>
         <footer class="savebar"><span class="save-status" id="ss-device" aria-live="polite"></span><button type="reset" class="btn">Fortryd</button><button class="btn primary" type="submit">Gem</button></footer>
-      </form></section><section class="sys-cat" data-cat="manifold" aria-labelledby="h-c-manifold"><label class="sys-back" for="c-none">System</label><header><div><small>System</small><h2 id="h-c-manifold">Manifold og motorer</h2></div></header>
-      <form data-save="manifold">
-        <section class="setting-group"><h4>Manifold</h4><div class="setting-list"><div class="setting"><div class="setting-label"><span>Ventiltype</span></div><div class="setting-control"><div class="seg" role="radiogroup" aria-label="Ventiltype"><label><input type="radio" name="manifold_type" value="no"><span>Normally open</span></label><label><input type="radio" name="manifold_type" value="nc" checked><span>Normally closed</span></label></div></div></div><div class="setting"><div class="setting-label"><label for="probe_flow">Fremløbsprobe</label></div><div class="setting-control"><select class="select" id="probe_flow" name="probe_flow"><option value="1">Probe 1</option><option value="2">Probe 2</option><option value="3">Probe 3</option><option value="4">Probe 4</option><option value="5">Probe 5</option><option value="6">Probe 6</option><option value="7" selected>Probe 7</option><option value="8">Probe 8</option></select></div></div><div class="setting"><div class="setting-label"><label for="probe_return">Returprobe</label></div><div class="setting-control"><select class="select" id="probe_return" name="probe_return"><option value="1">Probe 1</option><option value="2">Probe 2</option><option value="3">Probe 3</option><option value="4">Probe 4</option><option value="5">Probe 5</option><option value="6">Probe 6</option><option value="7">Probe 7</option><option value="8" selected>Probe 8</option></select></div></div></div></section>
+      </form></section><section class="sys-cat" data-cat="motors" aria-labelledby="h-c-motors"><label class="sys-back" for="c-none">System</label><header><div><small>System</small><h2 id="h-c-motors">Motorer</h2></div></header>
+      <form data-save="motors">
         <section class="setting-group"><h4>Motorer</h4><div class="setting-list gated"><label class="setting switch"><span class="setting-label"><b>Motordrivere</b><small>Slå fra for at frakoble alle 6</small></span><input type="checkbox" role="switch" name="motor_drivers" checked></label><div class="gated-body"><div class="setting"><div class="setting-label"><label for="motor_type">Motortype</label></div><div class="setting-control"><select class="select" id="motor_type" name="motor_type"><option>Generic</option><option selected>HmIP VdMot</option></select></div></div><div class="setting"><div class="setting-label"><label for="m_runtime">Maks. køretid</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk maks. køretid">−</button><span class="value"><input type="number" inputmode="decimal" id="m_runtime" name="m_runtime" value="45" min="10" max="120" step="5"><span class="unit">s</span></span><button type="button" data-step="1" aria-label="Hæv maks. køretid">+</button></div></div></div></div></div></section>
         <section class="setting-group"><h4>Avanceret</h4><div class="setting-list"><details class="subpage"><summary class="setting"><span class="sub-back">Tilbage</span><span class="setting-label"><span>Lukke-endestop</span></span><span class="setting-control"><span class="muted">180 mA</span></span></summary><div class="subpage-body"><section class="setting-group"><h4>Lukke-endestop</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="m_cthr">Grænse</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk grænse">−</button><span class="value"><input type="number" inputmode="decimal" id="m_cthr" name="m_cthr" value="180" min="50" max="500" step="10"><span class="unit">mA</span></span><button type="button" data-step="1" aria-label="Hæv grænse">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="m_cslope">Hældning</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk hældning">−</button><span class="value"><input type="number" inputmode="decimal" id="m_cslope" name="m_cslope" value="12" min="1" max="50" step="1"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Hæv hældning">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="m_cfloor">Hældningsgulv</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk hældningsgulv">−</button><span class="value"><input type="number" inputmode="decimal" id="m_cfloor" name="m_cfloor" value="4" min="0" max="20" step="1"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Hæv hældningsgulv">+</button></div></div></div></div></section></div></details><details class="subpage"><summary class="setting"><span class="sub-back">Tilbage</span><span class="setting-label"><span>Åbne-endestop</span></span><span class="setting-control"><span class="muted">160 mA</span></span></summary><div class="subpage-body"><section class="setting-group"><h4>Åbne-endestop</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="m_othr">Grænse</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk grænse">−</button><span class="value"><input type="number" inputmode="decimal" id="m_othr" name="m_othr" value="160" min="50" max="500" step="10"><span class="unit">mA</span></span><button type="button" data-step="1" aria-label="Hæv grænse">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="m_oslope">Hældning</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk hældning">−</button><span class="value"><input type="number" inputmode="decimal" id="m_oslope" name="m_oslope" value="10" min="1" max="50" step="1"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Hæv hældning">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="m_ofloor">Hældningsgulv</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk hældningsgulv">−</button><span class="value"><input type="number" inputmode="decimal" id="m_ofloor" name="m_ofloor" value="4" min="0" max="20" step="1"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Hæv hældningsgulv">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="m_ripple">Ripple-grænse</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk ripple-grænse">−</button><span class="value"><input type="number" inputmode="decimal" id="m_ripple" name="m_ripple" value="600" min="100" max="2000" step="50"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Hæv ripple-grænse">+</button></div></div></div></div></section></div></details><details class="subpage"><summary class="setting"><span class="sub-back">Tilbage</span><span class="setting-label"><span>Genlæring</span></span><span class="setting-control"><span class="muted">efter 200 bevægelser</span></span></summary><div class="subpage-body"><section class="setting-group"><h4>Genlæring</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="m_relmov">Efter bevægelser</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk efter bevægelser">−</button><span class="value"><input type="number" inputmode="decimal" id="m_relmov" name="m_relmov" value="200" min="10" max="2000" step="10"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Hæv efter bevægelser">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="m_relh">Efter timer</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk efter timer">−</button><span class="value"><input type="number" inputmode="decimal" id="m_relh" name="m_relh" value="168" min="1" max="720" step="1"><span class="unit">t</span></span><button type="button" data-step="1" aria-label="Hæv efter timer">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="m_minsamp">Min. samples</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk min. samples">−</button><span class="value"><input type="number" inputmode="decimal" id="m_minsamp" name="m_minsamp" value="3" min="1" max="20" step="1"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Hæv min. samples">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="m_maxdev">Maks. afvigelse</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk maks. afvigelse">−</button><span class="value"><input type="number" inputmode="decimal" id="m_maxdev" name="m_maxdev" value="0.15" min="0.01" max="1" step="0.01"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Hæv maks. afvigelse">+</button></div></div></div></div></section></div></details></div><p class="note">Startværdier før motoren har lært sin aktuator. Lærte faktorer pr. zone overskriver dem.</p></section>
-        <footer class="savebar"><span class="save-status" id="ss-manifold" aria-live="polite"></span><button type="reset" class="btn">Fortryd</button><button class="btn primary" type="submit">Gem</button></footer>
+        <footer class="savebar"><span class="save-status" id="ss-motors" aria-live="polite"></span><button type="reset" class="btn">Fortryd</button><button class="btn primary" type="submit">Gem</button></footer>
       </form></section><section class="sys-cat" data-cat="connections" aria-labelledby="h-c-connections"><label class="sys-back" for="c-none">System</label><header><div><small>System</small><h2 id="h-c-connections">Forbindelser</h2></div></header>
       <form data-save="connections" data-state="approved">
         <section class="setting-group"><h4>Lune Touch</h4><div class="setting-list"><div class="setting"><div class="setting-label"><span>Status</span></div><div class="setting-control"><span class="badge ok">Godkendt</span></div></div><div class="setting"><div class="setting-label"><span>Leverer</span></div><div class="setting-control"><span>Vejr-preload · mål · opsugning</span></div></div><div class="setting"><div class="setting-label"><span>Adresse</span></div><div class="setting-control"><span class="mono">192.168.20.186</span></div></div></div><p class="note" data-show-when="unpaired">Touch har fundet denne V6. Godkend for at give den styringen.</p></section>
@@ -2029,7 +2090,7 @@
     <input class="state tab" type="radio" name="tab-manifold" id="t-manifold-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-manifold" id="t-manifold-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-manifold" id="t-manifold-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/><path d="M8 7v10M16 7v10"/></svg></span>
-      <div><h2 id="sheet-manifold-t">Manifold</h2><p>34,2° / 29,8° · ΔT 4,4 · 32 % åben</p></div>
+      <div><h2 id="sheet-manifold-t">Manifold</h2><p>34,2° / 29,8° · ΔT 4,4 · 32 % flow</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-manifold" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-manifold-o" data-tab="overview">Overblik</label><label for="t-manifold-h" data-tab="history">Historik</label><label for="t-manifold-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -2039,14 +2100,20 @@
           <div class="metric"><dt>Fremløb</dt><dd data-bind="manifold.flow">34,2 <small>°C</small></dd></div>
           <div class="metric"><dt>Retur</dt><dd data-bind="manifold.return">29,8 <small>°C</small></dd></div>
           <div class="metric"><dt>ΔT</dt><dd data-bind="manifold.dt">4,4 <small>K</small></dd></div>
-          <div class="metric"><dt>Samlet åbning</dt><dd data-bind="manifold.opening">32 <small>%</small></dd></div>
+          <div class="metric"><dt>Samlet flow</dt><dd data-bind="manifold.opening">32 <small>%</small></dd></div>
         </dl>
-        <div class="bar" style="--v:32%" role="meter" aria-valuenow="32" aria-valuemin="0" aria-valuemax="100" aria-label="Samlet ventilåbning"><i></i></div>
+        <div class="bar" style="--v:32%" role="meter" aria-valuenow="32" aria-valuemin="0" aria-valuemax="100" aria-label="Samlet flow gennem sløjferne"><i></i></div>
         <div class="sub"><h4>Balancering <span class="badge violet">Adaptiv</span></h4>
           <div class="table-wrap"><table class="table">
             <thead><tr><th>Zone</th><th class="num">Prior</th><th class="num">Lært</th><th class="num">Effektiv</th></tr></thead>
             <tbody><tr><td>Z1</td><td class="num">1,00</td><td class="num c-violet">1,08</td><td class="num">1,08</td></tr><tr><td>Z2</td><td class="num">0,85</td><td class="num c-violet">0,81</td><td class="num">0,81</td></tr><tr><td>Z3</td><td class="num">0,40</td><td class="num c-violet">0,44</td><td class="num">0,44</td></tr><tr><td>Z4–5</td><td class="num">1,00</td><td class="num c-violet">0,97</td><td class="num">0,97</td></tr><tr><td>Z5</td><td class="num">1,00</td><td class="num c-violet">0,97</td><td class="num">0,97</td></tr><tr><td>Z6</td><td class="num">0,85</td><td class="num c-violet">—</td><td class="num">0,85</td></tr></tbody>
-          </table></div></div></section>
+          </table></div></div>
+        <div class="sub"><h4>Live værdier</h4>
+          <dl class="metrics">
+            <div class="metric"><dt>Probe 1 <span class="badge">Fremløb</span></dt><dd>34,2 <small>°C</small></dd></div>
+            <div class="metric"><dt>Probe 2 <span class="badge">Retur</span></dt><dd>29,8 <small>°C</small></dd></div>
+            <div class="metric"><dt>Probe 3 <span class="badge">Josephine</span></dt><dd>29,1 <small>°C</small></dd></div><div class="metric"><dt>Probe 4 <span class="badge">Laura</span></dt><dd>28,2 <small>°C</small></dd></div><div class="metric"><dt>Probe 5 <span class="badge">Toilet</span></dt><dd>28,9 <small>°C</small></dd></div><div class="metric"><dt>Probe 6 <span class="badge">Stue rum 1</span></dt><dd>28,4 <small>°C</small></dd></div><div class="metric"><dt>Probe 7 <span class="badge">Stue rum 2</span></dt><dd>28,5 <small>°C</small></dd></div><div class="metric"><dt>Probe 8 <span class="badge">Soveværelse</span></dt><dd>22,1 <small>°C</small></dd></div>
+          </dl></div></section>
       <section class="tab-panel" data-tab="history">
         <div class="sub trend-wrap">
           <h4>Sidste 24 timer <span class="legend"><i class="lf"></i>Fremløb<i class="lr"></i>Retur</span></h4>
@@ -2054,12 +2121,14 @@
           <div class="axis" aria-hidden="true"><span>−24 t</span><span>−12 t</span><span>nu</span></div>
         </div></section>
       <section class="tab-panel" data-tab="settings">
-        <form data-save="regulation">
-          <section class="setting-group"><h4>Varmetilstand</h4><div class="setting-list"><div class="setting"><div class="setting-label"><span>Tilstand</span></div><div class="setting-control"><div class="seg" role="radiogroup" aria-label="Tilstand"><label><input type="radio" name="heat_mode" value="normal"><span>Normal</span></label><label><input type="radio" name="heat_mode" value="heat_pump" checked><span>Varmepumpe</span></label></div></div></div><div class="setting"><div class="setting-label"><label for="heat_min_open">Min. samlet åbning</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk min. samlet åbning">−</button><span class="value"><input type="number" inputmode="decimal" id="heat_min_open" name="heat_min_open" value="0" min="0" max="100" step="1"><span class="unit">%</span></span><button type="button" data-step="1" aria-label="Hæv min. samlet åbning">+</button></div></div></div></div></section>
+        <form data-save="regulation" data-patch>
+          <section class="setting-group"><h4>Manifold</h4><div class="setting-list"><div class="setting"><div class="setting-label"><span>Ventiltype</span></div><div class="setting-control"><div class="seg" role="radiogroup" aria-label="Ventiltype"><label><input type="radio" name="manifold_type" value="no"><span>Normally open</span></label><label><input type="radio" name="manifold_type" value="nc" checked><span>Normally closed</span></label></div></div></div><div class="setting"><div class="setting-label"><label for="probe_flow">Fremløbsprobe</label></div><div class="setting-control"><select class="select" id="probe_flow" name="probe_flow"><option value="1" selected>Probe 1</option><option value="2">Probe 2</option><option value="3">Probe 3</option><option value="4">Probe 4</option><option value="5">Probe 5</option><option value="6">Probe 6</option><option value="7">Probe 7</option><option value="8">Probe 8</option></select></div></div><div class="setting"><div class="setting-label"><label for="probe_return">Returprobe</label></div><div class="setting-control"><select class="select" id="probe_return" name="probe_return"><option value="1">Probe 1</option><option value="2" selected>Probe 2</option><option value="3">Probe 3</option><option value="4">Probe 4</option><option value="5">Probe 5</option><option value="6">Probe 6</option><option value="7">Probe 7</option><option value="8">Probe 8</option></select></div></div><div class="setting"><div class="setting-label"><span>Følerlayout</span></div><div class="setting-control"><div class="seg" role="radiogroup" aria-label="Følerlayout"><label><input type="radio" name="return_probe_mode" value="2"><span>2 følere (frem/retur)</span></label><label><input type="radio" name="return_probe_mode" value="8" checked><span>8 følere</span></label></div></div></div></div></section>
+          <section class="setting-group"><h4>Varmetilstand</h4><div class="setting-list"><div class="setting"><div class="setting-label"><span>Tilstand</span></div><div class="setting-control"><div class="seg" role="radiogroup" aria-label="Tilstand"><label><input type="radio" name="heat_mode" value="normal"><span>Normal</span></label><label><input type="radio" name="heat_mode" value="heat_pump" checked><span>Varmepumpe</span></label></div></div></div><div class="setting normal-only"><div class="setting-label"><label for="heat_min_open">Min. samlet åbning</label><small>Kun i normal tilstand. I varmepumpetilstand har alle sløjfer altid flow.</small></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk min. samlet åbning">−</button><span class="value"><input type="number" inputmode="decimal" id="heat_min_open" name="heat_min_open" value="0" min="0" max="100" step="1"><span class="unit">%</span></span><button type="button" data-step="1" aria-label="Hæv min. samlet åbning">+</button></div></div></div></div></section>
           <section class="setting-group hp-limits"><h4>Varmepumpegrænser</h4><div class="setting-list">
                  <div class="setting"><div class="setting-label"><label for="hp_demand">Åbning ved varmebehov</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk åbning ved varmebehov">−</button><span class="value"><input type="number" inputmode="decimal" id="hp_demand" name="hp_demand" value="80" min="30" max="100" step="1"><span class="unit">%</span></span><button type="button" data-step="1" aria-label="Hæv åbning ved varmebehov">+</button></div></div></div>
                  <div class="setting"><div class="setting-label"><label for="hp_base">Basisåbning</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk basisåbning">−</button><span class="value"><input type="number" inputmode="decimal" id="hp_base" name="hp_base" value="60" min="30" max="100" step="1"><span class="unit">%</span></span><button type="button" data-step="1" aria-label="Hæv basisåbning">+</button></div></div></div>
                  <div class="setting"><div class="setting-label"><label for="hp_overheat">Overhedningsmargin</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk overhedningsmargin">−</button><span class="value"><input type="number" inputmode="decimal" id="hp_overheat" name="hp_overheat" value="1.0" min="0.3" max="3.0" step="0.1"><span class="unit">°C</span></span><button type="button" data-step="1" aria-label="Hæv overhedningsmargin">+</button></div></div></div>
+                 <div class="setting"><div class="setting-label"><label for="hp_move">Varmeflytning</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk varmeflytning">−</button><span class="value"><input type="number" inputmode="decimal" id="hp_move" name="hp_move" value="0.5" min="0" max="3.0" step="0.1"><span class="unit">°C</span></span><button type="button" data-step="1" aria-label="Hæv varmeflytning">+</button></div></div></div>
                  <div class="setting"><div class="setting-label"><label for="hp_trim">Trimgulv</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk trimgulv">−</button><span class="value"><input type="number" inputmode="decimal" id="hp_trim" name="hp_trim" value="35" min="0" max="100" step="1"><span class="unit">%</span></span><button type="button" data-step="1" aria-label="Hæv trimgulv">+</button></div></div></div></div></section>
           <section class="setting-group"><h4>Hydraulisk balancering</h4><div class="setting-list"><div class="setting"><div class="setting-label"><span>Tilstand</span></div><div class="setting-control"><div class="seg" role="radiogroup" aria-label="Tilstand"><label><input type="radio" name="bal_mode" value="static"><span>Statisk</span></label><label><input type="radio" name="bal_mode" value="adaptive" checked><span>Adaptiv</span></label></div></div></div><div class="setting"><div class="setting-label"><label for="bal_interval">Interval</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk interval">−</button><span class="value"><input type="number" inputmode="decimal" id="bal_interval" name="bal_interval" value="300" min="60" max="3600" step="60"><span class="unit">s</span></span><button type="button" data-step="1" aria-label="Hæv interval">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="bal_step">Skridt (k)</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk skridt (k)">−</button><span class="value"><input type="number" inputmode="decimal" id="bal_step" name="bal_step" value="0.02" min="0.01" max="0.2" step="0.01"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Hæv skridt (k)">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="bal_min">Min. faktor</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk min. faktor">−</button><span class="value"><input type="number" inputmode="decimal" id="bal_min" name="bal_min" value="0.30" min="0.1" max="1" step="0.05"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Hæv min. faktor">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="bal_max">Maks. faktor</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk maks. faktor">−</button><span class="value"><input type="number" inputmode="decimal" id="bal_max" name="bal_max" value="1.50" min="1" max="3" step="0.05"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Hæv maks. faktor">+</button></div></div></div></div></section>
           <section class="setting-group"><h4>Preheat-absorption</h4><div class="setting-list gated"><label class="setting switch"><span class="setting-label"><b>Opsug overskudsvarme</b><small>Bruger gulvet som buffer</small></span><input type="checkbox" role="switch" name="preheat_enabled"></label><div class="gated-body"><div class="setting"><div class="setting-label"><label for="ph_band">Absorb-bånd</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk absorb-bånd">−</button><span class="value"><input type="number" inputmode="decimal" id="ph_band" name="ph_band" value="0.5" min="0.1" max="3" step="0.1"><span class="unit">°C</span></span><button type="button" data-step="1" aria-label="Hæv absorb-bånd">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="ph_delta">Detektions-delta</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk detektions-delta">−</button><span class="value"><input type="number" inputmode="decimal" id="ph_delta" name="ph_delta" value="0.3" min="0.1" max="2" step="0.1"><span class="unit">°C</span></span><button type="button" data-step="1" aria-label="Hæv detektions-delta">+</button></div></div></div></div></div></section>
@@ -2073,7 +2142,7 @@
     <input class="state tab" type="radio" name="tab-z1" id="t-z1-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-z1" id="t-z1-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-z1" id="t-z1-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span>
-      <div><h2 id="sheet-z1-t">Josephine</h2><p>Z1 · 21,4° · 62 % åben · Kalder varme</p></div>
+      <div><h2 id="sheet-z1-t">Josephine</h2><p>Z1 · 21,4° · 62 % flow · Kalder varme</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-z1" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-z1-o" data-tab="overview">Overblik</label><label for="t-z1-h" data-tab="history">Historik</label><label for="t-z1-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -2100,7 +2169,25 @@
           <div><dt>Motor</dt><dd class="c-ok">Lært</dd></div>
           <div><dt>Vejr-offset nu</dt><dd class="c-info">+0,4 °C</dd></div>
           <div><dt>Temperatur fra</dt><dd class="c-info">BLE-sensor</dd></div>
-        </dl></section>
+        </dl>
+        <div class="sub mtrace">
+          <h4>Ventilkurve <span class="legend">fuldt flow 1,9 l/min</span></h4>
+          <div class="mtrace-row square"><div class="mtrace-y" aria-hidden="true"><span>100 <small>%</small></span><span>50</span><span>0</span></div>
+            <svg class="trend" viewBox="0 0 600 100" preserveAspectRatio="none" role="img" aria-label="Flow mod åbning for zonens ventil"><path class="vpos" d="M132.0,0V100"/><path class="vc" d="M0,100H72.0L204.0,0H600"/></svg></div>
+          <div class="axis" aria-hidden="true"><span>0 %</span><span>Åbning</span><span>100 %</span></div>
+          <p class="note">Flow fra 12 %, fuldt ved 34 % · målt af Lune Touch 3.11.2026. Ventilen står på 22 % (45 % flow).</p>
+        </div>
+        <div class="sub">
+          <h4>Rumfysik</h4>
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th></th><th class="num">Beregnet</th><th class="num">Lært</th><th class="num">Brugt</th></tr></thead>
+            <tbody>
+              <tr><td>Varmetab</td><td class="num">8,5 W/K</td><td class="num">9,5 W/K</td><td class="num">9,5 W/K</td></tr>
+              <tr><td>Tidskonstant</td><td class="num">107 t</td><td class="num">—</td><td class="num">96 t</td></tr>
+            </tbody>
+          </table></div>
+          <p class="note">Termisk masse 0,9 kWh/K. Varmetabet er lært af Lune Touch over 9 døgn (sikkerhed 80 %).</p>
+        </div></section>
       <section class="tab-panel" data-tab="history">
         <section class="sub" data-state="calling" aria-labelledby="zc-h-1">
           <h4 id="zc-h-1">Sidste 24 timer og fremskrivning 6 timer</h4>
@@ -2143,7 +2230,7 @@
     <input class="state tab" type="radio" name="tab-z2" id="t-z2-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-z2" id="t-z2-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-z2" id="t-z2-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span>
-      <div><h2 id="sheet-z2-t">Laura</h2><p>Z2 · 20,8° · 18 % åben · Hviler</p></div>
+      <div><h2 id="sheet-z2-t">Laura</h2><p>Z2 · 20,8° · 18 % flow · Hviler</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-z2" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-z2-o" data-tab="overview">Overblik</label><label for="t-z2-h" data-tab="history">Historik</label><label for="t-z2-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -2170,7 +2257,25 @@
           <div><dt>Motor</dt><dd class="c-ok">Lært</dd></div>
           <div><dt>Vejr-offset nu</dt><dd class="">0,0 °C</dd></div>
           <div><dt>Temperatur fra</dt><dd class="c-info">BLE-sensor</dd></div>
-        </dl></section>
+        </dl>
+        <div class="sub mtrace">
+          <h4>Ventilkurve <span class="legend">fuldt flow 1,9 l/min</span></h4>
+          <div class="mtrace-row square"><div class="mtrace-y" aria-hidden="true"><span>100 <small>%</small></span><span>50</span><span>0</span></div>
+            <svg class="trend" viewBox="0 0 600 100" preserveAspectRatio="none" role="img" aria-label="Flow mod åbning for zonens ventil"><path class="vpos" d="M132.0,0V100"/><path class="vc" d="M0,100H72.0L204.0,0H600"/></svg></div>
+          <div class="axis" aria-hidden="true"><span>0 %</span><span>Åbning</span><span>100 %</span></div>
+          <p class="note">Flow fra 12 %, fuldt ved 34 % · målt af Lune Touch 3.11.2026. Ventilen står på 22 % (45 % flow).</p>
+        </div>
+        <div class="sub">
+          <h4>Rumfysik</h4>
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th></th><th class="num">Beregnet</th><th class="num">Lært</th><th class="num">Brugt</th></tr></thead>
+            <tbody>
+              <tr><td>Varmetab</td><td class="num">7,8 W/K</td><td class="num">—</td><td class="num">7,8 W/K</td></tr>
+              <tr><td>Tidskonstant</td><td class="num">107 t</td><td class="num">—</td><td class="num">107 t</td></tr>
+            </tbody>
+          </table></div>
+          <p class="note">Termisk masse 0,8 kWh/K. Varmetabet er endnu ikke lært: Lune Touch lærer det af døgn med jævn drift.</p>
+        </div></section>
       <section class="tab-panel" data-tab="history">
         <section class="sub" data-state="idle" aria-labelledby="zc-h-2">
           <h4 id="zc-h-2">Sidste 24 timer og fremskrivning 6 timer</h4>
@@ -2213,7 +2318,7 @@
     <input class="state tab" type="radio" name="tab-z3" id="t-z3-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-z3" id="t-z3-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-z3" id="t-z3-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span>
-      <div><h2 id="sheet-z3-t">Toilet</h2><p>Z3 · 22,6° · 6 % åben · Hviler</p></div>
+      <div><h2 id="sheet-z3-t">Toilet</h2><p>Z3 · 22,6° · 6 % flow · Hviler</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-z3" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-z3-o" data-tab="overview">Overblik</label><label for="t-z3-h" data-tab="history">Historik</label><label for="t-z3-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -2240,7 +2345,25 @@
           <div><dt>Motor</dt><dd class="c-ok">Lært</dd></div>
           <div><dt>Vejr-offset nu</dt><dd class="">0,0 °C</dd></div>
           <div><dt>Temperatur fra</dt><dd class="c-info">Lokal probe</dd></div>
-        </dl></section>
+        </dl>
+        <div class="sub mtrace">
+          <h4>Ventilkurve <span class="legend">fuldt flow 1,9 l/min</span></h4>
+          <div class="mtrace-row square"><div class="mtrace-y" aria-hidden="true"><span>100 <small>%</small></span><span>50</span><span>0</span></div>
+            <svg class="trend" viewBox="0 0 600 100" preserveAspectRatio="none" role="img" aria-label="Flow mod åbning for zonens ventil"><path class="vpos" d="M132.0,0V100"/><path class="vc" d="M0,100H72.0L204.0,0H600"/></svg></div>
+          <div class="axis" aria-hidden="true"><span>0 %</span><span>Åbning</span><span>100 %</span></div>
+          <p class="note">Flow fra 12 %, fuldt ved 34 % · målt af Lune Touch 3.11.2026. Ventilen står på 22 % (45 % flow).</p>
+        </div>
+        <div class="sub">
+          <h4>Rumfysik</h4>
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th></th><th class="num">Beregnet</th><th class="num">Lært</th><th class="num">Brugt</th></tr></thead>
+            <tbody>
+              <tr><td>Varmetab</td><td class="num">3,2 W/K</td><td class="num">—</td><td class="num">3,2 W/K</td></tr>
+              <tr><td>Tidskonstant</td><td class="num">107 t</td><td class="num">—</td><td class="num">107 t</td></tr>
+            </tbody>
+          </table></div>
+          <p class="note">Termisk masse 0,3 kWh/K. Varmetabet er endnu ikke lært: Lune Touch lærer det af døgn med jævn drift.</p>
+        </div></section>
       <section class="tab-panel" data-tab="history">
         <section class="sub" data-state="idle" aria-labelledby="zc-h-3">
           <h4 id="zc-h-3">Sidste 24 timer og fremskrivning 6 timer</h4>
@@ -2283,7 +2406,7 @@
     <input class="state tab" type="radio" name="tab-z4" id="t-z4-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-z4" id="t-z4-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-z4" id="t-z4-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span>
-      <div><h2 id="sheet-z4-t">Stue rum 1</h2><p>Z4–5 · 21,1° · 54 % åben · Kalder varme</p></div>
+      <div><h2 id="sheet-z4-t">Stue rum 1</h2><p>Z4–5 · 21,1° · 54 % flow · Kalder varme</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-z4" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-z4-o" data-tab="overview">Overblik</label><label for="t-z4-h" data-tab="history">Historik</label><label for="t-z4-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -2310,7 +2433,25 @@
           <div><dt>Motor</dt><dd class="c-ok">Lært</dd></div>
           <div><dt>Vejr-offset nu</dt><dd class="">0,0 °C</dd></div>
           <div><dt>Temperatur fra</dt><dd class="c-info">Lokal probe</dd></div>
-        </dl></section>
+        </dl>
+        <div class="sub mtrace">
+          <h4>Ventilkurve <span class="legend">fuldt flow 1,9 l/min</span></h4>
+          <div class="mtrace-row square"><div class="mtrace-y" aria-hidden="true"><span>100 <small>%</small></span><span>50</span><span>0</span></div>
+            <svg class="trend" viewBox="0 0 600 100" preserveAspectRatio="none" role="img" aria-label="Flow mod åbning for zonens ventil"><path class="vpos" d="M132.0,0V100"/><path class="vc" d="M0,100H72.0L204.0,0H600"/></svg></div>
+          <div class="axis" aria-hidden="true"><span>0 %</span><span>Åbning</span><span>100 %</span></div>
+          <p class="note">Flow fra 12 %, fuldt ved 34 % · målt af Lune Touch 3.11.2026. Ventilen står på 22 % (45 % flow).</p>
+        </div>
+        <div class="sub">
+          <h4>Rumfysik</h4>
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th></th><th class="num">Beregnet</th><th class="num">Lært</th><th class="num">Brugt</th></tr></thead>
+            <tbody>
+              <tr><td>Varmetab</td><td class="num">15,6 W/K</td><td class="num">—</td><td class="num">15,6 W/K</td></tr>
+              <tr><td>Tidskonstant</td><td class="num">107 t</td><td class="num">—</td><td class="num">107 t</td></tr>
+            </tbody>
+          </table></div>
+          <p class="note">Termisk masse 1,7 kWh/K. Varmetabet er endnu ikke lært: Lune Touch lærer det af døgn med jævn drift.</p>
+        </div></section>
       <section class="tab-panel" data-tab="history">
         <section class="sub" data-state="calling" aria-labelledby="zc-h-4">
           <h4 id="zc-h-4">Sidste 24 timer og fremskrivning 6 timer</h4>
@@ -2353,7 +2494,7 @@
     <input class="state tab" type="radio" name="tab-z5" id="t-z5-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-z5" id="t-z5-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-z5" id="t-z5-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span>
-      <div><h2 id="sheet-z5-t">Stue rum 2</h2><p>Z5 · 21,0° · 54 % åben · Kalder varme</p></div>
+      <div><h2 id="sheet-z5-t">Stue rum 2</h2><p>Z5 · 21,0° · 54 % flow · Kalder varme</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-z5" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-z5-o" data-tab="overview">Overblik</label><label for="t-z5-h" data-tab="history">Historik</label><label for="t-z5-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -2380,7 +2521,25 @@
           <div><dt>Motor</dt><dd class="c-ok">Lært</dd></div>
           <div><dt>Vejr-offset nu</dt><dd class="c-info">+0,4 °C</dd></div>
           <div><dt>Temperatur fra</dt><dd class="c-info">Lokal probe</dd></div>
-        </dl></section>
+        </dl>
+        <div class="sub mtrace">
+          <h4>Ventilkurve <span class="legend">fuldt flow 1,9 l/min</span></h4>
+          <div class="mtrace-row square"><div class="mtrace-y" aria-hidden="true"><span>100 <small>%</small></span><span>50</span><span>0</span></div>
+            <svg class="trend" viewBox="0 0 600 100" preserveAspectRatio="none" role="img" aria-label="Flow mod åbning for zonens ventil"><path class="vpos" d="M132.0,0V100"/><path class="vc" d="M0,100H72.0L204.0,0H600"/></svg></div>
+          <div class="axis" aria-hidden="true"><span>0 %</span><span>Åbning</span><span>100 %</span></div>
+          <p class="note">Flow fra 12 %, fuldt ved 34 % · målt af Lune Touch 3.11.2026. Ventilen står på 22 % (45 % flow).</p>
+        </div>
+        <div class="sub">
+          <h4>Rumfysik</h4>
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th></th><th class="num">Beregnet</th><th class="num">Lært</th><th class="num">Brugt</th></tr></thead>
+            <tbody>
+              <tr><td>Varmetab</td><td class="num">12,8 W/K</td><td class="num">—</td><td class="num">12,8 W/K</td></tr>
+              <tr><td>Tidskonstant</td><td class="num">107 t</td><td class="num">—</td><td class="num">107 t</td></tr>
+            </tbody>
+          </table></div>
+          <p class="note">Termisk masse 1,4 kWh/K. Varmetabet er endnu ikke lært: Lune Touch lærer det af døgn med jævn drift.</p>
+        </div></section>
       <section class="tab-panel" data-tab="history">
         <section class="sub" data-state="calling" aria-labelledby="zc-h-5">
           <h4 id="zc-h-5">Sidste 24 timer og fremskrivning 6 timer</h4>
@@ -2423,7 +2582,7 @@
     <input class="state tab" type="radio" name="tab-z6" id="t-z6-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-z6" id="t-z6-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-z6" id="t-z6-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span>
-      <div><h2 id="sheet-z6-t">Soveværelse</h2><p>Z6 · 17,8° · 0 % åben · Motorfejl</p></div>
+      <div><h2 id="sheet-z6-t">Soveværelse</h2><p>Z6 · 17,8° · 0 % flow · Motorfejl</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-z6" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-z6-o" data-tab="overview">Overblik</label><label for="t-z6-h" data-tab="history">Historik</label><label for="t-z6-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -2458,7 +2617,18 @@
           <div><dt>Motor</dt><dd class="c-warn">Kræver læring</dd></div>
           <div><dt>Vejr-offset nu</dt><dd class="">0,0 °C</dd></div>
           <div><dt>Temperatur fra</dt><dd class="c-info">BLE-sensor</dd></div>
-        </dl></section>
+        </dl>
+        <div class="sub">
+          <h4>Rumfysik</h4>
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th></th><th class="num">Beregnet</th><th class="num">Lært</th><th class="num">Brugt</th></tr></thead>
+            <tbody>
+              <tr><td>Varmetab</td><td class="num">9,9 W/K</td><td class="num">—</td><td class="num">9,9 W/K</td></tr>
+              <tr><td>Tidskonstant</td><td class="num">107 t</td><td class="num">—</td><td class="num">107 t</td></tr>
+            </tbody>
+          </table></div>
+          <p class="note">Termisk masse 1,1 kWh/K. Varmetabet er endnu ikke lært: Lune Touch lærer det af døgn med jævn drift.</p>
+        </div></section>
       <section class="tab-panel" data-tab="history">
         <section class="sub" data-state="fault" aria-labelledby="zc-h-6">
           <h4 id="zc-h-6">Sidste 24 timer og fremskrivning 6 timer</h4>
