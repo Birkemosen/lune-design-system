@@ -445,7 +445,24 @@
   }
 
   /* Værktøjer i headerens højre side: sprog + tema */
-  .tools { display: flex; align-items: center; gap: var(--space-1); }
+  .tools { display: flex; align-items: center; gap: var(--space-1); min-width: 0; }
+
+  /* Aktivitet (Touch): hvad enheden gør nu, som .badge først i værktøjerne (DESIGN.md 5.1).
+     Afkortes med ellipse frem for at skubbe sprog og tema ud; detaljen kun fra 1200 px. */
+  .tools .activity { min-width: 0; max-width: 24em; margin-right: var(--space-1); }
+  .activity > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .activity small { font: inherit; opacity: .8; }
+  @media (max-width: 1199.98px) { .activity small { display: none; } }
+  @media (max-width: 767.98px) {
+    .header:has(.activity) { grid-template-columns: auto minmax(0, 1fr); }
+    .header > .tools { justify-self: stretch; justify-content: flex-end; }
+  }
+  /* Smal mobil: logoet alene står for enheden, så aktiviteten kan stå læseligt. */
+  @media (max-width: 599.98px) {
+    .header:has(.activity) .device .name { display: none; }
+    .tools .activity { padding-inline: var(--space-2); margin-right: 0; }
+    .tools .activity::before { display: none; }
+  }
 
   /* Sprogvælger — almindelige links til /en/ og /da/ (ingen JS).
      Kun renderet når buildet indeholder mere end ét sprog. */
@@ -1660,7 +1677,7 @@
 
   /* Varmekort: rum grupperet pr. manifold. Rumfelterne fylder efter rummets areal (--area),
      har afvigelses-chip (5 trin, forklaret i .heatmap-legend), temperatur og en 5-trins
-     ventilbjælke med «x % åben» under. Gruppeoverskriften åbner manifoldens ark. */
+     flowbjælke med «x % flow» under. Gruppeoverskriften åbner manifoldens ark. */
   .heatmap-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3) var(--space-5); }
   .heatmap-head > div:first-child { display: grid; gap: var(--space-1); flex: 1 0 auto; }
   .heatmap-head small { font-size: var(--fs-sm); color: var(--muted); }
@@ -2381,6 +2398,7 @@
         <label for="m-sys"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>System</label>
       </nav>
       <div class="tools">
+        <span class="badge violet activity" role="status"><span>Måler ventiler<small> · Bryggers · trin 3/10</small></span></span>
         <nav class="lang" aria-label="Sprog"><a href="/en/" hreflang="en" lang="en" title="English">EN</a><a href="/da/" hreflang="da" lang="da" title="Dansk" aria-current="true">DA</a></nav>
         <label class="icon-btn theme-btn" for="theme" title="Skift lyst/mørkt tema">
           <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg>
@@ -2456,7 +2474,7 @@
         <section class="panel" aria-labelledby="h-heatmap">
           <header class="heatmap-head">
             <div><small>Rum</small><h3 id="h-heatmap">Varmekort</h3></div>
-            <div class="heatmap-legend" role="group" aria-label="Forklaring"><ol><li data-dev="1">≤−1</li><li data-dev="2">−0,3</li><li data-dev="3">±0,3</li><li data-dev="4">+0,3</li><li data-dev="5">≥+1</li></ol><span>° fra mål</span><span><span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>ventil åben</span></div>
+            <div class="heatmap-legend" role="group" aria-label="Forklaring"><ol><li data-dev="1">≤−1</li><li data-dev="2">−0,3</li><li data-dev="3">±0,3</li><li data-dev="4">+0,3</li><li data-dev="5">≥+1</li></ol><span>° fra mål</span><span><span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>flow</span></div>
           </header>
           <div class="heatmap">
           <section class="room-group" aria-label="Teknikrum">
@@ -2465,7 +2483,7 @@
             <div class="room-grid">
             <button class="tile" type="button" popovertarget="sheet-r01" data-state="idle" data-open="1" style="--area:12" aria-label="Kontor, Hviler, 22,9°">
               <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">18 % åben</span>
+              <span class="tile-pct">18 % flow</span>
               <span class="tile-id">Z1</span>
               <span class="tile-name">Kontor</span>
               <span class="tile-dev" data-dev="4">+0,9°</span>
@@ -2473,7 +2491,7 @@
             </button>
             <button class="tile" type="button" popovertarget="sheet-r02" data-state="idle" data-open="2" style="--area:16" aria-label="Hobbyrum, Hviler, 23,0°">
               <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">22 % åben</span>
+              <span class="tile-pct">22 % flow</span>
               <span class="tile-id">Z2</span>
               <span class="tile-name">Hobbyrum</span>
               <span class="tile-dev" data-dev="5">+1,0°</span>
@@ -2481,7 +2499,7 @@
             </button>
             <button class="tile" type="button" popovertarget="sheet-r03" data-state="idle" data-open="1" style="--area:8" aria-label="Bryggers, Hviler, 21,6°">
               <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">4 % åben</span>
+              <span class="tile-pct">4 % flow</span>
               <span class="tile-id">Z3</span>
               <span class="tile-name">Bryggers</span>
               <span class="tile-dev" data-dev="4">+0,6°</span>
@@ -2497,7 +2515,7 @@
             </button>
             <button class="tile" type="button" popovertarget="sheet-r05" data-state="calling" data-open="3" style="--area:48" aria-label="Stue, Kalder på varme, 21,4°">
               <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">54 % åben</span>
+              <span class="tile-pct">54 % flow</span>
               <span class="tile-id">Z5</span>
               <span class="tile-name">Stue</span>
               <span class="tile-dev" data-dev="3">−0,1°</span>
@@ -2510,7 +2528,7 @@
             <div class="room-grid">
             <button class="tile" type="button" popovertarget="sheet-r06" data-state="calling" data-open="4" style="--area:12" aria-label="Josephine, Kalder på varme, 21,4°">
               <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">62 % åben</span>
+              <span class="tile-pct">62 % flow</span>
               <span class="tile-id">Z1</span>
               <span class="tile-name">Josephine</span>
               <span class="tile-dev" data-dev="2">−0,6°</span>
@@ -2518,7 +2536,7 @@
             </button>
             <button class="tile" type="button" popovertarget="sheet-r07" data-state="idle" data-open="2" style="--area:11" aria-label="Laura, Hviler, 22,2°">
               <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">35 % åben</span>
+              <span class="tile-pct">35 % flow</span>
               <span class="tile-id">Z2</span>
               <span class="tile-name">Laura</span>
               <span class="tile-dev" data-dev="3">+0,2°</span>
@@ -2526,7 +2544,7 @@
             </button>
             <button class="tile" type="button" popovertarget="sheet-r08" data-state="idle" data-open="1" style="--area:4" aria-label="Toilet, Hviler, 22,7°">
               <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">14 % åben</span>
+              <span class="tile-pct">14 % flow</span>
               <span class="tile-id">Z3</span>
               <span class="tile-name">Toilet</span>
               <span class="tile-dev" data-dev="4">+0,7°</span>
@@ -2542,7 +2560,7 @@
             </button>
             <button class="tile" type="button" popovertarget="sheet-r10" data-state="idle" data-open="3" style="--area:8" aria-label="Bad, Hviler, 23,3°">
               <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">48 % åben</span>
+              <span class="tile-pct">48 % flow</span>
               <span class="tile-id">Z5</span>
               <span class="tile-name">Bad</span>
               <span class="tile-dev" data-dev="5">+1,3°</span>
@@ -2555,7 +2573,7 @@
             <div class="room-grid">
             <button class="tile" type="button" popovertarget="sheet-r11" data-state="idle" data-open="1" style="--area:22" aria-label="Værksted, Hviler, 16,8°">
               <span class="lvl" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="tile-pct">20 % åben</span>
+              <span class="tile-pct">20 % flow</span>
               <span class="tile-id">Z1</span>
               <span class="tile-name">Værksted</span>
               <span class="tile-dev" data-dev="1">−1,2°</span>
@@ -2852,7 +2870,7 @@
     <input class="state tab" type="radio" name="tab-r01" id="t-r01-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-r01" id="t-r01-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-r01" id="t-r01-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span>
-      <div><h2 id="sheet-r01-t">Kontor</h2><p>Teknikrum · Z1 · 22,9° · 18 % åben · Hviler</p></div>
+      <div><h2 id="sheet-r01-t">Kontor</h2><p>Teknikrum · Z1 · 22,9° · 18 % flow · Hviler</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-r01" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-r01-o" data-tab="overview">Overblik</label><label for="t-r01-h" data-tab="history">Historik</label><label for="t-r01-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -2864,7 +2882,7 @@
         </dl>
         <div class="bar" style="--v:18%" aria-hidden="true"><i></i></div>
         <div class="sub"><h4>Kredse fra Teknikrum</h4>
-          <dl class="kv"><div><dt>Z1</dt><dd>22,9 °C · 18 % åben</dd></div><div><dt>Retur</dt><dd class="c-info">27,8 °C</dd></div><div><dt>Tilstand</dt><dd>Hviler</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
+          <dl class="kv"><div><dt>Z1</dt><dd>22,9 °C · 18 % flow</dd></div><div><dt>Retur</dt><dd class="c-info">27,8 °C</dd></div><div><dt>Tilstand</dt><dd>Hviler</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
           <svg class="spark" style="height:100px" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="Kontor: temperatur mod mål, sidste 24 timer"><polyline class="g" points="0,40.0 240,40.0"/><polyline class="t" points="0.0,27.1 5.1,25.2 10.2,25.2 15.3,23.3 20.4,22.1 25.5,23.4 30.6,22.4 35.7,17.5 40.9,18.7 46.0,17.4 51.1,12.7 56.2,13.6 61.3,10.7 66.4,11.0 71.5,9.1 76.6,10.1 81.7,7.1 86.8,5.3 91.9,6.1 97.0,4.7 102.1,4.7 107.2,7.2 112.3,4.3 117.4,5.3 122.6,6.9 127.7,8.6 132.8,5.8 137.9,8.4 143.0,8.4 148.1,8.8 153.2,10.8 158.3,11.2 163.4,14.8 168.5,14.5 173.6,17.4 178.7,16.7 183.8,18.2 188.9,22.8 194.0,23.9 199.1,24.6 204.3,22.3 209.4,25.4 214.5,25.2 219.6,27.1 224.7,26.5 229.8,27.2 234.9,27.2 240.0,26.0"/></svg>
           <div class="axis" aria-hidden="true"><span>−24 t</span><span>−12 t</span><span>nu</span></div></div></section><section class="tab-panel" data-tab="settings">
         <form data-save="rooms" data-patch>
@@ -2878,7 +2896,7 @@
     <input class="state tab" type="radio" name="tab-r02" id="t-r02-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-r02" id="t-r02-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-r02" id="t-r02-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span>
-      <div><h2 id="sheet-r02-t">Hobbyrum</h2><p>Teknikrum · Z2 · 23,0° · 22 % åben · Hviler</p></div>
+      <div><h2 id="sheet-r02-t">Hobbyrum</h2><p>Teknikrum · Z2 · 23,0° · 22 % flow · Hviler</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-r02" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-r02-o" data-tab="overview">Overblik</label><label for="t-r02-h" data-tab="history">Historik</label><label for="t-r02-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -2890,7 +2908,7 @@
         </dl>
         <div class="bar" style="--v:22%" aria-hidden="true"><i></i></div>
         <div class="sub"><h4>Kredse fra Teknikrum</h4>
-          <dl class="kv"><div><dt>Z2</dt><dd>23,0 °C · 22 % åben</dd></div><div><dt>Retur</dt><dd class="c-info">27,8 °C</dd></div><div><dt>Tilstand</dt><dd>Hviler</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
+          <dl class="kv"><div><dt>Z2</dt><dd>23,0 °C · 22 % flow</dd></div><div><dt>Retur</dt><dd class="c-info">27,8 °C</dd></div><div><dt>Tilstand</dt><dd>Hviler</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
           <svg class="spark" style="height:100px" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="Hobbyrum: temperatur mod mål, sidste 24 timer"><polyline class="g" points="0,40.0 240,40.0"/><polyline class="t" points="0.0,22.0 5.1,21.3 10.2,22.0 15.3,22.1 20.4,22.1 25.5,18.2 30.6,17.8 35.7,15.2 40.9,15.5 46.0,12.4 51.1,13.1 56.2,9.5 61.3,8.5 66.4,8.6 71.5,6.9 76.6,5.2 81.7,6.3 86.8,4.0 91.9,2.3 97.0,4.1 102.1,1.5 107.2,1.9 112.3,1.3 117.4,3.7 122.6,5.1 127.7,2.7 132.8,3.4 137.9,5.9 143.0,8.4 148.1,9.1 153.2,8.5 158.3,11.2 163.4,9.8 168.5,12.7 173.6,15.8 178.7,15.2 183.8,17.8 188.9,16.6 194.0,17.9 199.1,20.6 204.3,21.0 209.4,21.6 214.5,21.8 219.6,21.5 224.7,25.9 229.8,24.6 234.9,23.5 240.0,24.5"/></svg>
           <div class="axis" aria-hidden="true"><span>−24 t</span><span>−12 t</span><span>nu</span></div></div></section><section class="tab-panel" data-tab="settings">
         <form data-save="rooms" data-patch>
@@ -2904,7 +2922,7 @@
     <input class="state tab" type="radio" name="tab-r03" id="t-r03-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-r03" id="t-r03-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-r03" id="t-r03-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span>
-      <div><h2 id="sheet-r03-t">Bryggers</h2><p>Teknikrum · Z3 · 21,6° · 4 % åben · Hviler</p></div>
+      <div><h2 id="sheet-r03-t">Bryggers</h2><p>Teknikrum · Z3 · 21,6° · 4 % flow · Hviler</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-r03" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-r03-o" data-tab="overview">Overblik</label><label for="t-r03-h" data-tab="history">Historik</label><label for="t-r03-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -2916,7 +2934,7 @@
         </dl>
         <div class="bar" style="--v:4%" aria-hidden="true"><i></i></div>
         <div class="sub"><h4>Kredse fra Teknikrum</h4>
-          <dl class="kv"><div><dt>Z3</dt><dd>21,6 °C · 4 % åben</dd></div><div><dt>Retur</dt><dd class="c-info">27,8 °C</dd></div><div><dt>Tilstand</dt><dd>Hviler</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
+          <dl class="kv"><div><dt>Z3</dt><dd>21,6 °C · 4 % flow</dd></div><div><dt>Retur</dt><dd class="c-info">27,8 °C</dd></div><div><dt>Tilstand</dt><dd>Hviler</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
           <svg class="spark" style="height:100px" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="Bryggers: temperatur mod mål, sidste 24 timer"><polyline class="g" points="0,40.0 240,40.0"/><polyline class="t" points="0.0,34.1 5.1,33.9 10.2,34.1 15.3,30.1 20.4,32.8 25.5,29.5 30.6,26.6 35.7,28.8 40.9,25.4 46.0,23.7 51.1,24.8 56.2,22.0 61.3,19.3 66.4,19.1 71.5,16.7 76.6,18.1 81.7,16.8 86.8,16.5 91.9,14.2 97.0,12.0 102.1,13.1 107.2,12.2 112.3,13.9 117.4,12.6 122.6,15.8 127.7,15.5 132.8,14.7 137.9,15.3 143.0,17.7 148.1,20.2 153.2,20.7 158.3,22.3 163.4,23.3 168.5,22.4 173.6,26.4 178.7,24.9 183.8,26.2 188.9,31.0 194.0,30.8 199.1,31.4 204.3,34.4 209.4,33.4 214.5,32.0 219.6,35.9 224.7,34.1 229.8,36.3 234.9,34.3 240.0,32.7"/></svg>
           <div class="axis" aria-hidden="true"><span>−24 t</span><span>−12 t</span><span>nu</span></div></div></section><section class="tab-panel" data-tab="settings">
         <form data-save="rooms" data-patch>
@@ -2930,7 +2948,7 @@
     <input class="state tab" type="radio" name="tab-r04" id="t-r04-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-r04" id="t-r04-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-r04" id="t-r04-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span>
-      <div><h2 id="sheet-r04-t">Køkken</h2><p>Teknikrum · Z4 · 21,7° · 0 % åben · Hviler</p></div>
+      <div><h2 id="sheet-r04-t">Køkken</h2><p>Teknikrum · Z4 · 21,7° · 0 % flow · Hviler</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-r04" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-r04-o" data-tab="overview">Overblik</label><label for="t-r04-h" data-tab="history">Historik</label><label for="t-r04-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -2942,7 +2960,7 @@
         </dl>
         <div class="bar" style="--v:0%" aria-hidden="true"><i></i></div>
         <div class="sub"><h4>Kredse fra Teknikrum</h4>
-          <dl class="kv"><div><dt>Z4</dt><dd>21,7 °C · 0 % åben</dd></div><div><dt>Retur</dt><dd class="c-info">27,8 °C</dd></div><div><dt>Tilstand</dt><dd>Hviler</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
+          <dl class="kv"><div><dt>Z4</dt><dd>21,7 °C · 0 % flow</dd></div><div><dt>Retur</dt><dd class="c-info">27,8 °C</dd></div><div><dt>Tilstand</dt><dd>Hviler</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
           <svg class="spark" style="height:100px" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="Køkken: temperatur mod mål, sidste 24 timer"><polyline class="g" points="0,40.0 240,40.0"/><polyline class="t" points="0.0,31.4 5.1,30.0 10.2,29.2 15.3,30.6 20.4,30.1 25.5,27.4 30.6,26.6 35.7,23.0 40.9,22.1 46.0,21.1 51.1,19.9 56.2,18.1 61.3,19.0 66.4,16.5 71.5,16.5 76.6,12.2 81.7,14.9 86.8,10.9 91.9,13.4 97.0,10.3 102.1,11.5 107.2,11.1 112.3,9.3 117.4,13.0 122.6,13.3 127.7,10.2 132.8,12.7 137.9,15.4 143.0,12.6 148.1,13.9 153.2,18.7 158.3,18.7 163.4,21.3 168.5,21.9 173.6,22.0 178.7,25.3 183.8,24.4 188.9,28.4 194.0,29.0 199.1,27.4 204.3,30.1 209.4,30.8 214.5,30.7 219.6,31.7 224.7,32.4 229.8,34.0 234.9,31.0 240.0,29.7"/></svg>
           <div class="axis" aria-hidden="true"><span>−24 t</span><span>−12 t</span><span>nu</span></div></div></section><section class="tab-panel" data-tab="settings">
         <form data-save="rooms" data-patch>
@@ -2956,7 +2974,7 @@
     <input class="state tab" type="radio" name="tab-r05" id="t-r05-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-r05" id="t-r05-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-r05" id="t-r05-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span>
-      <div><h2 id="sheet-r05-t">Stue</h2><p>Teknikrum · Z5 · 21,4° · 54 % åben · Kalder på varme</p></div>
+      <div><h2 id="sheet-r05-t">Stue</h2><p>Teknikrum · Z5 · 21,4° · 54 % flow · Kalder på varme</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-r05" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-r05-o" data-tab="overview">Overblik</label><label for="t-r05-h" data-tab="history">Historik</label><label for="t-r05-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -2968,7 +2986,7 @@
         </dl>
         <div class="bar" style="--v:54%" aria-hidden="true"><i></i></div>
         <div class="sub"><h4>Kredse fra Teknikrum</h4>
-          <dl class="kv"><div><dt>Z5</dt><dd>21,4 °C · 54 % åben</dd></div><div><dt>Retur</dt><dd class="c-info">27,8 °C</dd></div><div><dt>Tilstand</dt><dd>Kalder på varme</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
+          <dl class="kv"><div><dt>Z5</dt><dd>21,4 °C · 54 % flow</dd></div><div><dt>Retur</dt><dd class="c-info">27,8 °C</dd></div><div><dt>Tilstand</dt><dd>Kalder på varme</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
           <svg class="spark" style="height:100px" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="Stue: temperatur mod mål, sidste 24 timer"><polyline class="g" points="0,40.0 240,40.0"/><polyline class="t" points="0.0,50.6 5.1,54.1 10.2,50.3 15.3,51.8 20.4,47.3 25.5,50.3 30.6,45.3 35.7,44.9 40.9,42.8 46.0,40.8 51.1,42.6 56.2,40.8 61.3,37.9 66.4,38.5 71.5,37.4 76.6,36.4 81.7,32.8 86.8,32.0 91.9,31.6 97.0,33.6 102.1,30.3 107.2,32.0 112.3,33.2 117.4,32.5 122.6,33.1 127.7,35.1 132.8,33.8 137.9,35.6 143.0,35.7 148.1,35.3 153.2,37.7 158.3,40.1 163.4,39.5 168.5,40.3 173.6,43.9 178.7,43.3 183.8,48.6 188.9,49.3 194.0,50.4 199.1,48.2 204.3,50.2 209.4,50.9 214.5,53.3 219.6,52.9 224.7,51.6 229.8,55.0 234.9,54.9 240.0,55.0"/></svg>
           <div class="axis" aria-hidden="true"><span>−24 t</span><span>−12 t</span><span>nu</span></div></div></section><section class="tab-panel" data-tab="settings">
         <form data-save="rooms" data-patch>
@@ -2982,7 +3000,7 @@
     <input class="state tab" type="radio" name="tab-r06" id="t-r06-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-r06" id="t-r06-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-r06" id="t-r06-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span>
-      <div><h2 id="sheet-r06-t">Josephine</h2><p>1. sal · Z1 · 21,4° · 62 % åben · Kalder på varme</p></div>
+      <div><h2 id="sheet-r06-t">Josephine</h2><p>1. sal · Z1 · 21,4° · 62 % flow · Kalder på varme</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-r06" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-r06-o" data-tab="overview">Overblik</label><label for="t-r06-h" data-tab="history">Historik</label><label for="t-r06-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -2994,7 +3012,7 @@
         </dl>
         <div class="bar" style="--v:62%" aria-hidden="true"><i></i></div>
         <div class="sub"><h4>Kredse fra 1. sal</h4>
-          <dl class="kv"><div><dt>Z1</dt><dd>21,4 °C · 62 % åben</dd></div><div><dt>Retur</dt><dd class="c-info">28,4 °C</dd></div><div><dt>Tilstand</dt><dd>Kalder på varme</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
+          <dl class="kv"><div><dt>Z1</dt><dd>21,4 °C · 62 % flow</dd></div><div><dt>Retur</dt><dd class="c-info">28,4 °C</dd></div><div><dt>Tilstand</dt><dd>Kalder på varme</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
           <svg class="spark" style="height:100px" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="Josephine: temperatur mod mål, sidste 24 timer"><polyline class="g" points="0,40.0 240,40.0"/><polyline class="t" points="0.0,67.3 5.1,64.7 10.2,65.3 15.3,65.0 20.4,62.7 25.5,61.6 30.6,60.4 35.7,59.2 40.9,58.6 46.0,57.3 51.1,54.0 56.2,54.2 61.3,51.4 66.4,49.6 71.5,48.1 76.6,46.7 81.7,48.8 86.8,48.0 91.9,45.2 97.0,45.4 102.1,46.7 107.2,44.6 112.3,43.8 117.4,44.2 122.6,47.3 127.7,47.5 132.8,49.5 137.9,46.3 143.0,50.5 148.1,49.5 153.2,51.5 158.3,52.6 163.4,54.3 168.5,54.4 173.6,56.7 178.7,59.4 183.8,61.5 188.9,61.2 194.0,60.5 199.1,64.9 204.3,63.5 209.4,64.6 214.5,67.2 219.6,67.5 224.7,65.7 229.8,66.9 234.9,67.0 240.0,66.4"/></svg>
           <div class="axis" aria-hidden="true"><span>−24 t</span><span>−12 t</span><span>nu</span></div></div></section><section class="tab-panel" data-tab="settings">
         <form data-save="rooms" data-patch>
@@ -3008,7 +3026,7 @@
     <input class="state tab" type="radio" name="tab-r07" id="t-r07-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-r07" id="t-r07-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-r07" id="t-r07-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span>
-      <div><h2 id="sheet-r07-t">Laura</h2><p>1. sal · Z2 · 22,2° · 35 % åben · Hviler</p></div>
+      <div><h2 id="sheet-r07-t">Laura</h2><p>1. sal · Z2 · 22,2° · 35 % flow · Hviler</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-r07" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-r07-o" data-tab="overview">Overblik</label><label for="t-r07-h" data-tab="history">Historik</label><label for="t-r07-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -3020,7 +3038,7 @@
         </dl>
         <div class="bar" style="--v:35%" aria-hidden="true"><i></i></div>
         <div class="sub"><h4>Kredse fra 1. sal</h4>
-          <dl class="kv"><div><dt>Z2</dt><dd>22,2 °C · 35 % åben</dd></div><div><dt>Retur</dt><dd class="c-info">28,4 °C</dd></div><div><dt>Tilstand</dt><dd>Hviler</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
+          <dl class="kv"><div><dt>Z2</dt><dd>22,2 °C · 35 % flow</dd></div><div><dt>Retur</dt><dd class="c-info">28,4 °C</dd></div><div><dt>Tilstand</dt><dd>Hviler</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
           <svg class="spark" style="height:100px" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="Laura: temperatur mod mål, sidste 24 timer"><polyline class="g" points="0,40.0 240,40.0"/><polyline class="t" points="0.0,46.0 5.1,43.2 10.2,42.7 15.3,42.5 20.4,42.6 25.5,39.0 30.6,37.6 35.7,37.6 40.9,36.3 46.0,36.0 51.1,35.6 56.2,32.7 61.3,30.4 66.4,31.4 71.5,27.1 76.6,28.4 81.7,27.5 86.8,27.5 91.9,22.8 97.0,23.4 102.1,22.5 107.2,23.5 112.3,26.1 117.4,25.0 122.6,24.7 127.7,27.0 132.8,24.1 137.9,27.5 143.0,29.5 148.1,27.8 153.2,32.0 158.3,29.9 163.4,33.2 168.5,34.2 173.6,36.5 178.7,37.3 183.8,39.9 188.9,41.8 194.0,39.4 199.1,43.2 204.3,41.8 209.4,45.0 214.5,42.4 219.6,43.2 224.7,44.1 229.8,44.2 234.9,44.9 240.0,44.0"/></svg>
           <div class="axis" aria-hidden="true"><span>−24 t</span><span>−12 t</span><span>nu</span></div></div></section><section class="tab-panel" data-tab="settings">
         <form data-save="rooms" data-patch>
@@ -3034,7 +3052,7 @@
     <input class="state tab" type="radio" name="tab-r08" id="t-r08-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-r08" id="t-r08-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-r08" id="t-r08-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span>
-      <div><h2 id="sheet-r08-t">Toilet</h2><p>1. sal · Z3 · 22,7° · 14 % åben · Hviler</p></div>
+      <div><h2 id="sheet-r08-t">Toilet</h2><p>1. sal · Z3 · 22,7° · 14 % flow · Hviler</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-r08" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-r08-o" data-tab="overview">Overblik</label><label for="t-r08-h" data-tab="history">Historik</label><label for="t-r08-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -3046,7 +3064,7 @@
         </dl>
         <div class="bar" style="--v:14%" aria-hidden="true"><i></i></div>
         <div class="sub"><h4>Kredse fra 1. sal</h4>
-          <dl class="kv"><div><dt>Z3</dt><dd>22,7 °C · 14 % åben</dd></div><div><dt>Retur</dt><dd class="c-info">28,4 °C</dd></div><div><dt>Tilstand</dt><dd>Hviler</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
+          <dl class="kv"><div><dt>Z3</dt><dd>22,7 °C · 14 % flow</dd></div><div><dt>Retur</dt><dd class="c-info">28,4 °C</dd></div><div><dt>Tilstand</dt><dd>Hviler</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
           <svg class="spark" style="height:100px" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="Toilet: temperatur mod mål, sidste 24 timer"><polyline class="g" points="0,40.0 240,40.0"/><polyline class="t" points="0.0,30.4 5.1,29.2 10.2,31.3 15.3,26.9 20.4,29.3 25.5,26.1 30.6,27.4 35.7,23.2 40.9,24.4 46.0,20.7 51.1,19.2 56.2,17.7 61.3,17.7 66.4,14.6 71.5,12.9 76.6,15.6 81.7,12.9 86.8,10.3 91.9,10.6 97.0,11.3 102.1,11.6 107.2,8.7 112.3,12.5 117.4,9.9 122.6,9.9 127.7,13.4 132.8,13.5 137.9,14.5 143.0,14.5 148.1,16.4 153.2,15.4 158.3,16.5 163.4,20.5 168.5,19.4 173.6,24.3 178.7,25.6 183.8,24.5 188.9,25.2 194.0,26.3 199.1,26.6 204.3,28.1 209.4,31.4 214.5,30.1 219.6,29.8 224.7,33.6 229.8,32.0 234.9,33.4 240.0,33.2"/></svg>
           <div class="axis" aria-hidden="true"><span>−24 t</span><span>−12 t</span><span>nu</span></div></div></section><section class="tab-panel" data-tab="settings">
         <form data-save="rooms" data-patch>
@@ -3060,7 +3078,7 @@
     <input class="state tab" type="radio" name="tab-r09" id="t-r09-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-r09" id="t-r09-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-r09" id="t-r09-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span>
-      <div><h2 id="sheet-r09-t">Gang</h2><p>1. sal · Z4 · Fejl · 0 % åben · Motorfejl</p></div>
+      <div><h2 id="sheet-r09-t">Gang</h2><p>1. sal · Z4 · Fejl · 0 % flow · Motorfejl</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-r09" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-r09-o" data-tab="overview">Overblik</label><label for="t-r09-h" data-tab="history">Historik</label><label for="t-r09-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -3074,7 +3092,7 @@
         </dl>
         <div class="bar" style="--v:0%" aria-hidden="true"><i></i></div>
         <div class="sub"><h4>Kredse fra 1. sal</h4>
-          <dl class="kv"><div><dt>Z4</dt><dd>19,1 °C · 0 % åben</dd></div><div><dt>Retur</dt><dd class="c-info">28,4 °C</dd></div><div><dt>Tilstand</dt><dd class="c-bad">Motorfejl</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
+          <dl class="kv"><div><dt>Z4</dt><dd>19,1 °C · 0 % flow</dd></div><div><dt>Retur</dt><dd class="c-info">28,4 °C</dd></div><div><dt>Tilstand</dt><dd class="c-bad">Motorfejl</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
           <svg class="spark" style="height:100px" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="Gang: temperatur mod mål, sidste 24 timer"><polyline class="g" points="0,40.0 240,40.0"/><polyline class="t" points="0.0,73.3 5.1,72.5 10.2,70.7 15.3,73.0 20.4,72.5 25.5,68.2 30.6,69.0 35.7,67.5 40.9,64.3 46.0,65.6 51.1,61.1 56.2,61.5 61.3,62.0 66.4,57.1 71.5,57.4 76.6,58.4 81.7,54.2 86.8,53.7 91.9,53.2 97.0,53.1 102.1,51.4 107.2,55.4 112.3,51.4 117.4,53.0 122.6,55.1 127.7,54.2 132.8,56.1 137.9,55.7 143.0,56.5 148.1,58.4 153.2,61.4 158.3,61.5 163.4,63.2 168.5,62.7 173.6,63.3 178.7,65.4 183.8,67.7 188.9,70.5 194.0,69.4 199.1,72.4 204.3,70.2 209.4,74.5 214.5,71.8 219.6,76.3 224.7,73.3 229.8,75.3 234.9,74.3 240.0,74.7"/></svg>
           <div class="axis" aria-hidden="true"><span>−24 t</span><span>−12 t</span><span>nu</span></div></div></section><section class="tab-panel" data-tab="settings">
         <form data-save="rooms" data-patch>
@@ -3088,7 +3106,7 @@
     <input class="state tab" type="radio" name="tab-r10" id="t-r10-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-r10" id="t-r10-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-r10" id="t-r10-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span>
-      <div><h2 id="sheet-r10-t">Bad</h2><p>1. sal · Z5 · 23,3° · 48 % åben · Hviler</p></div>
+      <div><h2 id="sheet-r10-t">Bad</h2><p>1. sal · Z5 · 23,3° · 48 % flow · Hviler</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-r10" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-r10-o" data-tab="overview">Overblik</label><label for="t-r10-h" data-tab="history">Historik</label><label for="t-r10-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -3100,7 +3118,7 @@
         </dl>
         <div class="bar" style="--v:48%" aria-hidden="true"><i></i></div>
         <div class="sub"><h4>Kredse fra 1. sal</h4>
-          <dl class="kv"><div><dt>Z5</dt><dd>23,3 °C · 48 % åben</dd></div><div><dt>Retur</dt><dd class="c-info">28,4 °C</dd></div><div><dt>Tilstand</dt><dd>Hviler</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
+          <dl class="kv"><div><dt>Z5</dt><dd>23,3 °C · 48 % flow</dd></div><div><dt>Retur</dt><dd class="c-info">28,4 °C</dd></div><div><dt>Tilstand</dt><dd>Hviler</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
           <svg class="spark" style="height:100px" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="Bad: temperatur mod mål, sidste 24 timer"><polyline class="g" points="0,40.0 240,40.0"/><polyline class="t" points="0.0,15.1 5.1,15.6 10.2,15.9 15.3,12.4 20.4,13.2 25.5,11.9 30.6,10.1 35.7,7.7 40.9,4.9 46.0,5.7 51.1,2.1 56.2,0.7 61.3,2.6 66.4,2.0 71.5,0.5 76.6,-3.5 81.7,-3.4 86.8,-5.6 91.9,-6.4 97.0,-5.6 102.1,-5.4 107.2,-3.5 112.3,-3.2 117.4,-6.3 122.6,-5.3 127.7,-5.1 132.8,-3.5 137.9,-3.1 143.0,-1.9 148.1,-1.9 153.2,2.7 158.3,2.4 163.4,4.5 168.5,3.7 173.6,4.9 178.7,8.9 183.8,11.0 188.9,11.6 194.0,12.4 199.1,11.6 204.3,14.0 209.4,13.4 214.5,15.9 219.6,15.5 224.7,17.2 229.8,15.4 234.9,15.9 240.0,14.1"/></svg>
           <div class="axis" aria-hidden="true"><span>−24 t</span><span>−12 t</span><span>nu</span></div></div></section><section class="tab-panel" data-tab="settings">
         <form data-save="rooms" data-patch>
@@ -3114,7 +3132,7 @@
     <input class="state tab" type="radio" name="tab-r11" id="t-r11-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-r11" id="t-r11-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-r11" id="t-r11-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span>
-      <div><h2 id="sheet-r11-t">Værksted</h2><p>Anneks · Z1 · 16,8° · 20 % åben · Hviler</p></div>
+      <div><h2 id="sheet-r11-t">Værksted</h2><p>Anneks · Z1 · 16,8° · 20 % flow · Hviler</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-r11" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-r11-o" data-tab="overview">Overblik</label><label for="t-r11-h" data-tab="history">Historik</label><label for="t-r11-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -3126,7 +3144,7 @@
         </dl>
         <div class="bar" style="--v:20%" aria-hidden="true"><i></i></div>
         <div class="sub"><h4>Kredse fra Anneks</h4>
-          <dl class="kv"><div><dt>Z1</dt><dd>16,8 °C · 20 % åben</dd></div><div><dt>Retur</dt><dd class="c-info">26,6 °C</dd></div><div><dt>Tilstand</dt><dd>Hviler</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
+          <dl class="kv"><div><dt>Z1</dt><dd>16,8 °C · 20 % flow</dd></div><div><dt>Retur</dt><dd class="c-info">26,6 °C</dd></div><div><dt>Tilstand</dt><dd>Hviler</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub trend-wrap"><h4>Sidste 24 timer <span class="legend"><i class="lt"></i>Temperatur<i class="lg"></i>Mål</span></h4>
           <svg class="spark" style="height:100px" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="Værksted: temperatur mod mål, sidste 24 timer"><polyline class="g" points="0,40.0 240,40.0"/><polyline class="t" points="0.0,81.6 5.1,80.8 10.2,79.3 15.3,80.7 20.4,78.0 25.5,75.9 30.6,74.6 35.7,76.3 40.9,73.0 46.0,71.7 51.1,70.8 56.2,67.5 61.3,68.0 66.4,67.1 71.5,63.8 76.6,64.0 81.7,64.5 86.8,63.7 91.9,62.3 97.0,63.7 102.1,61.0 107.2,60.3 112.3,61.7 117.4,60.2 122.6,60.2 127.7,62.4 132.8,62.6 137.9,65.9 143.0,67.2 148.1,64.4 153.2,68.6 158.3,70.2 163.4,68.7 168.5,70.7 173.6,74.8 178.7,75.3 183.8,77.0 188.9,78.1 194.0,80.4 199.1,79.3 204.3,81.2 209.4,81.6 214.5,83.1 219.6,83.9 224.7,84.5 229.8,81.1 234.9,81.5 240.0,82.1"/></svg>
           <div class="axis" aria-hidden="true"><span>−24 t</span><span>−12 t</span><span>nu</span></div></div></section><section class="tab-panel" data-tab="settings">
         <form data-save="rooms" data-patch>
@@ -3140,7 +3158,7 @@
     <input class="state tab" type="radio" name="tab-r12" id="t-r12-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-r12" id="t-r12-h" value="history" data-hash="historik" aria-label="Historik"><input class="state tab" type="radio" name="tab-r12" id="t-r12-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 12h8V4"/></svg></span>
-      <div><h2 id="sheet-r12-t">Lager</h2><p>Anneks · Z2 · — · 0 % åben · Ingen data</p></div>
+      <div><h2 id="sheet-r12-t">Lager</h2><p>Anneks · Z2 · — · 0 % flow · Ingen data</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-r12" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-r12-o" data-tab="overview">Overblik</label><label for="t-r12-h" data-tab="history">Historik</label><label for="t-r12-s" data-tab="settings">Indstillinger</label></nav>
     </header>
@@ -3152,7 +3170,7 @@
         </dl>
         <div class="bar" style="--v:0%" aria-hidden="true"><i></i></div>
         <div class="sub"><h4>Kredse fra Anneks</h4>
-          <dl class="kv"><div><dt>Z2</dt><dd>— · 0 % åben</dd></div><div><dt>Retur</dt><dd class="c-info">—</dd></div><div><dt>Tilstand</dt><dd>Ingen data</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub" data-empty><h4>Sidste 24 timer</h4><p class="empty">Ingen målinger endnu</p></div></section><section class="tab-panel" data-tab="settings">
+          <dl class="kv"><div><dt>Z2</dt><dd>— · 0 % flow</dd></div><div><dt>Retur</dt><dd class="c-info">—</dd></div><div><dt>Tilstand</dt><dd>Ingen data</dd></div></dl></div></section><section class="tab-panel" data-tab="history"><div class="sub" data-empty><h4>Sidste 24 timer</h4><p class="empty">Ingen målinger endnu</p></div></section><section class="tab-panel" data-tab="settings">
         <form data-save="rooms" data-patch>
           <section class="setting-group"><h4>Hustemperatur</h4><div class="setting-list"><label class="setting switch"><span class="setting-label"><b>Medregn i hustemperaturen</b><small>Rummet tæller med i den vægtede temperatur</small></span><input type="checkbox" role="switch" name="room:r12:include"></label><div class="setting"><div class="setting-label"><label for="r12-weight">Vægt</label><small>Ganges på rummets areal</small></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk vægt">−</button><span class="value"><input type="number" inputmode="decimal" id="r12-weight" name="room:r12:weight" value="0.25" min="0" max="5" step="0.05"><span class="unit">×</span></span><button type="button" data-step="1" aria-label="Hæv vægt">+</button></div></div></div></div></section>
           <section class="setting-group"><h4>Vejr</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="r12-wind">Vindeksponering</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk vindeksponering">−</button><span class="value"><input type="number" inputmode="decimal" id="r12-wind" name="room:r12:wind" value="0.30" min="0" max="1" step="0.05"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Hæv vindeksponering">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="r12-solar">Solindfald</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Sænk solindfald">−</button><span class="value"><input type="number" inputmode="decimal" id="r12-solar" name="room:r12:solar" value="0.00" min="0" max="1" step="0.05"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Hæv solindfald">+</button></div></div></div></div></section>

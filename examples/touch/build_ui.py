@@ -841,6 +841,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         <label for="m-sys">{I_SYS}{T("nav.system")}</label>
       </nav>
       <div class="tools">
+        <span class="badge violet activity" role="status"><span>{T("activity.probe")}<small> · {T("activity.sample")} · {T("activity.step").replace("{s}", "3").replace("{n}", "10")}</small></span></span>
         {langnav}
         <label class="icon-btn theme-btn" for="theme" title="{T("theme.toggle")}">
           <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg>
