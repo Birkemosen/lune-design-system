@@ -2,7 +2,7 @@
 
 ## 2.3.31
 
-- Navbaren i Touch viser, hvad enheden er i gang med (`.badge.activity` først i `.tools`): måler ventiler (violet, med zone og trin fra 1200 px), varmekilde offline (rød), varmt vand / legionella / opvarmer (varme), starter snart og hviler (neutral). Under 600 px viser enhedsvælgeren kun logoet, og aktiviteten afkortes med ellipse, så sprog og tema bliver stående. DESIGN.md 5.1.
+- Navbaren i Touch viser, hvad enheden er i gang med (`.badge.activity` først i `.tools`): måler ventiler (violet, med zone og trin fra 1200 px), varmekilde offline (rød), varmt vand / legionella / opvarmer (varme), starter snart og hviler (neutral). Udlufter kreds (neutral, med kreds og minutter tilbage) står efter måler ventiler. Under 600 px viser enhedsvælgeren kun logoet, og aktiviteten afkortes med ellipse, så sprog og tema bliver stående. DESIGN.md 5.1.
 
 - Ventiler vises som **flow** (% af sløjfens fulde flow), ikke som pinnens åbning: ventilindsatser åbner hurtigt, så 20 % åbning kan være 80 % flow. Bjælker, felter og statuslinjer bruger flow; pinnens position står som sekundær tekst («62 % flow · ventil 22 %»), hvor der er plads (rummets/zonens ark), ikke i små felter. Heatmappens nøgle hedder «flow».
 - Motorlabbets endestop-explorer (V6): strømmen med tærskler (`.trend .thr` stiplet for den dynamiske, `.cap` prikket for de absolutte), en lodret `.trip` hvor hver vej ville stoppe motoren (`.trip.first` fuldt optrukket) og en `.table` med vej, tærskel, tid og tællinger (`tr.first`). Ventilkurven (`.trend .vc` i vandets farve, `.vpos` for ventilens stilling) i `.mtrace-row.square`. Tærsklerne redigeres som grupperet liste med gem-bjælke under grafen.
