@@ -190,7 +190,7 @@
   "plan.lHeat": "Space heating",
   "plan.lDhw": "Hot water",
   "plan.lLeg": "Legionella",
-  "plan.lLift": "Comfort band lift",
+  "plan.lLift": "Touch lifts the comfort band",
   "plan.preload": "Preheat",
   "plan.charge": "Charging before wind",
   "plan.insufficient": "Does not cover the whole deficit",
@@ -415,5 +415,13 @@
   "svc.resetDo": "Reset",
   "zs.advanced": "Advanced",
   "hero.heat": "Heat pump",
-  "hero.heatSub": "idle · Odin in control"
+  "hero.heatSub": "idle · Odin in control",
+  "plan.lanePrice": "Price",
+  "plan.laneBand": "Band",
+  "plan.laneWind": "Wind",
+  "plan.now": "Now",
+  "plan.lPrice": "Electricity price (cheap → dear)",
+  "plan.lBand": "Comfort band and expected temperature",
+  "plan.lSkip": "Dear hour skipped",
+  "plan.lWind": "Wind (m/s)"
 }

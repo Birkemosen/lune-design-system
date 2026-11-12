@@ -311,15 +311,89 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             <span class="ht-fr"><small>{T("tile.flow")}</small><b>{T.num(36.0)}°</b><svg class="fr-arc" viewBox="0 0 12 40" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="lds-fr" x1="0" y1="0" x2="0" y2="1"><stop offset="0"/><stop offset=".25"/><stop offset=".5"/><stop offset=".75"/><stop offset="1"/></linearGradient></defs><path d="M1 1 A 11 19 0 0 1 1 39"/></svg><span class="fr-dt"><small>ΔT</small><b>{T.num(7.0)}°</b></span><small>{T("tile.return")}</small><b>{T.num(29.0)}°</b></span>
             <svg class="ht-viz" viewBox="0 0 240 64" preserveAspectRatio="none" aria-hidden="true"><path class="a" d="M0,64 L{pts(hf, 240, 64, lo_, hi_).replace(" ", " L")} L240,64Z"/><polyline class="f" points="{pts(hf, 240, 64, lo_, hi_)}"/><polyline class="r" points="{pts(hr, 240, 64, lo_, hi_)}"/></svg>
           </button>'''
-    plan_kwh = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2.1, 3.4, 2.6, 0, 0, 0, 0, 0, 0, 0]
-    bars = '<line class="base" x1="0" y1="63.5" x2="240" y2="63.5"/>' + "".join(f'<rect class="col on" x="{k * 10 + 2}" y="{64 - v / 3.4 * 60}" width="6" height="{v / 3.4 * 60}" rx="3"/>' for k, v in enumerate(plan_kwh) if v)
+    # Næste 24 t fra kl. 14: Odin varmer 15–17 og igen 01–04 (billigst); Touch løfter båndet
+    # 17–01 for et rum, der halter (bund +0,3, top +1,5), og springer kl. 18 over, fordi det er
+    # billigere at varme kl. 15–17, varmetabet medregnet.
+    START = 14
+    plan_kwh = [0, 2.1, 3.4, 2.6, 0, 0, 0, 0, 0, 0, 0, 2.4, 4.2, 4.6, 3.8, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    plan_mode = ["heat"] * 24
+    plan_mode[2] = "dhw"
+    price = [1.62, 1.58, 1.60, 1.71, 2.48, 2.86, 2.74, 2.41, 1.88, 1.66, 1.42, 1.31, 1.18, 1.12, 1.10, 1.14, 1.29, 1.55, 1.92, 2.05, 1.84, 1.69, 1.63, 1.60]
+    band_lo = [21.5] * 24
+    band_hi = [22.5] * 24
+    lift = [0.0] * 24
+    skip = [0] * 24
+    for k in range(3, 11):
+        lift[k], band_lo[k], band_hi[k] = 1.5, 21.8, 24.0
+    skip[4] = 1
+    lift[4], band_lo[4], band_hi[4] = 0.0, 21.5, 22.5
+    expected = [22.0, 22.1, 22.3, 22.4, 22.3, 22.2, 22.1, 22.0, 21.9, 21.9, 21.8, 21.8, 22.0, 22.2, 22.3, 22.2, 22.1, 22.0, 21.9, 21.9, 21.8, 21.8, 21.7, 21.7]
+    wind = [6, 7, 9, 11, 12, 12, 11, 10, 9, 8, 7, 6, 6, 5, 5, 5, 4, 4, 5, 6, 6, 7, 7, 6]
+
+    def price_scale(v):
+        lo_, hi_ = min(price), max(price)
+        return 1 + min(4, int((v - lo_) / (hi_ - lo_ + 1e-9) * 5))
+
+    def plan_timeline(mini=False):
+        """Odins plan time for time (DESIGN.md 8, .plan). mini = Hjem-feltets kompakte udgave:
+        kun pris, varme og bånd, ingen rumspor og ingen aflæsning. Alle tekster er HTML."""
+        tag = "span" if mini else "div"   # inde i en <button> må der kun være frasering
+        q = '"'
+        ptop = 3.0
+        cells = "".join(f'<i class="plan-cell" data-scale="{price_scale(v)}" style="--v:{round(v / ptop * 100)}"></i>' for v in price)
+        bars_ = "".join(f'<i class="plan-bar"' + (f' data-mode={q}{plan_mode[k]}{q}' if plan_mode[k] != "heat" else "") + f' style="--v:{round(v / 5 * 100)}"></i>' for k, v in enumerate(plan_kwh))
+        lo_, hi_ = 20.5, 24.5   # temperaturakse mindst 3 °C
+        y = lambda t: (hi_ - t) / (hi_ - lo_) * 100
+        rects = ""
+        for k in range(24):
+            cls = "bd lift" if lift[k] else ("bd skip" if skip[k] else "bd")
+            rects += f'<rect class="{cls}" x="{k + .06:.2f}" y="{y(band_hi[k]):.1f}" width=".88" height="{y(band_lo[k]) - y(band_hi[k]):.1f}"/>'
+        exp_pts = " ".join(f"{k},{y(t):.1f} {k + 1},{y(t):.1f}" for k, t in enumerate(expected))
+        band_svg = f'<svg viewBox="0 0 24 100" preserveAspectRatio="none" aria-hidden="true">{rects}<polyline class="exp" points="{exp_pts}"/></svg>'
+        wcells = "".join(f'<i class="plan-cell" style="--v:{round(w / 15 * 100)}"></i>' for w in wind)
+        rows = (f'<{tag} class="plan-lab plan-lab--y plan-lab--sm"><b>{T("plan.lanePrice")}</b><span class="plan-y"><i>{T.num(ptop, 0)}</i><i>0</i></span></{tag}>'
+                f'<{tag} class="plan-lane plan-lane--price">{cells}</{tag}>'
+                f'<{tag} class="plan-lab plan-lab--y"><b>Odin</b><span class="plan-y"><i>5 kWh</i><i>{T.num(2.5)}</i><i>0</i></span></{tag}>'
+                f'<{tag} class="plan-lane plan-lane--odin">{bars_}</{tag}>'
+                f'<{tag} class="plan-lab plan-lab--y plan-lab--band"><b>{T("plan.laneBand")}</b><span class="plan-y"><i>{T.num(hi_, 0)}°</i><i>{T.num(lo_, 0)}°</i></span></{tag}>'
+                f'<{tag} class="plan-lane plan-lane--band">{band_svg}</{tag}>')
+        if not mini:
+            rows += (f'<div class="plan-lab plan-lab--y plan-lab--sm"><b>{T("plan.laneWind")}</b><span class="plan-y"><i>15</i><i>0</i></span></div>'
+                     f'<div class="plan-lane plan-lane--wind">{wcells}</div>')
+            for r in ROOMS:
+                if r[0] in ("r05", "r06"):
+                    seg_ = f'<span class="plan-seg" data-kind="charge" style="--a:3;--b:7" title="{T("plan.charge")}"></span>'
+                elif r[0] == "r09":
+                    seg_ = f'<span class="plan-seg" data-kind="charge" data-insufficient style="--a:3;--b:8" title="{T("plan.insufficient")}"></span>'
+                elif r[0] in ("r01", "r07"):
+                    seg_ = f'<span class="plan-seg" data-kind="preload" style="--a:1;--b:5" title="{T("plan.preload")}"></span>'
+                else:
+                    continue
+                rows += f'<span class="plan-lab">{r[1]}</span><div class="plan-lane">{seg_}</div>'
+        xs = ""
+        for k in range(24):
+            h = (START + k) % 24
+            # Hver 6. time altid, ellers efter bredden; timen lige efter «Nu» kun i brede planer.
+            cls = "" if k == 0 else "h1" if k == 1 or h % 2 else "" if h % 6 == 0 else "h3" if h % 3 == 0 else "h2"
+            text = T("plan.now") if k == 0 else f"{h:02d}"
+            xs += f'<span' + (f' class={q}{cls}{q}' if cls else "") + f' style="left:{k / 24 * 100:.2f}%">{text}</span>'
+        if mini:
+            return f'<span class="plan plan--mini ht-plan" aria-hidden="true">{rows}<span></span><span class="plan-x">{xs}</span></span>'
+        legend = "".join(f'<span><i class="{c}"></i>{T(k)}</span>' for c, k in (
+            ("lprice", "plan.lPrice"), ("lbar", "plan.lHeat"), ("ldhw", "plan.lDhw"), ("lband", "plan.lBand"),
+            ("lbandlift", "plan.lLift"), ("lskip", "plan.lSkip"), ("lwind", "plan.lWind"),
+            ("lpre", "plan.preload"), ("lch", "plan.charge"), ("lins", "plan.insufficient")))
+        return (f'<div class="plan" role="img" aria-label="{T("plan.aria")}" data-readout>{rows}<span></span>'
+                f'<div class="plan-x">{xs}</div><div class="bars-readout" aria-live="polite" hidden></div></div>'
+                f'<div class="fc-legend" aria-hidden="true">{legend}</div>')
+
     tile_plan = f'''
-          <button class="home-tile" type="button" popovertarget="sheet-plan">
+          <button class="home-tile wide" type="button" popovertarget="sheet-plan">
             <span class="chip-icon" data-tone="violet" aria-hidden="true">{I["plan"]}</span><b>{T("tile.plan")}</b>
             <span class="ht-status">{T("tile.planStatus")}</span>
-            <span class="ht-val">{T("tile.planVal", a="06", b="09")} <small>≈ {T.num(8.1)} kWh</small></span>
-            <span class="ht-price">{T("tile.price", p=T.num(1.82, 2), unit=T("price.unit"))} <span class="scale-chip" data-scale="2">{T("price.scale.2")}</span></span>
-            <svg class="ht-viz" viewBox="0 0 240 64" preserveAspectRatio="none" aria-hidden="true">{bars}</svg>
+            <span class="ht-val">{T("tile.planVal", a="15", b="18")} <small>≈ {T.num(8.1)} kWh</small></span>
+            <span class="ht-price">{T("tile.price", p=T.num(1.62, 2), unit=T("price.unit"))} <span class="scale-chip" data-scale="2">{T("price.scale.2")}</span></span>
+            {plan_timeline(mini=True)}
           </button>'''
     wx = series(7, 24, 9.5, 3.2, .3)
     tile_wx = f'''
@@ -390,7 +464,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
           </form>
         </section>
         <header class="home-head"><small>{T("home.nowEyebrow")}</small><h3>{T("home.nowTitle")}</h3></header>
-        <div class="home-tiles">{tile_heat}{tile_plan}{tile_wx}{tile_pump}</div>
+        <div class="home-tiles">{tile_heat}{tile_wx}{tile_pump}{tile_plan}</div>
         {heatmap}
       </section>'''
 
@@ -443,33 +517,13 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
     sheet_heat = sheet("heat", T("hash.heat"), I["heat"], "", T("tile.heat"), T("sheet.heatStatus"), heat_over, heat_hist, heat_set)
 
     # ---- Næste varme (Odins plan) — kun Overblik/Historik
-    def plan_graph():
-        bars_ = "".join(f'<i class="plan-bar" style="--v:{round(v / 3.4 * 100)}"{" data-mode=" + chr(34) + "dhw" + chr(34) if k == 15 else ""}></i>' for k, v in enumerate(plan_kwh))
-        lanes = ""
-        for r in ROOMS:
-            if r[0] in ("r05", "r06"):
-                seg_ = f'<span class="plan-seg" data-kind="charge" style="--a:3;--b:7" title="{T("plan.charge")}"></span>'
-            elif r[0] == "r09":
-                seg_ = f'<span class="plan-seg" data-kind="charge" data-insufficient style="--a:3;--b:8" title="{T("plan.insufficient")}"></span>'
-            elif r[0] in ("r01", "r07"):
-                seg_ = f'<span class="plan-seg" data-kind="preload" style="--a:12;--b:16" title="{T("plan.preload")}"></span>'
-            else:
-                continue
-            lanes += f'<span class="plan-lab">{r[1]}</span><div class="plan-lane">{seg_}</div>'
-        xs = "".join(f'<span{" class=m" if (h % 6) else ""} style="left:{h / 24 * 100:.2f}%">{(14 + h) % 24:02d}</span>' for h in range(0, 24, 3))
-        return f'''<div class="plan" role="img" aria-label="{T("plan.aria")}">
-          <div class="plan-lab plan-lab--y"><b>Odin</b><span class="plan-y"><i>3</i><i>0</i></span></div>
-          <div class="plan-lane plan-lane--odin">{bars_}<span class="plan-lift" style="--a:13;--b:19"></span></div>
-          {lanes}
-          <div class="plan-x">{xs}</div></div>
-        <div class="fc-legend" aria-hidden="true"><span><i class="lbar"></i>{T("plan.lHeat")}</span><span><i class="ldhw"></i>{T("plan.lDhw")}</span><span><i class="lleg"></i>{T("plan.lLeg")}</span><span><i class="llift"></i>{T("plan.lLift")}</span><span><i class="lpre"></i>{T("plan.preload")}</span><span><i class="lch"></i>{T("plan.charge")}</span><span><i class="lins"></i>{T("plan.insufficient")}</span></div>'''
     plan_over = f'''
         <dl class="metrics">
-          {metric(T("plan.next"), T("tile.planVal", a="06", b="09"), "")}
+          {metric(T("plan.next"), T("tile.planVal", a="15", b="18"), "")}
           {metric(T("plan.energy"), T.num(8.1), "kWh")}
           {metric(T("plan.priceNow"), T.num(1.82, 2), T("price.unit"))}
         </dl>
-        {plan_graph()}'''
+        {plan_timeline()}'''
     pbars = "".join(f'<div class="col"><i class="plan" style="--plan:{p}"></i><i class="act" style="--act:{a}"></i></div>' for p, a in ((40, 32), (55, 48), (70, 61), (50, 44), (35, 30), (45, 52), (30, 28), (20, 22)))
     plan_hist = f'''<div class="sub"><h4>{T("plan.vsActual")}</h4><div class="bars" style="--bars-n:8"><div class="bars-plot" role="img" aria-label="{T("plan.vsActualAria")}">{pbars}</div>
         <div class="bars-legend"><span><i class="lp"></i>{T("plan.planned")}</span><span><i class="la"></i>{T("plan.actual")}</span></div></div></div>'''

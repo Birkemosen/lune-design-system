@@ -190,7 +190,7 @@
   "plan.lHeat": "Rumvarme",
   "plan.lDhw": "Varmt vand",
   "plan.lLeg": "Legionella",
-  "plan.lLift": "Løft af komfortbånd",
+  "plan.lLift": "Touch løfter komfortbåndet",
   "plan.preload": "Forvarme",
   "plan.charge": "Opladning før vind",
   "plan.insufficient": "Dækker ikke hele underskuddet",
@@ -415,5 +415,13 @@
   "svc.resetDo": "Nulstil",
   "zs.advanced": "Avanceret",
   "hero.heat": "Varmepumpe",
-  "hero.heatSub": "hviler · Odin styrer"
+  "hero.heatSub": "hviler · Odin styrer",
+  "plan.lanePrice": "Pris",
+  "plan.laneBand": "Bånd",
+  "plan.laneWind": "Vind",
+  "plan.now": "Nu",
+  "plan.lPrice": "Elpris (billig → dyr)",
+  "plan.lBand": "Komfortbånd og forventet temperatur",
+  "plan.lSkip": "Dyr time sprunget over",
+  "plan.lWind": "Vind (m/s)"
 }
