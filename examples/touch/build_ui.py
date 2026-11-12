@@ -374,7 +374,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         for k in range(24):
             h = (START + k) % 24
             # Hver 6. time altid, ellers efter bredden; timen lige efter «Nu» kun i brede planer.
-            cls = "" if k == 0 else "h1" if k == 1 or h % 2 else "" if h % 6 == 0 else "h3" if h % 3 == 0 else "h2"
+            cls = "" if k == 0 else "h1" if k == 1 else "" if h % 6 == 0 else "h3" if h % 3 == 0 else "h2" if h % 2 == 0 else "h1"
             text = T("plan.now") if k == 0 else f"{h:02d}"
             xs += f'<span' + (f' class={q}{cls}{q}' if cls else "") + f' style="left:{k / 24 * 100:.2f}%">{text}</span>'
         if mini:
