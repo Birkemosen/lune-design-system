@@ -1225,7 +1225,7 @@
     left: calc(var(--hi, 0) * 100% / 24); width: calc(100% / 24);
     background: color-mix(in srgb, var(--fg) 14%, transparent);
   }
-  .plan .bars-readout { left: 0; }
+  .plan .bars-readout { left: 0; flex-direction: column; gap: 0; }
   .fc-legend .lprice { height: 10px; border-radius: 2px 2px 0 0; background: var(--scale-good-bad-1); box-shadow: 6px 0 0 var(--scale-good-bad-3), 12px 0 0 var(--scale-good-bad-5); width: 4px; margin-right: 12px; }
   .fc-legend .lband { height: 10px; border-radius: 2px; background: var(--seg-off); border-top: 2px solid var(--fg); }
   .fc-legend .lbandlift { height: 10px; border-radius: 2px; background: color-mix(in srgb, var(--violet) 45%, transparent); }
