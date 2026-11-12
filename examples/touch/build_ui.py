@@ -326,6 +326,10 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
     for k in range(3, 11):
         lift[k], band_lo[k], band_hi[k] = 1.5, 21.8, 24.0
     skip[4] = 1
+    # Kl. 15–16 løfter Touch kun for vejret (forvarmning før vinden kl. 17–19): blå.
+    pre_only = [0] * 24
+    for k in (1, 2):
+        lift[k], band_lo[k], band_hi[k], pre_only[k] = 1.2, 21.7, 23.7, 1
     lift[4], band_lo[4], band_hi[4] = 0.0, 21.5, 22.5
     expected = [22.0, 22.1, 22.3, 22.4, 22.3, 22.2, 22.1, 22.0, 21.9, 21.9, 21.8, 21.8, 22.0, 22.2, 22.3, 22.2, 22.1, 22.0, 21.9, 21.9, 21.8, 21.8, 21.7, 21.7]
     wind = [6, 7, 9, 11, 12, 12, 11, 10, 9, 8, 7, 6, 6, 5, 5, 5, 4, 4, 5, 6, 6, 7, 7, 6]
@@ -346,7 +350,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         y = lambda t: (hi_ - t) / (hi_ - lo_) * 100
         rects = ""
         for k in range(24):
-            cls = "bd lift" if lift[k] else ("bd skip" if skip[k] else "bd")
+            cls = ("bd pre" if pre_only[k] else "bd lift") if lift[k] else ("bd skip" if skip[k] else "bd")
             rects += f'<rect class="{cls}" x="{k + .06:.2f}" y="{y(band_hi[k]):.1f}" width=".88" height="{y(band_lo[k]) - y(band_hi[k]):.1f}"/>'
         exp_pts = " ".join(f"{k},{y(t):.1f} {k + 1},{y(t):.1f}" for k, t in enumerate(expected))
         band_svg = f'<svg viewBox="0 0 24 100" preserveAspectRatio="none" aria-hidden="true">{rects}<polyline class="exp" points="{exp_pts}"/></svg>'
@@ -381,7 +385,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             return f'<span class="plan plan--mini ht-plan" aria-hidden="true">{rows}<span></span><span class="plan-x">{xs}</span></span>'
         legend = "".join(f'<span><i class="{c}"></i>{T(k)}</span>' for c, k in (
             ("lprice", "plan.lPrice"), ("lbar", "plan.lHeat"), ("ldhw", "plan.lDhw"), ("lband", "plan.lBand"),
-            ("lbandlift", "plan.lLift"), ("lskip", "plan.lSkip"), ("lwind", "plan.lWind"),
+            ("lbandpre", "plan.lPre"), ("lbandlift", "plan.lLift"), ("lskip", "plan.lSkip"), ("lwind", "plan.lWind"),
             ("lpre", "plan.preload"), ("lch", "plan.charge"), ("lins", "plan.insufficient")))
         return (f'<div class="plan" role="img" aria-label="{T("plan.aria")}" data-readout>{rows}<span></span>'
                 f'<div class="plan-x">{xs}</div><div class="bars-readout" aria-live="polite" hidden></div></div>'
