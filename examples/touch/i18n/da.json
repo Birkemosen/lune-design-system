@@ -128,7 +128,7 @@
   "tile.flow": "Frem",
   "tile.return": "Retur",
   "tile.plan": "Plan",
-  "tile.planNext": "Næste varme",
+  "tile.planNext": "Næste opvarmning",
   "tile.planStatus": "Planlagt af Odin",
   "tile.planVal": "kl. {a}–{b}",
   "tile.price": "Elpris nu {p} {unit}",
