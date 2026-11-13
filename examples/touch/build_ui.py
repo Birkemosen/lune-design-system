@@ -309,6 +309,19 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         </section>'''
 
     # Felter (maks. 4): Varme · Næste varme · Vejr · Cirkulation
+    NOW_H = 14
+
+    def tile_x(past):
+        """Timeakse under et felts graf (.ht-x): hver 6. time, «Nu» i den ende, der er nu.
+        past = de seneste 24 t (nu til højre), ellers de næste 24 t (nu til venstre)."""
+        marks = ""
+        for k in range(1, 24):
+            h = (NOW_H - 24 + k) % 24 if past else (NOW_H + k) % 24
+            if h % 6 or k < 3 or k > 21:
+                continue
+            marks += f'<span style="left:{k / 24 * 100:.1f}%">{h:02d}</span>'
+        now = f'<span class="{"end" if past else "start"}">{T("plan.now")}</span>'
+        return f'<span class="ht-x" aria-hidden="true">{marks + now if past else now + marks}</span>'
     hf = series(3, 24, 34.5, 1.6, .2)
     hr = series(4, 24, 28.6, 0.8, .15)
     lo_, hi_ = 26, 38
@@ -318,11 +331,13 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             <span class="ht-status">{T("tile.heatStatus")}</span>
             <span class="ht-fr"><small>{T("tile.flow")}</small><b>{T.num(36.0)}°</b><svg class="fr-arc" viewBox="0 0 12 40" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="lds-fr" x1="0" y1="0" x2="0" y2="1"><stop offset="0"/><stop offset=".25"/><stop offset=".5"/><stop offset=".75"/><stop offset="1"/></linearGradient></defs><path d="M1 1 A 11 19 0 0 1 1 39"/></svg><span class="fr-dt"><small>ΔT</small><b>{T.num(7.0)}°</b></span><small>{T("tile.return")}</small><b>{T.num(29.0)}°</b></span>
             <svg class="ht-viz" viewBox="0 0 240 64" preserveAspectRatio="none" aria-hidden="true"><path class="a" d="M0,64 L{pts(hf, 240, 64, lo_, hi_).replace(" ", " L")} L240,64Z"/><polyline class="f" points="{pts(hf, 240, 64, lo_, hi_)}"/><polyline class="r" points="{pts(hr, 240, 64, lo_, hi_)}"/></svg>
+            <span class="ht-y" aria-hidden="true"><i>{hi_}°</i><i>{lo_}°</i></span>
+            {tile_x(True)}
           </button>'''
     # Næste 24 t fra kl. 14: Odin varmer 15–17 og igen 01–04 (billigst); Touch løfter båndet
     # 17–01 for et rum, der halter (bund +0,3, top +1,5), og springer kl. 18 over, fordi det er
     # billigere at varme kl. 15–17, varmetabet medregnet.
-    START = 14
+    START = NOW_H
     plan_kwh = [0, 2.1, 3.4, 2.6, 0, 0, 0, 0, 0, 0, 0, 2.4, 4.2, 4.6, 3.8, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     plan_mode = ["heat"] * 24
     plan_mode[2] = "dhw"
@@ -424,6 +439,8 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             <span class="ht-status">{T("tile.weatherStatus", n=6)}</span>
             <span class="ht-val">{T.num(8.4)}° <small>{T("tile.weatherSub", w=6)}</small></span>
             <svg class="ht-viz" viewBox="0 0 240 64" preserveAspectRatio="none" aria-hidden="true"><rect class="pre" x="150" y="0" width="70" height="64"/><path class="wa" d="M0,64 L{pts(wx, 240, 64, 4, 16).replace(" ", " L")} L240,64Z"/><polyline class="t" points="{pts(wx, 240, 64, 4, 16)}"/></svg>
+            <span class="ht-y" aria-hidden="true"><i>16°</i><i>4°</i></span>
+            {tile_x(False)}
           </button>'''
     fl = series(9, 24, 21.5, 2.5, .4)
     tile_pump = f'''
@@ -432,6 +449,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             <span class="ht-status">{T("tile.pumpStatus")}</span>
             <span class="ht-val">{T.num(22.4)} <small>l/min · {T.num(2.9)} m · 38 W</small></span>
             <svg class="ht-viz" viewBox="0 0 240 64" preserveAspectRatio="none" aria-hidden="true"><polyline class="w" points="{pts(fl, 240, 64, 15, 28)}"/></svg>
+            {tile_x(True)}
           </button>'''
 
     alerts = "".join(f'''
