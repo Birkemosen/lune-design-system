@@ -106,7 +106,7 @@
     --scale-good-bad-5: light-dark(#b63132, #ea6a64);
     --scale-cold-warm-1: light-dark(#196ea9, #348dcf);
     --scale-cold-warm-2: light-dark(#7aa3c8, #74a4cd);
-    --scale-cold-warm-3: light-dark(#d2d1cd, #46484a);
+    --scale-cold-warm-3: light-dark(#b9d1ae, #46604a);
     --scale-cold-warm-4: light-dark(#e29a76, #f9aa60);
     --scale-cold-warm-5: light-dark(#db5600, #f67400);
     /* font */
@@ -432,7 +432,24 @@
   }
 
   /* Værktøjer i headerens højre side: sprog + tema */
-  .tools { display: flex; align-items: center; gap: var(--space-1); }
+  .tools { display: flex; align-items: center; gap: var(--space-1); min-width: 0; }
+
+  /* Aktivitet (Touch): hvad enheden gør nu, som .badge først i værktøjerne (DESIGN.md 5.1).
+     Afkortes med ellipse frem for at skubbe sprog og tema ud; detaljen kun fra 1200 px. */
+  .tools .activity { min-width: 0; max-width: 24em; margin-right: var(--space-1); }
+  .activity > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .activity small { font: inherit; opacity: .8; }
+  @media (max-width: 1199.98px) { .activity small { display: none; } }
+  @media (max-width: 767.98px) {
+    .header:has(.activity) { grid-template-columns: auto minmax(0, 1fr); }
+    .header > .tools { justify-self: stretch; justify-content: flex-end; }
+  }
+  /* Smal mobil: logoet alene står for enheden, så aktiviteten kan stå læseligt. */
+  @media (max-width: 599.98px) {
+    .header:has(.activity) .device .name { display: none; }
+    .tools .activity { padding-inline: var(--space-2); margin-right: 0; }
+    .tools .activity::before { display: none; }
+  }
 
   /* Sprogvælger — almindelige links til /en/ og /da/ (ingen JS).
      Kun renderet når buildet indeholder mere end ét sprog. */
@@ -496,6 +513,7 @@
   /* Tekst på chippen: næsten sort, undtagen trin 1 i lyst tema (mørk blå → hvid, ≥ 4,5:1). */
   .tile-dev[data-dev="1"] { background: var(--scale-cold-warm-1); color: light-dark(var(--on-fill), var(--on-warn-fill)); }
   .tile-dev[data-dev="2"] { background: var(--scale-cold-warm-2); color: var(--on-warn-fill); }
+  .tile-dev[data-dev="3"] { background: var(--scale-cold-warm-3); color: var(--fg); }
   .tile-dev[data-dev="4"] { background: var(--scale-cold-warm-4); color: var(--on-warn-fill); }
   .tile-dev[data-dev="5"] { background: var(--scale-cold-warm-5); color: var(--on-warn-fill); }
 
@@ -1441,14 +1459,11 @@
   .mtrace[data-empty] :is(.layers, .mtrace-row, .phase-strip, .actions, .note, .table-wrap) { display: none; }
   /* Endestop-explorer: tærskler som linjer over strømmen — den dynamiske tærskel stiplet, de absolutte
      grænser prikket — og en lodret streg, hvor hver vej ville stoppe motoren; den, der stopper først, er fuldt optrukket.
-     Navne og tider står i tabellen under (HTML). Ventilkurven er flow mod åbning i vandets farve. */
+     Navne og tider står i tabellen under (HTML). */
   .trend .thr  { fill: none; stroke: var(--muted); stroke-width: 1.4; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; }
   .trend .cap  { stroke: var(--faint); stroke-width: 1; stroke-dasharray: 1 3; vector-effect: non-scaling-stroke; }
   .trend .trip { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 3; vector-effect: non-scaling-stroke; }
   .trend .trip.first { stroke: var(--fg); stroke-width: 1.5; stroke-dasharray: none; }
-  .trend .vc   { fill: none; stroke: var(--data-pump); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-  .trend .vpos { stroke: var(--fg); stroke-width: 1; stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }
-  .mtrace-row.square .trend { height: 160px; }
   .table tr.first td:first-child { font-weight: 600; }
   /* Motorlabbets forløb: handlinger efter tilstand (DESIGN.md 6.1b) med labbets egne tilstande. */
   [data-state="setup"]   [data-show-when~="setup"],

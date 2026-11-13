@@ -4,6 +4,7 @@
 
 - Touch' Hjem: husets mål er flyttet fra hovedsektionen til husets ark (`sheet-house`, ringen med autogem). Hus-kortet i `.home-scopes` er en knap (`.scope--house`) med hustemperatur, mål (`.scope-tgt`) og afvigelsen som varmekortets chip, og Ude står lige efter som læseværdi (`.scope--fact`). Hovedsektionen har kun hilsen, overskrift og sætning. DESIGN.md 15.10.
 - Styringskortenes søjler (`.scope .mini i`) er farvet efter rummets afvigelse fra mål (`data-dev="1–5"`, `scale-cold-warm`); højden er fortsat ventilåbningen.
+- Ventiler vises igen som **åbning**: ventilpinnens position i % af dens fulde vandring (0 % = i sædet, 100 % = pinden helt fri, ca. 3 mm), ikke beregnet flow. Flowkurverne byggede på pumpens beregnede flow og holdt ventilerne på ca. 1 mm af 3 mm. «x % åben» i felter, bjælker og statuslinjer; rummets og zonens ark viser også mm («ventil 62 % · 1,9 mm»). Ventilkurven i V6' zoneark og motorlab (`.trend .vc`, `.vpos`, `.mtrace-row.square`) og aktiviteten «måler ventiler» er fjernet. DESIGN.md 5.1, 15.10.
 - `scale-cold-warm-3` (±0,3 °C, på målet) er dæmpet grøn i stedet for neutral grå: varmekort, `.tile-dev`, nøgle og søjler. Kontrast for `fg` på trinnet tjekkes.
 
 ## 2.3.33

@@ -57,6 +57,7 @@ ROOMS = [
     ("r12", "Lager",     3, 2, None, 15.0,  0, "off",     18.0, 200, "PEX 20 mm", "",   False, 0.25, 0.30, 0.00),
 ]
 HOUSE_TEMP, HOUSE_TARGET = 21.9, 21.0
+PIN_MM = 3.0   # ventilpindens fulde vandring; 100 % åbning = pinden helt fri
 THERMO_MIN, THERMO_MAX = 15.0, 25.0
 
 
@@ -653,7 +654,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         </dl>
         <div class="bar" style="--v:{0 if level(r) == 0 else valve}%" aria-hidden="true"><i></i></div>
         <div class="sub"><h4>{T("room.loops", m=m["name"])}</h4>
-          {kv([(f"Z{zn}", f'{"—" if nodata else T.num(temp) + " °C"} · {T("room.valveShort", v=0 if level(r) == 0 else valve)}'),
+          {kv([(f"Z{zn}", f'{"—" if nodata else T.num(temp) + " °C"} · {T("room.valveShort", v=0 if level(r) == 0 else valve, mm=T.num(0 if level(r) == 0 else valve / 100 * PIN_MM))}'),
                (T("m.return"), "—" if nodata else f"{T.num(m['ret'] - 1.2)} °C", "c-info"), (T("room.state"), ST[st], "c-bad" if fault else "")])}</div>'''
         hist = (f'<div class="sub" data-empty><h4>{T("trend.title")}</h4><p class="empty">{T("room.noHistory")}</p></div>' if nodata else
                 f'''<div class="sub trend-wrap"><h4>{T("trend.title")} <span class="legend"><i class="lt"></i>{T("legend.temp")}<i class="lg"></i>{T("legend.target")}</span></h4>
@@ -921,7 +922,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         <label for="m-sys">{I_SYS}{T("nav.system")}</label>
       </nav>
       <div class="tools">
-        <span class="badge violet activity" role="status"><span>{T("activity.probe")}<small> · {T("activity.sample")} · {T("activity.step").replace("{s}", "3").replace("{n}", "10")}</small></span></span>
+        <span class="badge hot activity" role="status"><span>{T("activity.heating")}</span></span>
         {langnav}
         <label class="icon-btn theme-btn" for="theme" title="{T("theme.toggle")}">
           <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg>

@@ -491,7 +491,7 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
         </form>
         {pre}
         <dl class="metrics">
-          {metric(T("zdash.opening"),0 if fault else fl,"%",f"z{i}.flow")}
+          {metric(T("zdash.opening"),0 if fault else fl,f'% · {T.num(0 if fault else fl/100*3)} mm',f"z{i}.opening")}
           {metric(T("m.return"),T.num(ret),"°C",f"z{i}.return")}
         </dl>
         <div class="bar" style="--v:{0 if fault else fl}%" aria-hidden="true"><i></i></div>
@@ -499,14 +499,7 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
           <div><dt>{T("zdash.motor")}</dt><dd class="{'c-warn' if fault else 'c-ok'}">{T("common.needsLearning") if fault else T("common.learned")}</dd></div>
           <div><dt>{T("zdash.offsetNow")}</dt><dd class="{'c-info' if i in (1,5) else ''}">{"+"+T.num(0.4) if i in (1,5) else T.num(0.0)} °C</dd></div>
           <div><dt>{T("zdash.tempFrom")}</dt><dd class="c-info">{T("src.ble") if src=="ble" else T("src.probe")}</dd></div>
-        </dl>{"" if fault else f'''
-        <div class="sub mtrace">
-          <h4>{T("lab.vc.title")} <span class="legend">{T("zdash.vcFull",v=T.num(1.9))}</span></h4>
-          <div class="mtrace-row square"><div class="mtrace-y" aria-hidden="true"><span>100 <small>%</small></span><span>50</span><span>0</span></div>
-            <svg class="trend" viewBox="0 0 600 100" preserveAspectRatio="none" role="img" aria-label="{T("lab.vc.aria")}"><path class="vpos" d="M{0.22*600:.1f},0V100"/><path class="vc" d="M0,100H{0.12*600:.1f}L{0.34*600:.1f},0H600"/></svg></div>
-          <div class="axis" aria-hidden="true"><span>0 %</span><span>{T("lab.vc.axis")}</span><span>100 %</span></div>
-          <p class="note">{T("lab.vc.note",start=12,full=34,src=T("lab.vc.measured",date="3.11.2026"),pos=22,flow=45)}</p>
-        </div>'''}{phys_sub(T,i,area)}'''
+        </dl>{phys_sub(T,i,area)}'''
         # Indstillinger
         merge=f'<option value="">{T("common.none")}</option>'+"".join(f'<option value="{y[0]}"{" selected" if (i==5 and y[0]==4) else ""}>Z{y[0]} {y[1]}</option>' for y in Z if y[0]!=i)
         pipes="".join(f'<option{" selected" if p==pipe else ""}>{p}</option>' for p in PIPES)
@@ -676,13 +669,6 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
           {group(T("lab.g.caps"),sstep("cap_close_seat_ma",T("lab.p.seat"),34,5,140,1,"mA",dec=0)+sstep("cap_close_seat_frames",T("lab.p.seatFrames"),4,1,20,1,"",dec=0)+sstep("cap_close_popoff_ma",T("lab.p.popoff"),36,5,140,1,"mA",dec=0)+sstep("cap_open_stop_ma",T("lab.p.openStop"),40,5,140,1,"mA",dec=0)+sstep("cap_stall_ma",T("lab.p.stall"),65,5,140,1,"mA",dec=0)+sstep("cap_circuit_fault_ma",T("lab.p.circuit"),85,5,140,1,"mA",dec=0))}
           {savebar("lab-thr")}
         </form>
-        <div class="sub mtrace">
-          <h4>{T("lab.vc.title")} <span class="legend">{T("lab.vc.meta",z=1)}</span></h4>
-          <div class="mtrace-row square"><div class="mtrace-y" aria-hidden="true"><span>100 <small>%</small></span><span>50</span><span>0</span></div>
-            <svg class="trend" viewBox="0 0 600 100" preserveAspectRatio="none" role="img" aria-label="{T("lab.vc.aria")}"><path class="vpos" d="M{0.31*600:.1f},0V100"/><path class="vc" d="M0,100H{0.12*600:.1f}L{0.34*600:.1f},0H600"/></svg></div>
-          <div class="axis" aria-hidden="true"><span>0 %</span><span>{T("lab.vc.axis")}</span><span>100 %</span></div>
-          <p class="note">{T("lab.vc.note",start=12,full=34,src=T("lab.vc.measured",date="3.11.2026"),pos=31,flow=87)}</p>
-        </div>
       </div>'''
 
     # ---- System (DESIGN.md 15.4)
