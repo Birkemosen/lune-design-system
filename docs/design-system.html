@@ -1929,7 +1929,7 @@
   .home-tile[data-empty] > .ht-viz { display: none; }
   .home-tile.wide { grid-column: 1 / -1; }
   .home-tile > .ht-plan { grid-area: viz; align-self: end; margin-top: var(--space-4); }
-  .home-tile[data-empty] > .ht-plan { display: none; }
+  .home-tile[data-empty] > :is(.ht-plan, .ht-legend) { display: none; }
   @media (min-width: 1100px) { .home-tiles:has(> .home-tile.wide) { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
   /* To spalter: et felt, der ellers står alene før det brede, fylder rækken. */
   @media (min-width: 600px) and (max-width: 1099.98px) {
