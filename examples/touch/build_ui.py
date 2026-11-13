@@ -397,13 +397,13 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         if mini:
             mleg = "".join(f'<span><i class="{c}"></i>{T(k)}</span>' for c, k in (
                 ("lprice", "plan.lPrice"), ("lheatmark", "plan.lHeatMark"), ("lband", "plan.lBandShort"), ("lbandlift", "plan.lLiftShort"), ("lbandpre", "plan.lPreShort")))
-            return (f'<span class="plan plan--mini ht-plan" aria-hidden="true">{rows}<span></span><span class="plan-x">{xs}</span></span>'
+            return (f'<span class="plan plan--mini ht-plan" aria-hidden="true" style="--now:.4">{rows}<span></span><span class="plan-x">{xs}</span></span>'
                     f'<span class="fc-legend ht-legend" aria-hidden="true">{mleg}</span>')
         legend = "".join(f'<span><i class="{c}"></i>{T(k)}</span>' for c, k in (
             ("lprice", "plan.lPrice"), ("lbar", "plan.lHeat"), ("ldhw", "plan.lDhw"), ("lband", "plan.lBand"),
             ("lbandpre", "plan.lPre"), ("lbandlift", "plan.lLift"), ("lskip", "plan.lSkip"), ("lwind", "plan.lWind"),
             ("lpre", "plan.preload"), ("lch", "plan.charge"), ("lins", "plan.insufficient")))
-        return (f'<div class="plan" role="img" aria-label="{T("plan.aria")}" data-readout>{rows}<span></span>'
+        return (f'<div class="plan" role="img" aria-label="{T("plan.aria")}" data-readout style="--now:.4">{rows}<span></span>'
                 f'<div class="plan-x">{xs}</div><div class="bars-readout" aria-live="polite" hidden></div></div>'
                 f'<div class="fc-legend" aria-hidden="true">{legend}</div>')
 
