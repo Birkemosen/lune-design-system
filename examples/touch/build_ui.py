@@ -398,7 +398,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             xs += f'<span' + (f' class={q}{cls}{q}' if cls else "") + f' style="left:{k / 24 * 100:.2f}%">{text}</span>'
         if mini:
             mleg = "".join(f'<span><i class="{c}"></i>{T(k)}</span>' for c, k in (
-                ("lprice", "plan.lPrice"), ("lheatmark", "plan.lHeatMark"), ("ldhw", "plan.lDhw"), ("lband", "plan.lBandShort"), ("lbandlift", "plan.lLiftShort"), ("lbandpre", "plan.lPreShort")))
+                ("lprice", "plan.lPrice"), ("lheatmark", "plan.lHeatMark"), ("ldhw", "plan.lDhw"), ("lband", "plan.lBandShort"), ("lbandlift", "plan.lLiftShort"), ("lbandpre", "plan.lPreShort"), ("lskip", "plan.lSkipShort")))
             return (f'<span class="plan plan--mini ht-plan" aria-hidden="true" style="--now:.4">{rows}<span></span><span class="plan-x">{xs}</span></span>'
                     f'<span class="fc-legend ht-legend" aria-hidden="true">{mleg}</span>')
         legend = "".join(f'<span><i class="{c}"></i>{T(k)}</span>' for c, k in (

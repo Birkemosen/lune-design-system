@@ -434,5 +434,6 @@
   "plan.lBandShort": "Comfort band",
   "plan.lLiftShort": "Lift",
   "plan.lPreShort": "Preload",
+  "plan.lSkipShort": "Expensive hour skipped",
   "plan.lWind": "Wind (m/s)"
 }
