@@ -331,6 +331,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             <span class="ht-status">{T("tile.heatStatus")}</span>
             <span class="ht-fr"><small>{T("tile.flow")}</small><b>{T.num(36.0)}°</b><svg class="fr-arc" viewBox="0 0 12 40" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="lds-fr" x1="0" y1="0" x2="0" y2="1"><stop offset="0"/><stop offset=".25"/><stop offset=".5"/><stop offset=".75"/><stop offset="1"/></linearGradient></defs><path d="M1 1 A 11 19 0 0 1 1 39"/></svg><span class="fr-dt"><small>ΔT</small><b>{T.num(7.0)}°</b></span><small>{T("tile.return")}</small><b>{T.num(29.0)}°</b></span>
             <svg class="ht-viz" viewBox="0 0 240 64" preserveAspectRatio="none" aria-hidden="true"><path class="a" d="M0,64 L{pts(hf, 240, 64, lo_, hi_).replace(" ", " L")} L240,64Z"/><polyline class="f" points="{pts(hf, 240, 64, lo_, hi_)}"/><polyline class="r" points="{pts(hr, 240, 64, lo_, hi_)}"/></svg>
+            <span class="ht-y" aria-hidden="true"><i>{hi_}°</i><i>{lo_}°</i></span>
             {tile_x(True)}
           </button>'''
     # Næste 24 t fra kl. 14: Odin varmer 15–17 og igen 01–04 (billigst); Touch løfter båndet
@@ -438,6 +439,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             <span class="ht-status">{T("tile.weatherStatus", n=6)}</span>
             <span class="ht-val">{T.num(8.4)}° <small>{T("tile.weatherSub", w=6)}</small></span>
             <svg class="ht-viz" viewBox="0 0 240 64" preserveAspectRatio="none" aria-hidden="true"><rect class="pre" x="150" y="0" width="70" height="64"/><path class="wa" d="M0,64 L{pts(wx, 240, 64, 4, 16).replace(" ", " L")} L240,64Z"/><polyline class="t" points="{pts(wx, 240, 64, 4, 16)}"/></svg>
+            <span class="ht-y" aria-hidden="true"><i>16°</i><i>4°</i></span>
             {tile_x(False)}
           </button>'''
     fl = series(9, 24, 21.5, 2.5, .4)
