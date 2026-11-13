@@ -57,6 +57,7 @@ ROOMS = [
     ("r12", "Lager",     3, 2, None, 15.0,  0, "off",     18.0, 200, "PEX 20 mm", "",   False, 0.25, 0.30, 0.00),
 ]
 HOUSE_TEMP, HOUSE_TARGET = 21.9, 21.0
+PIN_MM = 2.0   # pindens lærte vandring (ca. 1,1 µm pr. motortælling); 100 % åbning = pinden helt fri
 THERMO_MIN, THERMO_MAX = 15.0, 25.0
 
 
@@ -241,9 +242,16 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         d = room_dev(r)
         if d is None or r[7] in ("fault", "off"):
             return ""
-        k = 1 if d <= -1 else 2 if d <= -0.3 else 3 if d < 0.3 else 4 if d < 1 else 5
+        k = dev_step(d)
         sign = "+" if d > 0.05 else "−" if d < -0.05 else "±"
         return f'<span class="tile-dev" data-dev="{k}">{sign}{T.num(abs(d))}°</span>'
+
+    def dev_step(d):
+        return 1 if d <= -1 else 2 if d <= -0.3 else 3 if d < 0.3 else 4 if d < 1 else 5
+
+    def dev_attr(r):
+        d = room_dev(r)
+        return "" if d is None or r[7] in ("fault", "off") else f' data-dev="{dev_step(d)}"'
 
     def level(r):
         """Ventilåbning i 5 trin (20 % pr. segment); 0 = lukket, fejl eller ingen data."""
@@ -311,15 +319,103 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             <span class="ht-fr"><small>{T("tile.flow")}</small><b>{T.num(36.0)}°</b><svg class="fr-arc" viewBox="0 0 12 40" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="lds-fr" x1="0" y1="0" x2="0" y2="1"><stop offset="0"/><stop offset=".25"/><stop offset=".5"/><stop offset=".75"/><stop offset="1"/></linearGradient></defs><path d="M1 1 A 11 19 0 0 1 1 39"/></svg><span class="fr-dt"><small>ΔT</small><b>{T.num(7.0)}°</b></span><small>{T("tile.return")}</small><b>{T.num(29.0)}°</b></span>
             <svg class="ht-viz" viewBox="0 0 240 64" preserveAspectRatio="none" aria-hidden="true"><path class="a" d="M0,64 L{pts(hf, 240, 64, lo_, hi_).replace(" ", " L")} L240,64Z"/><polyline class="f" points="{pts(hf, 240, 64, lo_, hi_)}"/><polyline class="r" points="{pts(hr, 240, 64, lo_, hi_)}"/></svg>
           </button>'''
-    plan_kwh = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2.1, 3.4, 2.6, 0, 0, 0, 0, 0, 0, 0]
-    bars = '<line class="base" x1="0" y1="63.5" x2="240" y2="63.5"/>' + "".join(f'<rect class="col on" x="{k * 10 + 2}" y="{64 - v / 3.4 * 60}" width="6" height="{v / 3.4 * 60}" rx="3"/>' for k, v in enumerate(plan_kwh) if v)
+    # Næste 24 t fra kl. 14: Odin varmer 15–17 og igen 01–04 (billigst); Touch løfter båndet
+    # 17–01 for et rum, der halter (bund +0,3, top +1,5), og springer kl. 18 over, fordi det er
+    # billigere at varme kl. 15–17, varmetabet medregnet.
+    START = 14
+    plan_kwh = [0, 2.1, 3.4, 2.6, 0, 0, 0, 0, 0, 0, 0, 2.4, 4.2, 4.6, 3.8, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    plan_mode = ["heat"] * 24
+    plan_mode[2] = "dhw"
+    price = [1.62, 1.58, 1.60, 1.71, 2.48, 2.86, 2.74, 2.41, 1.88, 1.66, 1.42, 1.31, 1.18, 1.12, 1.10, 1.14, 1.29, 1.55, 1.92, 2.05, 1.84, 1.69, 1.63, 1.60]
+    band_lo = [21.5] * 24
+    band_hi = [22.5] * 24
+    lift = [0.0] * 24
+    skip = [0] * 24
+    for k in range(3, 11):
+        lift[k], band_lo[k], band_hi[k] = 1.5, 21.8, 24.0
+    skip[4] = 1
+    # Kl. 15–16 løfter Touch kun for vejret (forvarmning før vinden kl. 17–19): blå.
+    pre_only = [0] * 24
+    for k in (1, 2):
+        lift[k], band_lo[k], band_hi[k], pre_only[k] = 1.2, 21.7, 23.7, 1
+    lift[4], band_lo[4], band_hi[4] = 0.0, 21.5, 22.5
+    expected = [22.0, 22.1, 22.3, 22.4, 22.3, 22.2, 22.1, 22.0, 21.9, 21.9, 21.8, 21.8, 22.0, 22.2, 22.3, 22.2, 22.1, 22.0, 21.9, 21.9, 21.8, 21.8, 21.7, 21.7]
+    wind = [6, 7, 9, 11, 12, 12, 11, 10, 9, 8, 7, 6, 6, 5, 5, 5, 4, 4, 5, 6, 6, 7, 7, 6]
+
+    def price_scale(v):
+        lo_, hi_ = min(price), max(price)
+        return 1 + min(4, int((v - lo_) / (hi_ - lo_ + 1e-9) * 5))
+
+    def plan_timeline(mini=False):
+        """Odins plan time for time (DESIGN.md 8, .plan). mini = Hjem-feltets kompakte udgave:
+        kun pris, varme og bånd, ingen rumspor og ingen aflæsning. Alle tekster er HTML."""
+        tag = "span" if mini else "div"   # inde i en <button> må der kun være frasering
+        q = '"'
+        ptop = 3.0
+        cells = "".join(f'<i class="plan-cell" data-scale="{price_scale(v)}" style="--v:{round(v / ptop * 100)}"></i>' for v in price)
+        bars_ = "".join(f'<i class="plan-bar"' + (f' data-mode={q}{plan_mode[k]}{q}' if plan_mode[k] != "heat" else "") + f' style="--v:{round(v / 5 * 100)}"></i>' for k, v in enumerate(plan_kwh))
+        lo_, hi_ = 20.5, 24.5   # temperaturakse mindst 3 °C
+        # Mini: båndet over de nederste 12 %, hvor Odins planlagte varme står som en markering.
+        span_ = 88 if mini else 100
+        y = lambda t: (hi_ - t) / (hi_ - lo_) * span_
+        rects = ""
+        for k in range(24):
+            cls = ("bd pre" if pre_only[k] else "bd lift") if lift[k] else ("bd skip" if skip[k] else "bd")
+            rects += f'<rect class="{cls}" x="{k + .06:.2f}" y="{y(band_hi[k]):.1f}" width=".88" height="{y(band_lo[k]) - y(band_hi[k]):.1f}"/>'
+        exp_pts = " ".join(f"{k},{y(t):.1f} {k + 1},{y(t):.1f}" for k, t in enumerate(expected))
+        band_svg = f'<svg viewBox="0 0 24 100" preserveAspectRatio="none" aria-hidden="true">{rects}<polyline class="exp" points="{exp_pts}"/></svg>'''
+        # Mini: Odins varme pr. time som mærker i båndsporets bund (husvarme solid, varmt vand skraveret).
+        if mini:
+            band_svg += '<span class="plan-marks">' + "".join(
+                f'<i data-mode="{plan_mode[k]}"></i>' if plan_kwh[k] > 0 else '<i></i>' for k in range(24)) + '</span>'
+        wcells = "".join(f'<i class="plan-cell" style="--v:{round(w / 15 * 100)}"></i>' for w in wind)
+        odin = ("" if mini else f'<{tag} class="plan-lab plan-lab--y"><b>Odin</b><span class="plan-y"><i>5 kWh</i><i>{T.num(2.5)}</i><i>0</i></span></{tag}>'
+                                f'<{tag} class="plan-lane plan-lane--odin">{bars_}</{tag}>')
+        rows = (f'<{tag} class="plan-lab plan-lab--y plan-lab--sm"><b>{T("plan.lanePrice")}</b><span class="plan-y"><i>{T.num(ptop, 0)}</i><i>0</i></span></{tag}>'
+                f'<{tag} class="plan-lane plan-lane--price">{cells}</{tag}>'
+                + odin +
+                f'<{tag} class="plan-lab plan-lab--y plan-lab--band"><b>{T("plan.laneBand")}</b><span class="plan-y"><i>{T.num(hi_, 0)}°</i><i>{T.num(lo_, 0)}°</i></span></{tag}>'
+                f'<{tag} class="plan-lane plan-lane--band">{band_svg}</{tag}>')
+        if not mini:
+            rows += (f'<div class="plan-lab plan-lab--y plan-lab--sm"><b>{T("plan.laneWind")}</b><span class="plan-y"><i>15</i><i>0</i></span></div>'
+                     f'<div class="plan-lane plan-lane--wind">{wcells}</div>')
+            for r in ROOMS:
+                if r[0] in ("r05", "r06"):
+                    seg_ = f'<span class="plan-seg" data-kind="charge" style="--a:3;--b:7" title="{T("plan.charge")}"></span>'
+                elif r[0] == "r09":
+                    seg_ = f'<span class="plan-seg" data-kind="charge" data-insufficient style="--a:3;--b:8" title="{T("plan.insufficient")}"></span>'
+                elif r[0] in ("r01", "r07"):
+                    seg_ = f'<span class="plan-seg" data-kind="preload" style="--a:1;--b:5" title="{T("plan.preload")}"></span>'
+                else:
+                    continue
+                rows += f'<span class="plan-lab">{r[1]}</span><div class="plan-lane">{seg_}</div>'
+        xs = ""
+        for k in range(24):
+            h = (START + k) % 24
+            # Hver 6. time altid, ellers efter bredden; timen lige efter «Nu» kun i brede planer.
+            cls = "" if k == 0 else "h1" if k == 1 else "" if h % 6 == 0 else "h3" if h % 3 == 0 else "h2" if h % 2 == 0 else "h1"
+            text = T("plan.now") if k == 0 else f"{h:02d}"
+            xs += f'<span' + (f' class={q}{cls}{q}' if cls else "") + f' style="left:{k / 24 * 100:.2f}%">{text}</span>'
+        if mini:
+            mleg = "".join(f'<span><i class="{c}"></i>{T(k)}</span>' for c, k in (
+                ("lprice", "plan.lPrice"), ("lheatmark", "plan.lHeatMark"), ("ldhw", "plan.lDhw"), ("lband", "plan.lBandShort"), ("lbandlift", "plan.lLiftShort"), ("lbandpre", "plan.lPreShort"), ("lskip", "plan.lSkipShort")))
+            return (f'<span class="plan plan--mini ht-plan" aria-hidden="true" style="--now:.4">{rows}<span></span><span class="plan-x">{xs}</span></span>'
+                    f'<span class="fc-legend ht-legend" aria-hidden="true">{mleg}</span>')
+        legend = "".join(f'<span><i class="{c}"></i>{T(k)}</span>' for c, k in (
+            ("lprice", "plan.lPrice"), ("lbar", "plan.lHeat"), ("ldhw", "plan.lDhw"), ("lband", "plan.lBand"),
+            ("lbandpre", "plan.lPre"), ("lbandlift", "plan.lLift"), ("lskip", "plan.lSkip"), ("lwind", "plan.lWind"),
+            ("lpre", "plan.preload"), ("lch", "plan.charge"), ("lins", "plan.insufficient")))
+        return (f'<div class="plan" role="img" aria-label="{T("plan.aria")}" data-readout style="--now:.4">{rows}<span></span>'
+                f'<div class="plan-x">{xs}</div><div class="bars-readout" aria-live="polite" hidden></div></div>'
+                f'<div class="fc-legend" aria-hidden="true">{legend}</div>')
+
     tile_plan = f'''
-          <button class="home-tile" type="button" popovertarget="sheet-plan">
+          <button class="home-tile wide" type="button" popovertarget="sheet-plan">
             <span class="chip-icon" data-tone="violet" aria-hidden="true">{I["plan"]}</span><b>{T("tile.plan")}</b>
             <span class="ht-status">{T("tile.planStatus")}</span>
-            <span class="ht-val">{T("tile.planVal", a="06", b="09")} <small>≈ {T.num(8.1)} kWh</small></span>
-            <span class="ht-price">{T("tile.price", p=T.num(1.82, 2), unit=T("price.unit"))} <span class="scale-chip" data-scale="2">{T("price.scale.2")}</span></span>
-            <svg class="ht-viz" viewBox="0 0 240 64" preserveAspectRatio="none" aria-hidden="true">{bars}</svg>
+            <span class="ht-val"><small>{T("tile.planNext")}</small> {T("tile.planVal", a="15", b="18")} <small>≈ {T.num(8.1)} kWh</small></span>
+            <span class="ht-price">{T("tile.price", p=T.num(1.62, 2), unit=T("price.unit"))} <span class="scale-chip" data-scale="2">{T("price.scale.2")}</span></span>
+            {plan_timeline(mini=True)}
           </button>'''
     wx = series(7, 24, 9.5, 3.2, .3)
     tile_wx = f'''
@@ -350,15 +446,21 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
     ta = T("climate.targetAria")
 
     def scope_card(m):
-        bars = "".join(f'<i data-state="fault"></i>' if r[7] == "fault" else f'<i data-level="{level(r)}"></i>'
+        bars = "".join(f'<i data-state="fault"></i>' if r[7] == "fault" else f'<i data-level="{level(r)}"{dev_attr(r)}></i>'
                        for r in ROOMS if r[2] == m["n"])
         off = "" if m["online"] else " data-offline"
         note = "" if m["online"] else f' · <span>{T("status.offline")}</span>'
         return (f'<button class="scope" type="button" popovertarget="sheet-m{m["n"]}"{off}><small>M{m["n"]}{note}</small><b>{m["name"]}</b>'
                 f'<span class="mini" aria-hidden="true">{bars}</span></button>')
+    hd = HOUSE_TEMP - HOUSE_TARGET
+    hsign = "+" if hd > 0.05 else "−" if hd < -0.05 else "±"
+    house_card = (f'<button class="scope scope--house" type="button" popovertarget="sheet-house" aria-current="page">'
+                  f'<small>{T("scope.house")}</small><b>{T.num(HOUSE_TEMP)}° <span class="scope-tgt">{T("scope.target", t=T.num(HOUSE_TARGET))}</span></b>'
+                  f'<span class="tile-dev" data-dev="{dev_step(hd)}">{hsign}{T.num(abs(hd))}°</span></button>')
+    outside_card = (f'<div class="scope scope--fact"><small>{T("thermo.outsideLabel")}</small><b>{T.num(8.4)}°</b>'
+                    f'<span class="chip-icon" data-tone="info" aria-hidden="true">{I["outside"]}</span></div>')
     scopes = (f'<div class="home-scopes" role="group" aria-label="{T("scopes.aria")}">'
-              f'<div class="scope" aria-current="page"><small>{T("scope.house")}</small><b>{T.num(HOUSE_TEMP)}°</b></div>'
-              + "".join(scope_card(m) for m in MANIFOLDS) + '</div>')
+              + house_card + outside_card + "".join(scope_card(m) for m in MANIFOLDS) + '</div>')
     home = f'''
       <section class="view" id="v-home-house" aria-labelledby="h-home">
         {alerts}
@@ -370,27 +472,8 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             <h2 id="h-home">{T("home.headline")} <span class="sub">{T("home.headline2")}</span></h2>
             <p>{T("home.sentence", d=T.num(HOUSE_TEMP - HOUSE_TARGET), n=calling)}</p>
           </div>
-          <form class="thermo" data-save="house-target">
-            <dl class="thermo-facts">
-              <div><dt><span class="chip-icon" aria-hidden="true">{I["house"]}</span><span>{T("thermo.house")}</span></dt><dd>{T.num(HOUSE_TEMP)}°</dd></div>
-              <div><dt><span class="chip-icon" data-tone="info" aria-hidden="true">{I["outside"]}</span><span>{T("thermo.outsideLabel")}</span></dt><dd>{T.num(8.4)}°</dd></div>
-            </dl>
-            <div class="thermo-ring" style="--v:{v};--now:{now}" data-min="15" data-max="25">
-              <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="42" pathLength="100"/><circle class="arc" cx="50" cy="50" r="42" pathLength="100"/><line class="now" x1="84" y1="50" x2="99.4" y2="50"/><circle class="knob" cx="50" cy="50" r="42" pathLength="100"/></svg>
-              <div class="thermo-val">
-                <small>{T("climate.target")}</small>
-                <label class="thermo-target"><input type="text" inputmode="decimal" id="house_target" name="house_target" value="{T.num(HOUSE_TARGET)}" data-min="5" data-max="30" data-step-size="0.5" autocomplete="off" aria-label="{ta}"><span class="unit" aria-hidden="true">°</span></label>
-              </div>
-              <div class="thermo-steps">
-                <button type="button" data-step="-1" aria-label="{T("common.decrease", x=ta)}">−</button>
-                <button type="button" data-step="1" aria-label="{T("common.increase", x=ta)}">+</button>
-              </div>
-            </div>
-            <p class="autosave" aria-live="polite"></p>
-          </form>
         </section>
-        <header class="home-head"><small>{T("home.nowEyebrow")}</small><h3>{T("home.nowTitle")}</h3></header>
-        <div class="home-tiles">{tile_heat}{tile_plan}{tile_wx}{tile_pump}</div>
+        <div class="home-tiles">{tile_heat}{tile_wx}{tile_pump}{tile_plan}</div>
         {heatmap}
       </section>'''
 
@@ -440,36 +523,43 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
           <p class="note">{T("heat.connOnSystem")}</p>
           {savebar("heat-behavior")}
         </form>'''
+    # ---- Huset: målet indstilles her (ringen, autogem); Hjem viser det kun i Hus-kortet.
+    house_thermo_html = f'''          <form class="thermo" data-save="house-target">
+            <dl class="thermo-facts">
+              <div><dt><span class="chip-icon" aria-hidden="true">{I["house"]}</span><span>{T("thermo.house")}</span></dt><dd>{T.num(HOUSE_TEMP)}°</dd></div>
+              <div><dt><span class="chip-icon" data-tone="info" aria-hidden="true">{I["outside"]}</span><span>{T("thermo.outsideLabel")}</span></dt><dd>{T.num(8.4)}°</dd></div>
+            </dl>
+            <div class="thermo-ring" style="--v:{v};--now:{now}" data-min="15" data-max="25">
+              <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="42" pathLength="100"/><circle class="arc" cx="50" cy="50" r="42" pathLength="100"/><line class="now" x1="84" y1="50" x2="99.4" y2="50"/><circle class="knob" cx="50" cy="50" r="42" pathLength="100"/></svg>
+              <div class="thermo-val">
+                <small>{T("climate.target")}</small>
+                <label class="thermo-target"><input type="text" inputmode="decimal" id="house_target" name="house_target" value="{T.num(HOUSE_TARGET)}" data-min="5" data-max="30" data-step-size="0.5" autocomplete="off" aria-label="{ta}"><span class="unit" aria-hidden="true">°</span></label>
+              </div>
+              <div class="thermo-steps">
+                <button type="button" data-step="-1" aria-label="{T("common.decrease", x=ta)}">−</button>
+                <button type="button" data-step="1" aria-label="{T("common.increase", x=ta)}">+</button>
+              </div>
+            </div>
+            <p class="autosave" aria-live="polite"></p>
+          </form>
+'''
+    house_over = f'''
+        <div style="display:grid;gap:var(--space-5);justify-items:start">
+          {house_thermo_html}
+          {kv([(T("house.calling"), T("house.callingVal", n=calling)), (T("house.coverage"), "92 %")])}
+        </div>'''
+    sheet_house = sheet("house", T("hash.house"), I["house"], "", T("scope.house"),
+                        T("sheet.houseStatus", t=T.num(HOUSE_TEMP), g=T.num(HOUSE_TARGET)), house_over, heat_hist)
     sheet_heat = sheet("heat", T("hash.heat"), I["heat"], "", T("tile.heat"), T("sheet.heatStatus"), heat_over, heat_hist, heat_set)
 
     # ---- Næste varme (Odins plan) — kun Overblik/Historik
-    def plan_graph():
-        bars_ = "".join(f'<i class="plan-bar" style="--v:{round(v / 3.4 * 100)}"{" data-mode=" + chr(34) + "dhw" + chr(34) if k == 15 else ""}></i>' for k, v in enumerate(plan_kwh))
-        lanes = ""
-        for r in ROOMS:
-            if r[0] in ("r05", "r06"):
-                seg_ = f'<span class="plan-seg" data-kind="charge" style="--a:3;--b:7" title="{T("plan.charge")}"></span>'
-            elif r[0] == "r09":
-                seg_ = f'<span class="plan-seg" data-kind="charge" data-insufficient style="--a:3;--b:8" title="{T("plan.insufficient")}"></span>'
-            elif r[0] in ("r01", "r07"):
-                seg_ = f'<span class="plan-seg" data-kind="preload" style="--a:12;--b:16" title="{T("plan.preload")}"></span>'
-            else:
-                continue
-            lanes += f'<span class="plan-lab">{r[1]}</span><div class="plan-lane">{seg_}</div>'
-        xs = "".join(f'<span{" class=m" if (h % 6) else ""} style="left:{h / 24 * 100:.2f}%">{(14 + h) % 24:02d}</span>' for h in range(0, 24, 3))
-        return f'''<div class="plan" role="img" aria-label="{T("plan.aria")}">
-          <div class="plan-lab plan-lab--y"><b>Odin</b><span class="plan-y"><i>3</i><i>0</i></span></div>
-          <div class="plan-lane plan-lane--odin">{bars_}<span class="plan-lift" style="--a:13;--b:19"></span></div>
-          {lanes}
-          <div class="plan-x">{xs}</div></div>
-        <div class="fc-legend" aria-hidden="true"><span><i class="lbar"></i>{T("plan.lHeat")}</span><span><i class="ldhw"></i>{T("plan.lDhw")}</span><span><i class="lleg"></i>{T("plan.lLeg")}</span><span><i class="llift"></i>{T("plan.lLift")}</span><span><i class="lpre"></i>{T("plan.preload")}</span><span><i class="lch"></i>{T("plan.charge")}</span><span><i class="lins"></i>{T("plan.insufficient")}</span></div>'''
     plan_over = f'''
         <dl class="metrics">
-          {metric(T("plan.next"), T("tile.planVal", a="06", b="09"), "")}
+          {metric(T("plan.next"), T("tile.planVal", a="15", b="18"), "")}
           {metric(T("plan.energy"), T.num(8.1), "kWh")}
           {metric(T("plan.priceNow"), T.num(1.82, 2), T("price.unit"))}
         </dl>
-        {plan_graph()}'''
+        {plan_timeline()}'''
     pbars = "".join(f'<div class="col"><i class="plan" style="--plan:{p}"></i><i class="act" style="--act:{a}"></i></div>' for p, a in ((40, 32), (55, 48), (70, 61), (50, 44), (35, 30), (45, 52), (30, 28), (20, 22)))
     plan_hist = f'''<div class="sub"><h4>{T("plan.vsActual")}</h4><div class="bars" style="--bars-n:8"><div class="bars-plot" role="img" aria-label="{T("plan.vsActualAria")}">{pbars}</div>
         <div class="bars-legend"><span><i class="lp"></i>{T("plan.planned")}</span><span><i class="la"></i>{T("plan.actual")}</span></div></div></div>'''
@@ -573,7 +663,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         </dl>
         <div class="bar" style="--v:{0 if level(r) == 0 else valve}%" aria-hidden="true"><i></i></div>
         <div class="sub"><h4>{T("room.loops", m=m["name"])}</h4>
-          {kv([(f"Z{zn}", f'{"—" if nodata else T.num(temp) + " °C"} · {T("room.valveShort", v=0 if level(r) == 0 else valve)}'),
+          {kv([(f"Z{zn}", f'{"—" if nodata else T.num(temp) + " °C"} · {T("room.valveShort", v=0 if level(r) == 0 else valve, mm=T.num(0 if level(r) == 0 else valve / 100 * PIN_MM))}'),
                (T("m.return"), "—" if nodata else f"{T.num(m['ret'] - 1.2)} °C", "c-info"), (T("room.state"), ST[st], "c-bad" if fault else "")])}</div>'''
         hist = (f'<div class="sub" data-empty><h4>{T("trend.title")}</h4><p class="empty">{T("room.noHistory")}</p></div>' if nodata else
                 f'''<div class="sub trend-wrap"><h4>{T("trend.title")} <span class="legend"><i class="lt"></i>{T("legend.temp")}<i class="lg"></i>{T("legend.target")}</span></h4>
@@ -597,7 +687,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         </form>'''
         return sheet(rid, rid, I["room"], "", name, status, over, hist, settings)
 
-    sheets = sheet_heat + sheet_plan + sheet_wx + sheet_pump + "".join(manifold_sheet(m) for m in MANIFOLDS) + "".join(room_sheet(r) for r in ROOMS)
+    sheets = sheet_house + sheet_heat + sheet_plan + sheet_wx + sheet_pump + "".join(manifold_sheet(m) for m in MANIFOLDS) + "".join(room_sheet(r) for r in ROOMS)
 
     # ================================================================ SYSTEM
     def syscat(cat, title, body, badge=""):
@@ -841,6 +931,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         <label for="m-sys">{I_SYS}{T("nav.system")}</label>
       </nav>
       <div class="tools">
+        <span class="badge hot activity" role="status"><span>{T("activity.heating")}</span></span>
         {langnav}
         <label class="icon-btn theme-btn" for="theme" title="{T("theme.toggle")}">
           <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg>

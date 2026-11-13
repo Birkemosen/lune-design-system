@@ -143,7 +143,7 @@
             <div class="metric"><dt>ΔT</dt><dd data-bind="manifold.dt">4.4 <small>K</small></dd></div>
             <div class="metric"><dt>Total opening</dt><dd data-bind="manifold.opening">32 <small>%</small></dd></div>
           </dl>
-          <div class="bar" style="--v:32%" role="meter" aria-valuenow="32" aria-valuemin="0" aria-valuemax="100" aria-label="Total valve opening"><i></i></div>
+          <div class="bar" style="--v:32%" role="meter" aria-valuenow="32" aria-valuemin="0" aria-valuemax="100" aria-label="Total opening of the loops"><i></i></div>
           <div class="sub trend-wrap">
             <h4>Last 24 hours <span class="legend"><i class="lf"></i>Supply<i class="lr"></i>Return</span></h4>
             <svg class="trend" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="Supply and return, last 24 hours" data-bind-trend="manifold"><polygon class="dt" points="0.0,37.3 5.1,37.1 10.2,36.0 15.3,37.3 20.4,37.5 25.5,35.0 30.6,33.5 35.7,33.1 40.9,32.7 46.0,32.9 51.1,32.4 56.2,31.8 61.3,32.9 66.4,31.7 71.5,31.4 76.6,31.1 81.7,32.0 86.8,32.6 91.9,31.4 97.0,33.3 102.1,31.7 107.2,31.6 112.3,32.0 117.4,33.0 122.6,29.1 127.7,25.7 132.8,22.3 137.9,20.3 143.0,18.0 148.1,16.0 153.2,15.1 158.3,13.9 163.4,15.0 168.5,13.8 173.6,15.6 178.7,15.9 183.8,16.6 188.9,14.9 194.0,14.6 199.1,14.0 204.3,16.5 209.4,20.0 214.5,23.4 219.6,25.2 224.7,28.0 229.8,28.8 234.9,31.5 240.0,32.6 240.0,58.3 234.9,59.2 229.8,60.1 224.7,59.0 219.6,58.4 214.5,56.4 209.4,54.2 204.3,54.2 199.1,54.1 194.0,54.0 188.9,53.1 183.8,51.9 178.7,52.6 173.6,51.6 168.5,52.3 163.4,53.8 158.3,52.9 153.2,53.2 148.1,52.6 143.0,52.9 137.9,54.4 132.8,53.9 127.7,55.8 122.6,58.0 117.4,60.7 112.3,61.1 107.2,60.9 102.1,60.5 97.0,60.3 91.9,59.5 86.8,58.0 81.7,58.8 76.6,59.3 71.5,60.4 66.4,61.5 61.3,61.8 56.2,60.7 51.1,61.1 46.0,59.9 40.9,60.5 35.7,61.7 30.6,61.0 25.5,61.1 20.4,61.2 15.3,60.6 10.2,61.7 5.1,60.8 0.0,61.2"/><polyline class="f" points="0.0,37.3 5.1,37.1 10.2,36.0 15.3,37.3 20.4,37.5 25.5,35.0 30.6,33.5 35.7,33.1 40.9,32.7 46.0,32.9 51.1,32.4 56.2,31.8 61.3,32.9 66.4,31.7 71.5,31.4 76.6,31.1 81.7,32.0 86.8,32.6 91.9,31.4 97.0,33.3 102.1,31.7 107.2,31.6 112.3,32.0 117.4,33.0 122.6,29.1 127.7,25.7 132.8,22.3 137.9,20.3 143.0,18.0 148.1,16.0 153.2,15.1 158.3,13.9 163.4,15.0 168.5,13.8 173.6,15.6 178.7,15.9 183.8,16.6 188.9,14.9 194.0,14.6 199.1,14.0 204.3,16.5 209.4,20.0 214.5,23.4 219.6,25.2 224.7,28.0 229.8,28.8 234.9,31.5 240.0,32.6"/><polyline class="r" points="0.0,61.2 5.1,60.8 10.2,61.7 15.3,60.6 20.4,61.2 25.5,61.1 30.6,61.0 35.7,61.7 40.9,60.5 46.0,59.9 51.1,61.1 56.2,60.7 61.3,61.8 66.4,61.5 71.5,60.4 76.6,59.3 81.7,58.8 86.8,58.0 91.9,59.5 97.0,60.3 102.1,60.5 107.2,60.9 112.3,61.1 117.4,60.7 122.6,58.0 127.7,55.8 132.8,53.9 137.9,54.4 143.0,52.9 148.1,52.6 153.2,53.2 158.3,52.9 163.4,53.8 168.5,52.3 173.6,51.6 178.7,52.6 183.8,51.9 188.9,53.1 194.0,54.0 199.1,54.1 204.3,54.2 209.4,54.2 214.5,56.4 219.6,58.4 224.7,59.0 229.8,60.1 234.9,59.2 240.0,58.3"/></svg>
@@ -156,7 +156,7 @@
           <header class="panel-head"><h3>Comfort by zone</h3><p>Last 24 hours</p><span class="legend" aria-hidden="true"><i class="lt"></i>Temperature<i class="lg"></i>Target<i class="lh"></i>Heating</span></header>
           <div class="zcards">
             <button class="zcard" type="button" popovertarget="sheet-z1" data-state="calling">
-              <span class="zcard-head"><span class="id">Z1</span><span class="name">Josephine</span><span class="zcard-open">62 % open</span></span>
+              <span class="zcard-head"><span class="id">Z1</span><span class="name">Josephine</span><span class="zcard-open">open 62 % · return 29.1°</span></span>
               <span class="val"><b>21.4°</b> / 22.0°</span>
               <span class="zc mini" aria-hidden="true">
                 <span class="zc-y"><span>23°</span><span>21.5°</span><span>20°</span></span>
@@ -166,7 +166,7 @@
               <span class="empty">History appears about 10 minutes after a restart.</span>
             </button>
             <button class="zcard" type="button" popovertarget="sheet-z2" data-state="idle">
-              <span class="zcard-head"><span class="id">Z2</span><span class="name">Laura</span><span class="zcard-open">18 % open</span></span>
+              <span class="zcard-head"><span class="id">Z2</span><span class="name">Laura</span><span class="zcard-open">open 18 % · return 28.2°</span></span>
               <span class="val"><b>20.8°</b> / 21.0°</span>
               <span class="zc mini" aria-hidden="true">
                 <span class="zc-y"><span>22°</span><span>20.5°</span><span>19°</span></span>
@@ -176,7 +176,7 @@
               <span class="empty">History appears about 10 minutes after a restart.</span>
             </button>
             <button class="zcard" type="button" popovertarget="sheet-z3" data-state="idle">
-              <span class="zcard-head"><span class="id">Z3</span><span class="name">Toilet</span><span class="zcard-open">6 % open</span></span>
+              <span class="zcard-head"><span class="id">Z3</span><span class="name">Toilet</span><span class="zcard-open">open 6 % · return 28.9°</span></span>
               <span class="val"><b>22.6°</b> / 22.0°</span>
               <span class="zc mini" aria-hidden="true">
                 <span class="zc-y"><span>23°</span><span>21.5°</span><span>20°</span></span>
@@ -186,7 +186,7 @@
               <span class="empty">History appears about 10 minutes after a restart.</span>
             </button>
             <button class="zcard" type="button" popovertarget="sheet-z4" data-state="calling">
-              <span class="zcard-head"><span class="id">Z4–5</span><span class="name">Stue rum 1</span><span class="zcard-open">54 % open</span></span>
+              <span class="zcard-head"><span class="id">Z4–5</span><span class="name">Stue rum 1</span><span class="zcard-open">open 54 % · return 28.4°</span></span>
               <span class="val"><b>21.1°</b> / 21.5°</span>
               <span class="zc mini" aria-hidden="true">
                 <span class="zc-y"><span>22°</span><span>20.5°</span><span>19°</span></span>
@@ -196,7 +196,7 @@
               <span class="empty">History appears about 10 minutes after a restart.</span>
             </button>
             <button class="zcard" type="button" popovertarget="sheet-z5" data-state="calling">
-              <span class="zcard-head"><span class="id">Z5</span><span class="name">Stue rum 2</span><span class="zcard-open">54 % open</span></span>
+              <span class="zcard-head"><span class="id">Z5</span><span class="name">Stue rum 2</span><span class="zcard-open">open 54 % · return 28.5°</span></span>
               <span class="val"><b>21.0°</b> / 21.5°</span>
               <span class="zc mini" aria-hidden="true">
                 <span class="zc-y"><span>22°</span><span>20.5°</span><span>19°</span></span>
@@ -245,21 +245,20 @@
       </section>
       <section class="view" id="v-sys" aria-labelledby="h-sys">
         <h2 class="sr-only" id="h-sys">System</h2>
-        <input class="state" type="radio" name="syscat" id="c-none" checked aria-label="Categories"><input class="state" type="radio" name="syscat" id="c-device" data-hash="device" aria-label="Device"><input class="state" type="radio" name="syscat" id="c-manifold" data-hash="manifold" aria-label="Manifold and motors"><input class="state" type="radio" name="syscat" id="c-connections" data-hash="connections" aria-label="Connections"><input class="state" type="radio" name="syscat" id="c-firmware" data-hash="firmware" aria-label="Firmware and backup"><input class="state" type="radio" name="syscat" id="c-service" data-hash="service" aria-label="Service">
+        <input class="state" type="radio" name="syscat" id="c-none" checked aria-label="Categories"><input class="state" type="radio" name="syscat" id="c-device" data-hash="device" aria-label="Device"><input class="state" type="radio" name="syscat" id="c-motors" data-hash="motors" aria-label="Motors"><input class="state" type="radio" name="syscat" id="c-connections" data-hash="connections" aria-label="Connections"><input class="state" type="radio" name="syscat" id="c-firmware" data-hash="firmware" aria-label="Firmware and backup"><input class="state" type="radio" name="syscat" id="c-service" data-hash="service" aria-label="Service">
         <div class="sys">
-          <nav class="sys-nav" aria-label="Categories"><label for="c-device"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"/></svg>Device</label><label for="c-manifold"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>Manifold and motors</label><label for="c-connections"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 15l6-6M7 13l-2 2a3 3 0 0 0 4 4l2-2M17 11l2-2a3 3 0 0 0-4-4l-2 2"/></svg>Connections</label><label for="c-firmware"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10M8 10l4 4 4-4M5 19h14"/></svg>Firmware and backup</label><label for="c-service"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6a4 4 0 0 0-5 5l-5 5 3 3 5-5a4 4 0 0 0 5-5l-2 2-3-3z"/></svg>Service</label></nav>
+          <nav class="sys-nav" aria-label="Categories"><label for="c-device"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9H4z"/></svg>Device</label><label for="c-motors"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>Motors</label><label for="c-connections"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 15l6-6M7 13l-2 2a3 3 0 0 0 4 4l2-2M17 11l2-2a3 3 0 0 0-4-4l-2 2"/></svg>Connections</label><label for="c-firmware"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v10M8 10l4 4 4-4M5 19h14"/></svg>Firmware and backup</label><label for="c-service"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6a4 4 0 0 0-5 5l-5 5 3 3 5-5a4 4 0 0 0 5-5l-2 2-3-3z"/></svg>Service</label></nav>
           <div class="sys-main"><section class="sys-cat" data-cat="device" aria-labelledby="h-c-device"><label class="sys-back" for="c-none">System</label><header><div><small>System</small><h2 id="h-c-device">Device</h2></div></header>
       <form data-save="device">
         <section class="setting-group"><h4>Identity</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="device_name">Name</label></div><div class="setting-control"><input class="input w-sm" id="device_name" name="device_name" value="Stueetage" maxlength="24"></div></div></div></section>
         <section class="setting-group"><h4>Location</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="fc_lat">Latitude</label></div><div class="setting-control"><input class="input w-sm" id="fc_lat" name="fc_lat" type="number" inputmode="decimal" step="0.0001" min="-90" max="90" value="55.2700"></div></div><div class="setting"><div class="setting-label"><label for="fc_lon">Longitude</label></div><div class="setting-control"><input class="input w-sm" id="fc_lon" name="fc_lon" type="number" inputmode="decimal" step="0.0001" min="-180" max="180" value="9.9000"></div></div></div><p class="note">Used for the weather forecast.</p></section>
         <section class="setting-group"><h4>BLE clock</h4><div class="setting-list"><label class="setting switch"><span class="setting-label"><b>Broadcast time to BLE sensors</b><small>Shelly BLU H&T shows the time</small></span><input type="checkbox" role="switch" name="ble_clock" checked></label></div></section>
         <footer class="savebar"><span class="save-status" id="ss-device" aria-live="polite"></span><button type="reset" class="btn">Undo</button><button class="btn primary" type="submit">Save</button></footer>
-      </form></section><section class="sys-cat" data-cat="manifold" aria-labelledby="h-c-manifold"><label class="sys-back" for="c-none">System</label><header><div><small>System</small><h2 id="h-c-manifold">Manifold and motors</h2></div></header>
-      <form data-save="manifold">
-        <section class="setting-group"><h4>Manifold</h4><div class="setting-list"><div class="setting"><div class="setting-label"><span>Valve type</span></div><div class="setting-control"><div class="seg" role="radiogroup" aria-label="Valve type"><label><input type="radio" name="manifold_type" value="no"><span>Normally open</span></label><label><input type="radio" name="manifold_type" value="nc" checked><span>Normally closed</span></label></div></div></div><div class="setting"><div class="setting-label"><label for="probe_flow">Supply probe</label></div><div class="setting-control"><select class="select" id="probe_flow" name="probe_flow"><option value="1">Probe 1</option><option value="2">Probe 2</option><option value="3">Probe 3</option><option value="4">Probe 4</option><option value="5">Probe 5</option><option value="6">Probe 6</option><option value="7" selected>Probe 7</option><option value="8">Probe 8</option></select></div></div><div class="setting"><div class="setting-label"><label for="probe_return">Return probe</label></div><div class="setting-control"><select class="select" id="probe_return" name="probe_return"><option value="1">Probe 1</option><option value="2">Probe 2</option><option value="3">Probe 3</option><option value="4">Probe 4</option><option value="5">Probe 5</option><option value="6">Probe 6</option><option value="7">Probe 7</option><option value="8" selected>Probe 8</option></select></div></div></div></section>
+      </form></section><section class="sys-cat" data-cat="motors" aria-labelledby="h-c-motors"><label class="sys-back" for="c-none">System</label><header><div><small>System</small><h2 id="h-c-motors">Motors</h2></div></header>
+      <form data-save="motors">
         <section class="setting-group"><h4>Motors</h4><div class="setting-list gated"><label class="setting switch"><span class="setting-label"><b>Motor drivers</b><small>Turn off to disconnect all 6</small></span><input type="checkbox" role="switch" name="motor_drivers" checked></label><div class="gated-body"><div class="setting"><div class="setting-label"><label for="motor_type">Motor type</label></div><div class="setting-control"><select class="select" id="motor_type" name="motor_type"><option>Generic</option><option selected>HmIP VdMot</option></select></div></div><div class="setting"><div class="setting-label"><label for="m_runtime">Max. run time</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease max. run time">−</button><span class="value"><input type="number" inputmode="decimal" id="m_runtime" name="m_runtime" value="45" min="10" max="120" step="5"><span class="unit">s</span></span><button type="button" data-step="1" aria-label="Increase max. run time">+</button></div></div></div></div></div></section>
         <section class="setting-group"><h4>Advanced</h4><div class="setting-list"><details class="subpage"><summary class="setting"><span class="sub-back">Back</span><span class="setting-label"><span>Close end stop</span></span><span class="setting-control"><span class="muted">180 mA</span></span></summary><div class="subpage-body"><section class="setting-group"><h4>Close end stop</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="m_cthr">Threshold</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease threshold">−</button><span class="value"><input type="number" inputmode="decimal" id="m_cthr" name="m_cthr" value="180" min="50" max="500" step="10"><span class="unit">mA</span></span><button type="button" data-step="1" aria-label="Increase threshold">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="m_cslope">Slope</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease slope">−</button><span class="value"><input type="number" inputmode="decimal" id="m_cslope" name="m_cslope" value="12" min="1" max="50" step="1"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Increase slope">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="m_cfloor">Slope floor</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease slope floor">−</button><span class="value"><input type="number" inputmode="decimal" id="m_cfloor" name="m_cfloor" value="4" min="0" max="20" step="1"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Increase slope floor">+</button></div></div></div></div></section></div></details><details class="subpage"><summary class="setting"><span class="sub-back">Back</span><span class="setting-label"><span>Open end stop</span></span><span class="setting-control"><span class="muted">160 mA</span></span></summary><div class="subpage-body"><section class="setting-group"><h4>Open end stop</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="m_othr">Threshold</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease threshold">−</button><span class="value"><input type="number" inputmode="decimal" id="m_othr" name="m_othr" value="160" min="50" max="500" step="10"><span class="unit">mA</span></span><button type="button" data-step="1" aria-label="Increase threshold">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="m_oslope">Slope</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease slope">−</button><span class="value"><input type="number" inputmode="decimal" id="m_oslope" name="m_oslope" value="10" min="1" max="50" step="1"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Increase slope">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="m_ofloor">Slope floor</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease slope floor">−</button><span class="value"><input type="number" inputmode="decimal" id="m_ofloor" name="m_ofloor" value="4" min="0" max="20" step="1"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Increase slope floor">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="m_ripple">Ripple limit</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease ripple limit">−</button><span class="value"><input type="number" inputmode="decimal" id="m_ripple" name="m_ripple" value="600" min="100" max="2000" step="50"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Increase ripple limit">+</button></div></div></div></div></section></div></details><details class="subpage"><summary class="setting"><span class="sub-back">Back</span><span class="setting-label"><span>Relearning</span></span><span class="setting-control"><span class="muted">after 200 moves</span></span></summary><div class="subpage-body"><section class="setting-group"><h4>Relearning</h4><div class="setting-list"><div class="setting"><div class="setting-label"><label for="m_relmov">After movements</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease after movements">−</button><span class="value"><input type="number" inputmode="decimal" id="m_relmov" name="m_relmov" value="200" min="10" max="2000" step="10"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Increase after movements">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="m_relh">After hours</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease after hours">−</button><span class="value"><input type="number" inputmode="decimal" id="m_relh" name="m_relh" value="168" min="1" max="720" step="1"><span class="unit">h</span></span><button type="button" data-step="1" aria-label="Increase after hours">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="m_minsamp">Min. samples</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease min. samples">−</button><span class="value"><input type="number" inputmode="decimal" id="m_minsamp" name="m_minsamp" value="3" min="1" max="20" step="1"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Increase min. samples">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="m_maxdev">Max. deviation</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease max. deviation">−</button><span class="value"><input type="number" inputmode="decimal" id="m_maxdev" name="m_maxdev" value="0.15" min="0.01" max="1" step="0.01"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Increase max. deviation">+</button></div></div></div></div></section></div></details></div><p class="note">Starting values used before a motor has learned its actuator. Learned per-zone factors override them.</p></section>
-        <footer class="savebar"><span class="save-status" id="ss-manifold" aria-live="polite"></span><button type="reset" class="btn">Undo</button><button class="btn primary" type="submit">Save</button></footer>
+        <footer class="savebar"><span class="save-status" id="ss-motors" aria-live="polite"></span><button type="reset" class="btn">Undo</button><button class="btn primary" type="submit">Save</button></footer>
       </form></section><section class="sys-cat" data-cat="connections" aria-labelledby="h-c-connections"><label class="sys-back" for="c-none">System</label><header><div><small>System</small><h2 id="h-c-connections">Connections</h2></div></header>
       <form data-save="connections" data-state="approved">
         <section class="setting-group"><h4>Lune Touch</h4><div class="setting-list"><div class="setting"><div class="setting-label"><span>Status</span></div><div class="setting-control"><span class="badge ok">Approved</span></div></div><div class="setting"><div class="setting-label"><span>Provides</span></div><div class="setting-control"><span>Weather preload · targets · absorption</span></div></div><div class="setting"><div class="setting-label"><span>Address</span></div><div class="setting-control"><span class="mono">192.168.20.186</span></div></div></div><p class="note" data-show-when="unpaired">Touch has found this V6. Approve to give it control.</p></section>
@@ -304,12 +303,18 @@
           <div class="metric"><dt>ΔT</dt><dd data-bind="manifold.dt">4.4 <small>K</small></dd></div>
           <div class="metric"><dt>Total opening</dt><dd data-bind="manifold.opening">32 <small>%</small></dd></div>
         </dl>
-        <div class="bar" style="--v:32%" role="meter" aria-valuenow="32" aria-valuemin="0" aria-valuemax="100" aria-label="Total valve opening"><i></i></div>
+        <div class="bar" style="--v:32%" role="meter" aria-valuenow="32" aria-valuemin="0" aria-valuemax="100" aria-label="Total opening of the loops"><i></i></div>
         <div class="sub"><h4>Balancing <span class="badge violet">Adaptive</span></h4>
           <div class="table-wrap"><table class="table">
             <thead><tr><th>Zone</th><th class="num">Prior</th><th class="num">Learned</th><th class="num">Effective</th></tr></thead>
             <tbody><tr><td>Z1</td><td class="num">1.00</td><td class="num c-violet">1.08</td><td class="num">1.08</td></tr><tr><td>Z2</td><td class="num">0.85</td><td class="num c-violet">0.81</td><td class="num">0.81</td></tr><tr><td>Z3</td><td class="num">0.40</td><td class="num c-violet">0.44</td><td class="num">0.44</td></tr><tr><td>Z4–5</td><td class="num">1.00</td><td class="num c-violet">0.97</td><td class="num">0.97</td></tr><tr><td>Z5</td><td class="num">1.00</td><td class="num c-violet">0.97</td><td class="num">0.97</td></tr><tr><td>Z6</td><td class="num">0.85</td><td class="num c-violet">—</td><td class="num">0.85</td></tr></tbody>
-          </table></div></div></section>
+          </table></div></div>
+        <div class="sub"><h4>Live readings</h4>
+          <dl class="metrics">
+            <div class="metric"><dt>Probe 1 <span class="badge">Supply</span></dt><dd>34.2 <small>°C</small></dd></div>
+            <div class="metric"><dt>Probe 2 <span class="badge">Return</span></dt><dd>29.8 <small>°C</small></dd></div>
+            <div class="metric"><dt>Probe 3 <span class="badge">Josephine</span></dt><dd>29.1 <small>°C</small></dd></div><div class="metric"><dt>Probe 4 <span class="badge">Laura</span></dt><dd>28.2 <small>°C</small></dd></div><div class="metric"><dt>Probe 5 <span class="badge">Toilet</span></dt><dd>28.9 <small>°C</small></dd></div><div class="metric"><dt>Probe 6 <span class="badge">Stue rum 1</span></dt><dd>28.4 <small>°C</small></dd></div><div class="metric"><dt>Probe 7 <span class="badge">Stue rum 2</span></dt><dd>28.5 <small>°C</small></dd></div><div class="metric"><dt>Probe 8 <span class="badge">Soveværelse</span></dt><dd>22.1 <small>°C</small></dd></div>
+          </dl></div></section>
       <section class="tab-panel" data-tab="history">
         <div class="sub trend-wrap">
           <h4>Last 24 hours <span class="legend"><i class="lf"></i>Supply<i class="lr"></i>Return</span></h4>
@@ -317,12 +322,14 @@
           <div class="axis" aria-hidden="true"><span>−24 h</span><span>−12 h</span><span>now</span></div>
         </div></section>
       <section class="tab-panel" data-tab="settings">
-        <form data-save="regulation">
-          <section class="setting-group"><h4>Heating mode</h4><div class="setting-list"><div class="setting"><div class="setting-label"><span>Mode</span></div><div class="setting-control"><div class="seg" role="radiogroup" aria-label="Mode"><label><input type="radio" name="heat_mode" value="normal"><span>Normal</span></label><label><input type="radio" name="heat_mode" value="heat_pump" checked><span>Heat pump</span></label></div></div></div><div class="setting"><div class="setting-label"><label for="heat_min_open">Min. total opening</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease min. total opening">−</button><span class="value"><input type="number" inputmode="decimal" id="heat_min_open" name="heat_min_open" value="0" min="0" max="100" step="1"><span class="unit">%</span></span><button type="button" data-step="1" aria-label="Increase min. total opening">+</button></div></div></div></div></section>
+        <form data-save="regulation" data-patch>
+          <section class="setting-group"><h4>Manifold</h4><div class="setting-list"><div class="setting"><div class="setting-label"><span>Valve type</span></div><div class="setting-control"><div class="seg" role="radiogroup" aria-label="Valve type"><label><input type="radio" name="manifold_type" value="no"><span>Normally open</span></label><label><input type="radio" name="manifold_type" value="nc" checked><span>Normally closed</span></label></div></div></div><div class="setting"><div class="setting-label"><label for="probe_flow">Supply probe</label></div><div class="setting-control"><select class="select" id="probe_flow" name="probe_flow"><option value="1" selected>Probe 1</option><option value="2">Probe 2</option><option value="3">Probe 3</option><option value="4">Probe 4</option><option value="5">Probe 5</option><option value="6">Probe 6</option><option value="7">Probe 7</option><option value="8">Probe 8</option></select></div></div><div class="setting"><div class="setting-label"><label for="probe_return">Return probe</label></div><div class="setting-control"><select class="select" id="probe_return" name="probe_return"><option value="1">Probe 1</option><option value="2" selected>Probe 2</option><option value="3">Probe 3</option><option value="4">Probe 4</option><option value="5">Probe 5</option><option value="6">Probe 6</option><option value="7">Probe 7</option><option value="8">Probe 8</option></select></div></div><div class="setting"><div class="setting-label"><span>Probe layout</span></div><div class="setting-control"><div class="seg" role="radiogroup" aria-label="Probe layout"><label><input type="radio" name="return_probe_mode" value="2"><span>2 probes (flow/return)</span></label><label><input type="radio" name="return_probe_mode" value="8" checked><span>8 probes</span></label></div></div></div></div></section>
+          <section class="setting-group"><h4>Heating mode</h4><div class="setting-list"><div class="setting"><div class="setting-label"><span>Mode</span></div><div class="setting-control"><div class="seg" role="radiogroup" aria-label="Mode"><label><input type="radio" name="heat_mode" value="normal"><span>Normal</span></label><label><input type="radio" name="heat_mode" value="heat_pump" checked><span>Heat pump</span></label></div></div></div><div class="setting normal-only"><div class="setting-label"><label for="heat_min_open">Min. total opening</label><small>Normal mode only. In heat pump mode every loop always has flow.</small></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease min. total opening">−</button><span class="value"><input type="number" inputmode="decimal" id="heat_min_open" name="heat_min_open" value="0" min="0" max="100" step="1"><span class="unit">%</span></span><button type="button" data-step="1" aria-label="Increase min. total opening">+</button></div></div></div></div></section>
           <section class="setting-group hp-limits"><h4>Heat pump limits</h4><div class="setting-list">
                  <div class="setting"><div class="setting-label"><label for="hp_demand">Opening when calling</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease opening when calling">−</button><span class="value"><input type="number" inputmode="decimal" id="hp_demand" name="hp_demand" value="80" min="30" max="100" step="1"><span class="unit">%</span></span><button type="button" data-step="1" aria-label="Increase opening when calling">+</button></div></div></div>
                  <div class="setting"><div class="setting-label"><label for="hp_base">Base opening</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease base opening">−</button><span class="value"><input type="number" inputmode="decimal" id="hp_base" name="hp_base" value="60" min="30" max="100" step="1"><span class="unit">%</span></span><button type="button" data-step="1" aria-label="Increase base opening">+</button></div></div></div>
                  <div class="setting"><div class="setting-label"><label for="hp_overheat">Overheat margin</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease overheat margin">−</button><span class="value"><input type="number" inputmode="decimal" id="hp_overheat" name="hp_overheat" value="1.0" min="0.3" max="3.0" step="0.1"><span class="unit">°C</span></span><button type="button" data-step="1" aria-label="Increase overheat margin">+</button></div></div></div>
+                 <div class="setting"><div class="setting-label"><label for="hp_move">Heat moving</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease heat moving">−</button><span class="value"><input type="number" inputmode="decimal" id="hp_move" name="hp_move" value="0.5" min="0" max="3.0" step="0.1"><span class="unit">°C</span></span><button type="button" data-step="1" aria-label="Increase heat moving">+</button></div></div></div>
                  <div class="setting"><div class="setting-label"><label for="hp_trim">Trim floor</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease trim floor">−</button><span class="value"><input type="number" inputmode="decimal" id="hp_trim" name="hp_trim" value="35" min="0" max="100" step="1"><span class="unit">%</span></span><button type="button" data-step="1" aria-label="Increase trim floor">+</button></div></div></div></div></section>
           <section class="setting-group"><h4>Hydraulic balancing</h4><div class="setting-list"><div class="setting"><div class="setting-label"><span>Mode</span></div><div class="setting-control"><div class="seg" role="radiogroup" aria-label="Mode"><label><input type="radio" name="bal_mode" value="static"><span>Static</span></label><label><input type="radio" name="bal_mode" value="adaptive" checked><span>Adaptive</span></label></div></div></div><div class="setting"><div class="setting-label"><label for="bal_interval">Interval</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease interval">−</button><span class="value"><input type="number" inputmode="decimal" id="bal_interval" name="bal_interval" value="300" min="60" max="3600" step="60"><span class="unit">s</span></span><button type="button" data-step="1" aria-label="Increase interval">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="bal_step">Step (k)</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease step (k)">−</button><span class="value"><input type="number" inputmode="decimal" id="bal_step" name="bal_step" value="0.02" min="0.01" max="0.2" step="0.01"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Increase step (k)">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="bal_min">Min. factor</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease min. factor">−</button><span class="value"><input type="number" inputmode="decimal" id="bal_min" name="bal_min" value="0.30" min="0.1" max="1" step="0.05"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Increase min. factor">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="bal_max">Max. factor</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease max. factor">−</button><span class="value"><input type="number" inputmode="decimal" id="bal_max" name="bal_max" value="1.50" min="1" max="3" step="0.05"><span class="unit"></span></span><button type="button" data-step="1" aria-label="Increase max. factor">+</button></div></div></div></div></section>
           <section class="setting-group"><h4>Preheat absorption</h4><div class="setting-list gated"><label class="setting switch"><span class="setting-label"><b>Absorb surplus heat</b><small>Uses the floor as a buffer</small></span><input type="checkbox" role="switch" name="preheat_enabled"></label><div class="gated-body"><div class="setting"><div class="setting-label"><label for="ph_band">Absorb band</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease absorb band">−</button><span class="value"><input type="number" inputmode="decimal" id="ph_band" name="ph_band" value="0.5" min="0.1" max="3" step="0.1"><span class="unit">°C</span></span><button type="button" data-step="1" aria-label="Increase absorb band">+</button></div></div></div><div class="setting"><div class="setting-label"><label for="ph_delta">Detect delta</label></div><div class="setting-control"><div class="stepper"><button type="button" data-step="-1" aria-label="Decrease detect delta">−</button><span class="value"><input type="number" inputmode="decimal" id="ph_delta" name="ph_delta" value="0.3" min="0.1" max="2" step="0.1"><span class="unit">°C</span></span><button type="button" data-step="1" aria-label="Increase detect delta">+</button></div></div></div></div></div></section>
@@ -355,7 +362,7 @@
         </form>
         <p class="msg info"><span><b>Weather preload active:</b> target raised +0.4 °C until 06:00.</span></p>
         <dl class="metrics">
-          <div class="metric"><dt>Opening</dt><dd data-bind="z1.flow">62 <small>%</small></dd></div>
+          <div class="metric"><dt>Opening</dt><dd data-bind="z1.opening">62 <small>% · 1.2 mm</small></dd></div>
           <div class="metric"><dt>Return</dt><dd data-bind="z1.return">29.1 <small>°C</small></dd></div>
         </dl>
         <div class="bar" style="--v:62%" aria-hidden="true"><i></i></div>
@@ -363,7 +370,18 @@
           <div><dt>Motor</dt><dd class="c-ok">Learned</dd></div>
           <div><dt>Weather offset now</dt><dd class="c-info">+0.4 °C</dd></div>
           <div><dt>Temperature from</dt><dd class="c-info">BLE sensor</dd></div>
-        </dl></section>
+        </dl>
+        <div class="sub">
+          <h4>Room physics</h4>
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th></th><th class="num">Calculated</th><th class="num">Learned</th><th class="num">Used</th></tr></thead>
+            <tbody>
+              <tr><td>Heat loss</td><td class="num">8.5 W/K</td><td class="num">9.5 W/K</td><td class="num">9.5 W/K</td></tr>
+              <tr><td>Time constant</td><td class="num">107 h</td><td class="num">—</td><td class="num">96 h</td></tr>
+            </tbody>
+          </table></div>
+          <p class="note">Thermal mass 0.9 kWh/K. Heat loss learned by Lune Touch over 9 days (80 % confidence).</p>
+        </div></section>
       <section class="tab-panel" data-tab="history">
         <section class="sub" data-state="calling" aria-labelledby="zc-h-1">
           <h4 id="zc-h-1">Last 24 hours and 6-hour projection</h4>
@@ -425,7 +443,7 @@
         </form>
         
         <dl class="metrics">
-          <div class="metric"><dt>Opening</dt><dd data-bind="z2.flow">18 <small>%</small></dd></div>
+          <div class="metric"><dt>Opening</dt><dd data-bind="z2.opening">18 <small>% · 0.4 mm</small></dd></div>
           <div class="metric"><dt>Return</dt><dd data-bind="z2.return">28.2 <small>°C</small></dd></div>
         </dl>
         <div class="bar" style="--v:18%" aria-hidden="true"><i></i></div>
@@ -433,7 +451,18 @@
           <div><dt>Motor</dt><dd class="c-ok">Learned</dd></div>
           <div><dt>Weather offset now</dt><dd class="">0.0 °C</dd></div>
           <div><dt>Temperature from</dt><dd class="c-info">BLE sensor</dd></div>
-        </dl></section>
+        </dl>
+        <div class="sub">
+          <h4>Room physics</h4>
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th></th><th class="num">Calculated</th><th class="num">Learned</th><th class="num">Used</th></tr></thead>
+            <tbody>
+              <tr><td>Heat loss</td><td class="num">7.8 W/K</td><td class="num">—</td><td class="num">7.8 W/K</td></tr>
+              <tr><td>Time constant</td><td class="num">107 h</td><td class="num">—</td><td class="num">107 h</td></tr>
+            </tbody>
+          </table></div>
+          <p class="note">Thermal mass 0.8 kWh/K. Heat loss not learned yet: Lune Touch learns it from days of steady running.</p>
+        </div></section>
       <section class="tab-panel" data-tab="history">
         <section class="sub" data-state="idle" aria-labelledby="zc-h-2">
           <h4 id="zc-h-2">Last 24 hours and 6-hour projection</h4>
@@ -495,7 +524,7 @@
         </form>
         
         <dl class="metrics">
-          <div class="metric"><dt>Opening</dt><dd data-bind="z3.flow">6 <small>%</small></dd></div>
+          <div class="metric"><dt>Opening</dt><dd data-bind="z3.opening">6 <small>% · 0.1 mm</small></dd></div>
           <div class="metric"><dt>Return</dt><dd data-bind="z3.return">28.9 <small>°C</small></dd></div>
         </dl>
         <div class="bar" style="--v:6%" aria-hidden="true"><i></i></div>
@@ -503,7 +532,18 @@
           <div><dt>Motor</dt><dd class="c-ok">Learned</dd></div>
           <div><dt>Weather offset now</dt><dd class="">0.0 °C</dd></div>
           <div><dt>Temperature from</dt><dd class="c-info">Local probe</dd></div>
-        </dl></section>
+        </dl>
+        <div class="sub">
+          <h4>Room physics</h4>
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th></th><th class="num">Calculated</th><th class="num">Learned</th><th class="num">Used</th></tr></thead>
+            <tbody>
+              <tr><td>Heat loss</td><td class="num">3.2 W/K</td><td class="num">—</td><td class="num">3.2 W/K</td></tr>
+              <tr><td>Time constant</td><td class="num">107 h</td><td class="num">—</td><td class="num">107 h</td></tr>
+            </tbody>
+          </table></div>
+          <p class="note">Thermal mass 0.3 kWh/K. Heat loss not learned yet: Lune Touch learns it from days of steady running.</p>
+        </div></section>
       <section class="tab-panel" data-tab="history">
         <section class="sub" data-state="idle" aria-labelledby="zc-h-3">
           <h4 id="zc-h-3">Last 24 hours and 6-hour projection</h4>
@@ -565,7 +605,7 @@
         </form>
         
         <dl class="metrics">
-          <div class="metric"><dt>Opening</dt><dd data-bind="z4.flow">54 <small>%</small></dd></div>
+          <div class="metric"><dt>Opening</dt><dd data-bind="z4.opening">54 <small>% · 1.1 mm</small></dd></div>
           <div class="metric"><dt>Return</dt><dd data-bind="z4.return">28.4 <small>°C</small></dd></div>
         </dl>
         <div class="bar" style="--v:54%" aria-hidden="true"><i></i></div>
@@ -573,7 +613,18 @@
           <div><dt>Motor</dt><dd class="c-ok">Learned</dd></div>
           <div><dt>Weather offset now</dt><dd class="">0.0 °C</dd></div>
           <div><dt>Temperature from</dt><dd class="c-info">Local probe</dd></div>
-        </dl></section>
+        </dl>
+        <div class="sub">
+          <h4>Room physics</h4>
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th></th><th class="num">Calculated</th><th class="num">Learned</th><th class="num">Used</th></tr></thead>
+            <tbody>
+              <tr><td>Heat loss</td><td class="num">15.6 W/K</td><td class="num">—</td><td class="num">15.6 W/K</td></tr>
+              <tr><td>Time constant</td><td class="num">107 h</td><td class="num">—</td><td class="num">107 h</td></tr>
+            </tbody>
+          </table></div>
+          <p class="note">Thermal mass 1.7 kWh/K. Heat loss not learned yet: Lune Touch learns it from days of steady running.</p>
+        </div></section>
       <section class="tab-panel" data-tab="history">
         <section class="sub" data-state="calling" aria-labelledby="zc-h-4">
           <h4 id="zc-h-4">Last 24 hours and 6-hour projection</h4>
@@ -635,7 +686,7 @@
         </form>
         <p class="msg info"><span><b>Weather preload active:</b> target raised +0.4 °C until 06:00.</span></p>
         <dl class="metrics">
-          <div class="metric"><dt>Opening</dt><dd data-bind="z5.flow">54 <small>%</small></dd></div>
+          <div class="metric"><dt>Opening</dt><dd data-bind="z5.opening">54 <small>% · 1.1 mm</small></dd></div>
           <div class="metric"><dt>Return</dt><dd data-bind="z5.return">28.5 <small>°C</small></dd></div>
         </dl>
         <div class="bar" style="--v:54%" aria-hidden="true"><i></i></div>
@@ -643,7 +694,18 @@
           <div><dt>Motor</dt><dd class="c-ok">Learned</dd></div>
           <div><dt>Weather offset now</dt><dd class="c-info">+0.4 °C</dd></div>
           <div><dt>Temperature from</dt><dd class="c-info">Local probe</dd></div>
-        </dl></section>
+        </dl>
+        <div class="sub">
+          <h4>Room physics</h4>
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th></th><th class="num">Calculated</th><th class="num">Learned</th><th class="num">Used</th></tr></thead>
+            <tbody>
+              <tr><td>Heat loss</td><td class="num">12.8 W/K</td><td class="num">—</td><td class="num">12.8 W/K</td></tr>
+              <tr><td>Time constant</td><td class="num">107 h</td><td class="num">—</td><td class="num">107 h</td></tr>
+            </tbody>
+          </table></div>
+          <p class="note">Thermal mass 1.4 kWh/K. Heat loss not learned yet: Lune Touch learns it from days of steady running.</p>
+        </div></section>
       <section class="tab-panel" data-tab="history">
         <section class="sub" data-state="calling" aria-labelledby="zc-h-5">
           <h4 id="zc-h-5">Last 24 hours and 6-hour projection</h4>
@@ -713,7 +775,7 @@
         </form>
         
         <dl class="metrics">
-          <div class="metric"><dt>Opening</dt><dd data-bind="z6.flow">0 <small>%</small></dd></div>
+          <div class="metric"><dt>Opening</dt><dd data-bind="z6.opening">0 <small>% · 0.0 mm</small></dd></div>
           <div class="metric"><dt>Return</dt><dd data-bind="z6.return">22.1 <small>°C</small></dd></div>
         </dl>
         <div class="bar" style="--v:0%" aria-hidden="true"><i></i></div>
@@ -721,7 +783,18 @@
           <div><dt>Motor</dt><dd class="c-warn">Needs learning</dd></div>
           <div><dt>Weather offset now</dt><dd class="">0.0 °C</dd></div>
           <div><dt>Temperature from</dt><dd class="c-info">BLE sensor</dd></div>
-        </dl></section>
+        </dl>
+        <div class="sub">
+          <h4>Room physics</h4>
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th></th><th class="num">Calculated</th><th class="num">Learned</th><th class="num">Used</th></tr></thead>
+            <tbody>
+              <tr><td>Heat loss</td><td class="num">9.9 W/K</td><td class="num">—</td><td class="num">9.9 W/K</td></tr>
+              <tr><td>Time constant</td><td class="num">107 h</td><td class="num">—</td><td class="num">107 h</td></tr>
+            </tbody>
+          </table></div>
+          <p class="note">Thermal mass 1.1 kWh/K. Heat loss not learned yet: Lune Touch learns it from days of steady running.</p>
+        </div></section>
       <section class="tab-panel" data-tab="history">
         <section class="sub" data-state="fault" aria-labelledby="zc-h-6">
           <h4 id="zc-h-6">Last 24 hours and 6-hour projection</h4>
