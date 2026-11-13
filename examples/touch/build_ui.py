@@ -363,9 +363,11 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             cls = ("bd pre" if pre_only[k] else "bd lift") if lift[k] else ("bd skip" if skip[k] else "bd")
             rects += f'<rect class="{cls}" x="{k + .06:.2f}" y="{y(band_hi[k]):.1f}" width=".88" height="{y(band_lo[k]) - y(band_hi[k]):.1f}"/>'
         exp_pts = " ".join(f"{k},{y(t):.1f} {k + 1},{y(t):.1f}" for k, t in enumerate(expected))
-        heat = "".join(f'<rect class="ht{" dhw" if plan_mode[k] != "heat" else ""}" x="{k + .06:.2f}" y="92" width=".88" height="8"/>'
-                       for k in range(24) if mini and plan_kwh[k] > 0)
-        band_svg = f'<svg viewBox="0 0 24 100" preserveAspectRatio="none" aria-hidden="true">{rects}{heat}<polyline class="exp" points="{exp_pts}"/></svg>'
+        band_svg = f'<svg viewBox="0 0 24 100" preserveAspectRatio="none" aria-hidden="true">{rects}<polyline class="exp" points="{exp_pts}"/></svg>'''
+        # Mini: Odins varme pr. time som mærker i båndsporets bund (husvarme solid, varmt vand skraveret).
+        if mini:
+            band_svg += '<span class="plan-marks">' + "".join(
+                f'<i data-mode="{plan_mode[k]}"></i>' if plan_kwh[k] > 0 else '<i></i>' for k in range(24)) + '</span>'
         wcells = "".join(f'<i class="plan-cell" style="--v:{round(w / 15 * 100)}"></i>' for w in wind)
         odin = ("" if mini else f'<{tag} class="plan-lab plan-lab--y"><b>Odin</b><span class="plan-y"><i>5 kWh</i><i>{T.num(2.5)}</i><i>0</i></span></{tag}>'
                                 f'<{tag} class="plan-lane plan-lane--odin">{bars_}</{tag}>')
@@ -396,7 +398,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             xs += f'<span' + (f' class={q}{cls}{q}' if cls else "") + f' style="left:{k / 24 * 100:.2f}%">{text}</span>'
         if mini:
             mleg = "".join(f'<span><i class="{c}"></i>{T(k)}</span>' for c, k in (
-                ("lprice", "plan.lPrice"), ("lheatmark", "plan.lHeatMark"), ("lband", "plan.lBandShort"), ("lbandlift", "plan.lLiftShort"), ("lbandpre", "plan.lPreShort")))
+                ("lprice", "plan.lPrice"), ("lheatmark", "plan.lHeatMark"), ("ldhw", "plan.lDhw"), ("lband", "plan.lBandShort"), ("lbandlift", "plan.lLiftShort"), ("lbandpre", "plan.lPreShort")))
             return (f'<span class="plan plan--mini ht-plan" aria-hidden="true" style="--now:.4">{rows}<span></span><span class="plan-x">{xs}</span></span>'
                     f'<span class="fc-legend ht-legend" aria-hidden="true">{mleg}</span>')
         legend = "".join(f'<span><i class="{c}"></i>{T(k)}</span>' for c, k in (
