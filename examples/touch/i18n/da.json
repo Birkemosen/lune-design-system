@@ -429,5 +429,9 @@
   "plan.lPrice": "Elpris (billig → dyr)",
   "plan.lBand": "Komfortbånd og forventet temperatur",
   "plan.lSkip": "Dyr time sprunget over",
+  "plan.lHeatMark": "Odin varmer",
+  "plan.lBandShort": "Komfortbånd",
+  "plan.lLiftShort": "Løft",
+  "plan.lPreShort": "Forvarmning",
   "plan.lWind": "Vind (m/s)"
 }

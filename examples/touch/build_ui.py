@@ -355,18 +355,23 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         cells = "".join(f'<i class="plan-cell" data-scale="{price_scale(v)}" style="--v:{round(v / ptop * 100)}"></i>' for v in price)
         bars_ = "".join(f'<i class="plan-bar"' + (f' data-mode={q}{plan_mode[k]}{q}' if plan_mode[k] != "heat" else "") + f' style="--v:{round(v / 5 * 100)}"></i>' for k, v in enumerate(plan_kwh))
         lo_, hi_ = 20.5, 24.5   # temperaturakse mindst 3 °C
-        y = lambda t: (hi_ - t) / (hi_ - lo_) * 100
+        # Mini: båndet over de nederste 12 %, hvor Odins planlagte varme står som en markering.
+        span_ = 88 if mini else 100
+        y = lambda t: (hi_ - t) / (hi_ - lo_) * span_
         rects = ""
         for k in range(24):
             cls = ("bd pre" if pre_only[k] else "bd lift") if lift[k] else ("bd skip" if skip[k] else "bd")
             rects += f'<rect class="{cls}" x="{k + .06:.2f}" y="{y(band_hi[k]):.1f}" width=".88" height="{y(band_lo[k]) - y(band_hi[k]):.1f}"/>'
         exp_pts = " ".join(f"{k},{y(t):.1f} {k + 1},{y(t):.1f}" for k, t in enumerate(expected))
-        band_svg = f'<svg viewBox="0 0 24 100" preserveAspectRatio="none" aria-hidden="true">{rects}<polyline class="exp" points="{exp_pts}"/></svg>'
+        heat = "".join(f'<rect class="ht{" dhw" if plan_mode[k] != "heat" else ""}" x="{k + .06:.2f}" y="92" width=".88" height="8"/>'
+                       for k in range(24) if mini and plan_kwh[k] > 0)
+        band_svg = f'<svg viewBox="0 0 24 100" preserveAspectRatio="none" aria-hidden="true">{rects}{heat}<polyline class="exp" points="{exp_pts}"/></svg>'
         wcells = "".join(f'<i class="plan-cell" style="--v:{round(w / 15 * 100)}"></i>' for w in wind)
+        odin = ("" if mini else f'<{tag} class="plan-lab plan-lab--y"><b>Odin</b><span class="plan-y"><i>5 kWh</i><i>{T.num(2.5)}</i><i>0</i></span></{tag}>'
+                                f'<{tag} class="plan-lane plan-lane--odin">{bars_}</{tag}>')
         rows = (f'<{tag} class="plan-lab plan-lab--y plan-lab--sm"><b>{T("plan.lanePrice")}</b><span class="plan-y"><i>{T.num(ptop, 0)}</i><i>0</i></span></{tag}>'
                 f'<{tag} class="plan-lane plan-lane--price">{cells}</{tag}>'
-                f'<{tag} class="plan-lab plan-lab--y"><b>Odin</b><span class="plan-y"><i>5 kWh</i><i>{T.num(2.5)}</i><i>0</i></span></{tag}>'
-                f'<{tag} class="plan-lane plan-lane--odin">{bars_}</{tag}>'
+                + odin +
                 f'<{tag} class="plan-lab plan-lab--y plan-lab--band"><b>{T("plan.laneBand")}</b><span class="plan-y"><i>{T.num(hi_, 0)}°</i><i>{T.num(lo_, 0)}°</i></span></{tag}>'
                 f'<{tag} class="plan-lane plan-lane--band">{band_svg}</{tag}>')
         if not mini:
@@ -390,7 +395,10 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             text = T("plan.now") if k == 0 else f"{h:02d}"
             xs += f'<span' + (f' class={q}{cls}{q}' if cls else "") + f' style="left:{k / 24 * 100:.2f}%">{text}</span>'
         if mini:
-            return f'<span class="plan plan--mini ht-plan" aria-hidden="true">{rows}<span></span><span class="plan-x">{xs}</span></span>'
+            mleg = "".join(f'<span><i class="{c}"></i>{T(k)}</span>' for c, k in (
+                ("lprice", "plan.lPrice"), ("lheatmark", "plan.lHeatMark"), ("lband", "plan.lBandShort"), ("lbandlift", "plan.lLiftShort"), ("lbandpre", "plan.lPreShort")))
+            return (f'<span class="plan plan--mini ht-plan" aria-hidden="true">{rows}<span></span><span class="plan-x">{xs}</span></span>'
+                    f'<span class="fc-legend ht-legend" aria-hidden="true">{mleg}</span>')
         legend = "".join(f'<span><i class="{c}"></i>{T(k)}</span>' for c, k in (
             ("lprice", "plan.lPrice"), ("lbar", "plan.lHeat"), ("ldhw", "plan.lDhw"), ("lband", "plan.lBand"),
             ("lbandpre", "plan.lPre"), ("lbandlift", "plan.lLift"), ("lskip", "plan.lSkip"), ("lwind", "plan.lWind"),

@@ -429,5 +429,9 @@
   "plan.lPrice": "Electricity price (cheap → dear)",
   "plan.lBand": "Comfort band and expected temperature",
   "plan.lSkip": "Dear hour skipped",
+  "plan.lHeatMark": "Odin heats",
+  "plan.lBandShort": "Comfort band",
+  "plan.lLiftShort": "Lift",
+  "plan.lPreShort": "Preload",
   "plan.lWind": "Wind (m/s)"
 }
