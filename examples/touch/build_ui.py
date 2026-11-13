@@ -57,7 +57,7 @@ ROOMS = [
     ("r12", "Lager",     3, 2, None, 15.0,  0, "off",     18.0, 200, "PEX 20 mm", "",   False, 0.25, 0.30, 0.00),
 ]
 HOUSE_TEMP, HOUSE_TARGET = 21.9, 21.0
-PIN_MM = 3.0   # ventilpindens fulde vandring; 100 % åbning = pinden helt fri
+PIN_MM = 2.0   # pindens lærte vandring (ca. 1,1 µm pr. motortælling); 100 % åbning = pinden helt fri
 THERMO_MIN, THERMO_MAX = 15.0, 25.0
 
 

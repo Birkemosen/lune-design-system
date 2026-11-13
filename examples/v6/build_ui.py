@@ -491,7 +491,7 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
         </form>
         {pre}
         <dl class="metrics">
-          {metric(T("zdash.opening"),0 if fault else fl,f'% · {T.num(0 if fault else fl/100*3)} mm',f"z{i}.opening")}
+          {metric(T("zdash.opening"),0 if fault else fl,f'% · {T.num(0 if fault else fl/100*2)} mm',f"z{i}.opening")}
           {metric(T("m.return"),T.num(ret),"°C",f"z{i}.return")}
         </dl>
         <div class="bar" style="--v:{0 if fault else fl}%" aria-hidden="true"><i></i></div>
