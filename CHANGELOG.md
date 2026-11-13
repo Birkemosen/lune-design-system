@@ -1,5 +1,11 @@
 # Changelog — Lune Design System
 
+## 2.4.0
+
+- Touch' Hjem: husets mål er flyttet fra hovedsektionen til husets ark (`sheet-house`, ringen med autogem). Hus-kortet i `.home-scopes` er en knap (`.scope--house`) med hustemperatur, mål (`.scope-tgt`) og afvigelsen som varmekortets chip, og Ude står lige efter som læseværdi (`.scope--fact`). Hovedsektionen har kun hilsen, overskrift og sætning. DESIGN.md 15.10.
+- Styringskortenes søjler (`.scope .mini i`) er farvet efter rummets afvigelse fra mål (`data-dev="1–5"`, `scale-cold-warm`); højden er fortsat ventilåbningen.
+- `scale-cold-warm-3` (±0,3 °C, på målet) er dæmpet grøn i stedet for neutral grå: varmekort, `.tile-dev`, nøgle og søjler. Kontrast for `fg` på trinnet tjekkes.
+
 ## 2.3.33
 
 - `.plan` båndspor: timer Touch kun løfter for vejret (forvarmning før vind eller kulde) er blå (`.bd.pre`, `--info`); løft for et rum, der halter, eller en opladning er fortsat violet (`.bd.lift`), også når forvarmning gælder samme time. Forklaringen har `.lbandpre`, og aflæsningen nævner årsagen. DESIGN.md 8.

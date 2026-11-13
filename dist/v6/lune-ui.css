@@ -106,7 +106,7 @@
     --scale-good-bad-5: light-dark(#b63132, #ea6a64);
     --scale-cold-warm-1: light-dark(#196ea9, #348dcf);
     --scale-cold-warm-2: light-dark(#7aa3c8, #74a4cd);
-    --scale-cold-warm-3: light-dark(#d2d1cd, #46484a);
+    --scale-cold-warm-3: light-dark(#b9d1ae, #46604a);
     --scale-cold-warm-4: light-dark(#e29a76, #f9aa60);
     --scale-cold-warm-5: light-dark(#db5600, #f67400);
     /* font */
@@ -513,6 +513,7 @@
   /* Tekst på chippen: næsten sort, undtagen trin 1 i lyst tema (mørk blå → hvid, ≥ 4,5:1). */
   .tile-dev[data-dev="1"] { background: var(--scale-cold-warm-1); color: light-dark(var(--on-fill), var(--on-warn-fill)); }
   .tile-dev[data-dev="2"] { background: var(--scale-cold-warm-2); color: var(--on-warn-fill); }
+  .tile-dev[data-dev="3"] { background: var(--scale-cold-warm-3); color: var(--fg); }
   .tile-dev[data-dev="4"] { background: var(--scale-cold-warm-4); color: var(--on-warn-fill); }
   .tile-dev[data-dev="5"] { background: var(--scale-cold-warm-5); color: var(--on-warn-fill); }
 

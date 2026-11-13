@@ -241,9 +241,16 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         d = room_dev(r)
         if d is None or r[7] in ("fault", "off"):
             return ""
-        k = 1 if d <= -1 else 2 if d <= -0.3 else 3 if d < 0.3 else 4 if d < 1 else 5
+        k = dev_step(d)
         sign = "+" if d > 0.05 else "−" if d < -0.05 else "±"
         return f'<span class="tile-dev" data-dev="{k}">{sign}{T.num(abs(d))}°</span>'
+
+    def dev_step(d):
+        return 1 if d <= -1 else 2 if d <= -0.3 else 3 if d < 0.3 else 4 if d < 1 else 5
+
+    def dev_attr(r):
+        d = room_dev(r)
+        return "" if d is None or r[7] in ("fault", "off") else f' data-dev="{dev_step(d)}"'
 
     def level(r):
         """Ventilåbning i 5 trin (20 % pr. segment); 0 = lukket, fejl eller ingen data."""
@@ -428,15 +435,21 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
     ta = T("climate.targetAria")
 
     def scope_card(m):
-        bars = "".join(f'<i data-state="fault"></i>' if r[7] == "fault" else f'<i data-level="{level(r)}"></i>'
+        bars = "".join(f'<i data-state="fault"></i>' if r[7] == "fault" else f'<i data-level="{level(r)}"{dev_attr(r)}></i>'
                        for r in ROOMS if r[2] == m["n"])
         off = "" if m["online"] else " data-offline"
         note = "" if m["online"] else f' · <span>{T("status.offline")}</span>'
         return (f'<button class="scope" type="button" popovertarget="sheet-m{m["n"]}"{off}><small>M{m["n"]}{note}</small><b>{m["name"]}</b>'
                 f'<span class="mini" aria-hidden="true">{bars}</span></button>')
+    hd = HOUSE_TEMP - HOUSE_TARGET
+    hsign = "+" if hd > 0.05 else "−" if hd < -0.05 else "±"
+    house_card = (f'<button class="scope scope--house" type="button" popovertarget="sheet-house" aria-current="page">'
+                  f'<small>{T("scope.house")}</small><b>{T.num(HOUSE_TEMP)}° <span class="scope-tgt">{T("scope.target", t=T.num(HOUSE_TARGET))}</span></b>'
+                  f'<span class="tile-dev" data-dev="{dev_step(hd)}">{hsign}{T.num(abs(hd))}°</span></button>')
+    outside_card = (f'<div class="scope scope--fact"><small>{T("thermo.outsideLabel")}</small><b>{T.num(8.4)}°</b>'
+                    f'<span class="chip-icon" data-tone="info" aria-hidden="true">{I["outside"]}</span></div>')
     scopes = (f'<div class="home-scopes" role="group" aria-label="{T("scopes.aria")}">'
-              f'<div class="scope" aria-current="page"><small>{T("scope.house")}</small><b>{T.num(HOUSE_TEMP)}°</b></div>'
-              + "".join(scope_card(m) for m in MANIFOLDS) + '</div>')
+              + house_card + outside_card + "".join(scope_card(m) for m in MANIFOLDS) + '</div>')
     home = f'''
       <section class="view" id="v-home-house" aria-labelledby="h-home">
         {alerts}
@@ -448,24 +461,6 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             <h2 id="h-home">{T("home.headline")} <span class="sub">{T("home.headline2")}</span></h2>
             <p>{T("home.sentence", d=T.num(HOUSE_TEMP - HOUSE_TARGET), n=calling)}</p>
           </div>
-          <form class="thermo" data-save="house-target">
-            <dl class="thermo-facts">
-              <div><dt><span class="chip-icon" aria-hidden="true">{I["house"]}</span><span>{T("thermo.house")}</span></dt><dd>{T.num(HOUSE_TEMP)}°</dd></div>
-              <div><dt><span class="chip-icon" data-tone="info" aria-hidden="true">{I["outside"]}</span><span>{T("thermo.outsideLabel")}</span></dt><dd>{T.num(8.4)}°</dd></div>
-            </dl>
-            <div class="thermo-ring" style="--v:{v};--now:{now}" data-min="15" data-max="25">
-              <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="42" pathLength="100"/><circle class="arc" cx="50" cy="50" r="42" pathLength="100"/><line class="now" x1="84" y1="50" x2="99.4" y2="50"/><circle class="knob" cx="50" cy="50" r="42" pathLength="100"/></svg>
-              <div class="thermo-val">
-                <small>{T("climate.target")}</small>
-                <label class="thermo-target"><input type="text" inputmode="decimal" id="house_target" name="house_target" value="{T.num(HOUSE_TARGET)}" data-min="5" data-max="30" data-step-size="0.5" autocomplete="off" aria-label="{ta}"><span class="unit" aria-hidden="true">°</span></label>
-              </div>
-              <div class="thermo-steps">
-                <button type="button" data-step="-1" aria-label="{T("common.decrease", x=ta)}">−</button>
-                <button type="button" data-step="1" aria-label="{T("common.increase", x=ta)}">+</button>
-              </div>
-            </div>
-            <p class="autosave" aria-live="polite"></p>
-          </form>
         </section>
         <header class="home-head"><small>{T("home.nowEyebrow")}</small><h3>{T("home.nowTitle")}</h3></header>
         <div class="home-tiles">{tile_heat}{tile_wx}{tile_pump}{tile_plan}</div>
@@ -518,6 +513,33 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
           <p class="note">{T("heat.connOnSystem")}</p>
           {savebar("heat-behavior")}
         </form>'''
+    # ---- Huset: målet indstilles her (ringen, autogem); Hjem viser det kun i Hus-kortet.
+    house_thermo_html = f'''          <form class="thermo" data-save="house-target">
+            <dl class="thermo-facts">
+              <div><dt><span class="chip-icon" aria-hidden="true">{I["house"]}</span><span>{T("thermo.house")}</span></dt><dd>{T.num(HOUSE_TEMP)}°</dd></div>
+              <div><dt><span class="chip-icon" data-tone="info" aria-hidden="true">{I["outside"]}</span><span>{T("thermo.outsideLabel")}</span></dt><dd>{T.num(8.4)}°</dd></div>
+            </dl>
+            <div class="thermo-ring" style="--v:{v};--now:{now}" data-min="15" data-max="25">
+              <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="42" pathLength="100"/><circle class="arc" cx="50" cy="50" r="42" pathLength="100"/><line class="now" x1="84" y1="50" x2="99.4" y2="50"/><circle class="knob" cx="50" cy="50" r="42" pathLength="100"/></svg>
+              <div class="thermo-val">
+                <small>{T("climate.target")}</small>
+                <label class="thermo-target"><input type="text" inputmode="decimal" id="house_target" name="house_target" value="{T.num(HOUSE_TARGET)}" data-min="5" data-max="30" data-step-size="0.5" autocomplete="off" aria-label="{ta}"><span class="unit" aria-hidden="true">°</span></label>
+              </div>
+              <div class="thermo-steps">
+                <button type="button" data-step="-1" aria-label="{T("common.decrease", x=ta)}">−</button>
+                <button type="button" data-step="1" aria-label="{T("common.increase", x=ta)}">+</button>
+              </div>
+            </div>
+            <p class="autosave" aria-live="polite"></p>
+          </form>
+'''
+    house_over = f'''
+        <div style="display:grid;gap:var(--space-5);justify-items:start">
+          {house_thermo_html}
+          {kv([(T("house.calling"), T("house.callingVal", n=calling)), (T("house.coverage"), "92 %")])}
+        </div>'''
+    sheet_house = sheet("house", T("hash.house"), I["house"], "", T("scope.house"),
+                        T("sheet.houseStatus", t=T.num(HOUSE_TEMP), g=T.num(HOUSE_TARGET)), house_over, heat_hist)
     sheet_heat = sheet("heat", T("hash.heat"), I["heat"], "", T("tile.heat"), T("sheet.heatStatus"), heat_over, heat_hist, heat_set)
 
     # ---- Næste varme (Odins plan) — kun Overblik/Historik
@@ -655,7 +677,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         </form>'''
         return sheet(rid, rid, I["room"], "", name, status, over, hist, settings)
 
-    sheets = sheet_heat + sheet_plan + sheet_wx + sheet_pump + "".join(manifold_sheet(m) for m in MANIFOLDS) + "".join(room_sheet(r) for r in ROOMS)
+    sheets = sheet_house + sheet_heat + sheet_plan + sheet_wx + sheet_pump + "".join(manifold_sheet(m) for m in MANIFOLDS) + "".join(room_sheet(r) for r in ROOMS)
 
     # ================================================================ SYSTEM
     def syscat(cat, title, body, badge=""):

@@ -115,7 +115,7 @@
     --scale-good-bad-5: light-dark(#b63132, #ea6a64);
     --scale-cold-warm-1: light-dark(#196ea9, #348dcf);
     --scale-cold-warm-2: light-dark(#7aa3c8, #74a4cd);
-    --scale-cold-warm-3: light-dark(#d2d1cd, #46484a);
+    --scale-cold-warm-3: light-dark(#b9d1ae, #46604a);
     --scale-cold-warm-4: light-dark(#e29a76, #f9aa60);
     --scale-cold-warm-5: light-dark(#db5600, #f67400);
     /* font */
@@ -526,6 +526,7 @@
   /* Tekst på chippen: næsten sort, undtagen trin 1 i lyst tema (mørk blå → hvid, ≥ 4,5:1). */
   .tile-dev[data-dev="1"] { background: var(--scale-cold-warm-1); color: light-dark(var(--on-fill), var(--on-warn-fill)); }
   .tile-dev[data-dev="2"] { background: var(--scale-cold-warm-2); color: var(--on-warn-fill); }
+  .tile-dev[data-dev="3"] { background: var(--scale-cold-warm-3); color: var(--fg); }
   .tile-dev[data-dev="4"] { background: var(--scale-cold-warm-4); color: var(--on-warn-fill); }
   .tile-dev[data-dev="5"] { background: var(--scale-cold-warm-5); color: var(--on-warn-fill); }
 
@@ -1512,8 +1513,8 @@
   .chip-icon[data-tone="water"]  { background: var(--water-fill); }
 
   /* ---- Hjem (DESIGN.md 15.7): hovedsektion, termostat-ring, felter, varmekort ---- */
-  /* Hovedsektion: hilsen, én overskrift i to toner (situation · varmekilde), én sætning —
-     og målet i ringen. Tallene står i felterne lige under, ikke her. */
+  /* Hovedsektion: hilsen, én overskrift i to toner (situation · varmekilde) og én sætning.
+     Målet står i Hus-kortet over den og indstilles i husets ark; tallene står i felterne under. */
   .home-hero {
     display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-5) var(--space-7);
     position: relative; isolation: isolate; overflow: hidden;
@@ -1631,6 +1632,19 @@
   .scope .mini i[data-state="fault"] { height: 100%; background: var(--danger); }
   .scope[data-offline] .mini { opacity: .45; }
   .scope > small span { color: var(--warn); }
+  /* Søjlerne: højden er ventilens åbning, farven rummets afvigelse fra mål i varmekortets
+     5 trin (data-dev, scale-cold-warm), så en manifold med kolde rum ses fra Hjem. */
+  .scope .mini i[data-dev="1"] { background: var(--scale-cold-warm-1); }
+  .scope .mini i[data-dev="2"] { background: var(--scale-cold-warm-2); }
+  .scope .mini i[data-dev="3"] { background: var(--scale-cold-warm-3); }
+  .scope .mini i[data-dev="4"] { background: var(--scale-cold-warm-4); }
+  .scope .mini i[data-dev="5"] { background: var(--scale-cold-warm-5); }
+  /* Hus-kortet (.scope--house): huset nu, målet og afvigelsen som varmekortets chip. Det åbner
+     husets ark, hvor målet indstilles (ringen). Ude (.scope--fact) står lige efter og er kun
+     en læseværdi med ikonbrik. */
+  .scope .tile-dev { display: inline-flex; grid-column: 2; grid-row: 1 / 3; align-self: center; }
+  .scope .scope-tgt { font-size: var(--fs-sm); font-weight: 500; letter-spacing: 0; opacity: .7; }
+  .scope--fact > .chip-icon { grid-column: 2; grid-row: 1 / 3; align-self: center; }
   @media (max-width: 599.98px) {
     .scope { flex: 1 1 40%; min-width: 0; padding: var(--space-2) var(--space-3); }
     .scope[aria-current] { min-width: 0; }
@@ -2480,7 +2494,7 @@
           <p class="note">The valve stays closed until the fault is reset on the V6. Check the actuator first.</p>
           <div class="panel-foot"><button class="btn" type="button" popovertarget="sheet-r09">Open Gang</button></div>
         </div>
-        <div class="home-scopes" role="group" aria-label="House and controllers"><div class="scope" aria-current="page"><small>The house</small><b>21.9°</b></div><button class="scope" type="button" popovertarget="sheet-m1"><small>M1</small><b>Teknikrum</b><span class="mini" aria-hidden="true"><i data-level="1"></i><i data-level="2"></i><i data-level="1"></i><i data-level="0"></i><i data-level="3"></i></span></button><button class="scope" type="button" popovertarget="sheet-m2"><small>M2</small><b>1. sal</b><span class="mini" aria-hidden="true"><i data-level="4"></i><i data-level="2"></i><i data-level="1"></i><i data-state="fault"></i><i data-level="3"></i></span></button><button class="scope" type="button" popovertarget="sheet-m3" data-offline><small>M3 · <span>Offline</span></small><b>Anneks</b><span class="mini" aria-hidden="true"><i data-level="1"></i><i data-level="0"></i></span></button></div>
+        <div class="home-scopes" role="group" aria-label="House and controllers"><button class="scope scope--house" type="button" popovertarget="sheet-house" aria-current="page"><small>The house</small><b>21.9° <span class="scope-tgt">target 21.0°</span></b><span class="tile-dev" data-dev="4">+0.9°</span></button><div class="scope scope--fact"><small>Outside</small><b>8.4°</b><span class="chip-icon" data-tone="info" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.5 3.5v1.5M3.6 5.6l1.1 1.1M2 10.5h1.5M13.4 5.6l-1.1 1.1"/><path d="M5.4 12.6A3.5 3.5 0 1 1 11.8 9"/><path d="M9 20h8.5a3.5 3.5 0 0 0 .4-7 5 5 0 0 0-9.4 1.3A2.9 2.9 0 0 0 9 20z"/></svg></span></div><button class="scope" type="button" popovertarget="sheet-m1"><small>M1</small><b>Teknikrum</b><span class="mini" aria-hidden="true"><i data-level="1" data-dev="4"></i><i data-level="2" data-dev="5"></i><i data-level="1" data-dev="4"></i><i data-level="0" data-dev="4"></i><i data-level="3" data-dev="3"></i></span></button><button class="scope" type="button" popovertarget="sheet-m2"><small>M2</small><b>1. sal</b><span class="mini" aria-hidden="true"><i data-level="4" data-dev="2"></i><i data-level="2" data-dev="3"></i><i data-level="1" data-dev="4"></i><i data-state="fault"></i><i data-level="3" data-dev="5"></i></span></button><button class="scope" type="button" popovertarget="sheet-m3" data-offline><small>M3 · <span>Offline</span></small><b>Anneks</b><span class="mini" aria-hidden="true"><i data-level="1" data-dev="1"></i><i data-level="0"></i></span></button></div>
         <section class="home-hero">
           <svg class="hero-waves" viewBox="0 0 1200 420" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><path d="M0,18C25 20 100 28 150 30C200 32 250 29 300 29C350 28 400 24 450 25C500 26 550 31 600 34C650 38 700 43 750 47C800 50 850 51 900 56C950 60 1000 65 1050 76C1100 88 1175 115 1200 123"/><path d="M0,48C25 50 100 59 150 60C200 61 250 59 300 57C350 55 400 49 450 49C500 48 550 50 600 54C650 57 700 63 750 67C800 72 850 74 900 79C950 84 1000 88 1050 98C1100 109 1175 134 1200 141"/><path d="M0,77C25 79 100 86 150 87C200 88 250 85 300 83C350 80 400 73 450 71C500 70 550 71 600 74C650 77 700 84 750 90C800 95 850 99 900 105C950 110 1000 114 1050 123C1100 132 1175 153 1200 159"/><path d="M0,105C25 106 100 110 150 111C200 111 250 109 300 107C350 104 400 97 450 95C500 93 550 93 600 96C650 99 700 108 750 114C800 120 850 126 900 132C950 138 1000 141 1050 148C1100 155 1175 171 1200 176"/><path d="M0,129C25 130 100 132 150 132C200 132 250 132 300 130C350 128 400 122 450 120C500 119 550 118 600 121C650 125 700 134 750 140C800 147 850 155 900 160C950 166 1000 167 1050 172C1100 177 1175 188 1200 191"/><path d="M0,153C25 153 100 153 150 153C200 153 250 155 300 154C350 153 400 149 450 148C500 147 550 146 600 149C650 153 700 161 750 168C800 174 850 183 900 187C950 192 1000 192 1050 195C1100 198 1175 202 1200 204"/><path d="M0,175C25 175 100 174 150 174C200 175 250 179 300 180C350 181 400 179 450 179C500 179 550 177 600 180C650 183 700 190 750 195C800 200 850 209 900 212C950 215 1000 215 1050 215C1100 216 1175 215 1200 215"/><path d="M0,199C25 199 100 197 150 198C200 200 250 206 300 208C350 210 400 211 450 212C500 212 550 210 600 211C650 213 700 217 750 221C800 225 850 232 900 234C950 236 1000 234 1050 233C1100 232 1175 227 1200 226"/><path d="M0,225C25 225 100 223 150 225C200 227 250 234 300 238C350 241 400 244 450 245C500 245 550 242 600 242C650 242 700 243 750 245C800 246 850 251 900 252C950 253 1000 251 1050 249C1100 246 1175 240 1200 238"/><path d="M0,254C25 254 100 252 150 254C200 257 250 265 300 268C350 272 400 276 450 277C500 277 550 273 600 271C650 269 700 267 750 266C800 266 850 269 900 269C950 268 1000 267 1050 264C1100 261 1175 254 1200 251"/><path d="M0,285C25 285 100 283 150 286C200 288 250 295 300 298C350 302 400 306 450 306C500 306 550 301 600 297C650 294 700 288 750 286C800 284 850 285 900 284C950 283 1000 283 1050 281C1100 278 1175 270 1200 268"/><path d="M0,319C25 318 100 317 150 318C200 319 250 324 300 327C350 329 400 334 450 333C500 332 550 326 600 322C650 317 700 309 750 305C800 302 850 302 900 301C950 300 1000 301 1050 299C1100 297 1175 289 1200 287"/><path d="M0,353C25 352 100 349 150 349C200 349 250 352 300 353C350 354 400 358 450 356C500 355 550 349 600 344C650 339 700 330 750 326C800 322 850 320 900 319C950 318 1000 321 1050 319C1100 317 1175 310 1200 308"/><path d="M0,386C25 384 100 381 150 379C200 378 250 377 300 376C350 376 400 379 450 378C500 376 550 372 600 367C650 362 700 353 750 349C800 344 850 342 900 341C950 340 1000 343 1050 341C1100 339 1175 332 1200 330"/><path d="M0,416C25 415 100 409 150 407C200 404 250 400 300 398C350 397 400 399 450 398C500 397 550 395 600 391C650 387 700 379 750 375C800 370 850 367 900 365C950 363 1000 366 1050 364C1100 361 1175 352 1200 350"/></svg>
           <div class="hero-text">
@@ -2488,24 +2502,6 @@
             <h2 id="h-home">Warm enough everywhere. <span class="sub">The heat pump is idle.</span></h2>
             <p>The house is 0.9° above target, and 2 rooms call for heat. Odin plans the next heating at 06:00, and the wind picks up tonight.</p>
           </div>
-          <form class="thermo" data-save="house-target">
-            <dl class="thermo-facts">
-              <div><dt><span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/></svg></span><span>House now</span></dt><dd>21.9°</dd></div>
-              <div><dt><span class="chip-icon" data-tone="info" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.5 3.5v1.5M3.6 5.6l1.1 1.1M2 10.5h1.5M13.4 5.6l-1.1 1.1"/><path d="M5.4 12.6A3.5 3.5 0 1 1 11.8 9"/><path d="M9 20h8.5a3.5 3.5 0 0 0 .4-7 5 5 0 0 0-9.4 1.3A2.9 2.9 0 0 0 9 20z"/></svg></span><span>Outside</span></dt><dd>8.4°</dd></div>
-            </dl>
-            <div class="thermo-ring" style="--v:60;--now:69" data-min="15" data-max="25">
-              <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="42" pathLength="100"/><circle class="arc" cx="50" cy="50" r="42" pathLength="100"/><line class="now" x1="84" y1="50" x2="99.4" y2="50"/><circle class="knob" cx="50" cy="50" r="42" pathLength="100"/></svg>
-              <div class="thermo-val">
-                <small>Target</small>
-                <label class="thermo-target"><input type="text" inputmode="decimal" id="house_target" name="house_target" value="21.0" data-min="5" data-max="30" data-step-size="0.5" autocomplete="off" aria-label="house target"><span class="unit" aria-hidden="true">°</span></label>
-              </div>
-              <div class="thermo-steps">
-                <button type="button" data-step="-1" aria-label="Decrease house target">−</button>
-                <button type="button" data-step="1" aria-label="Increase house target">+</button>
-              </div>
-            </div>
-            <p class="autosave" aria-live="polite"></p>
-          </form>
         </section>
         <header class="home-head"><small>Right now</small><h3>Heat, plan and weather</h3></header>
         <div class="home-tiles">
@@ -2737,6 +2733,41 @@
       </section>
   </main>
 
+  <div id="sheet-house" popover class="sheet" role="dialog" aria-labelledby="sheet-house-t" data-hash="house">
+    <input class="state tab" type="radio" name="tab-house" id="t-house-o" value="overview" data-hash="overview" aria-label="Overview" checked><input class="state tab" type="radio" name="tab-house" id="t-house-h" value="history" data-hash="history" aria-label="History">
+    <header class="sheet-head">
+      <span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/></svg></span>
+      <div><h2 id="sheet-house-t">The house</h2><p>21.9° now · target 21.0°</p></div>
+      <button class="sheet-close" type="button" popovertarget="sheet-house" popovertargetaction="hide" aria-label="Close">×</button>
+      <nav class="tabs" aria-label="Tabs"><label for="t-house-o" data-tab="overview">Overview</label><label for="t-house-h" data-tab="history">History</label></nav>
+    </header>
+    <div class="sheet-body"><section class="tab-panel" data-tab="overview">
+        <div style="display:grid;gap:var(--space-5);justify-items:start">
+                    <form class="thermo" data-save="house-target">
+            <dl class="thermo-facts">
+              <div><dt><span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/></svg></span><span>House now</span></dt><dd>21.9°</dd></div>
+              <div><dt><span class="chip-icon" data-tone="info" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.5 3.5v1.5M3.6 5.6l1.1 1.1M2 10.5h1.5M13.4 5.6l-1.1 1.1"/><path d="M5.4 12.6A3.5 3.5 0 1 1 11.8 9"/><path d="M9 20h8.5a3.5 3.5 0 0 0 .4-7 5 5 0 0 0-9.4 1.3A2.9 2.9 0 0 0 9 20z"/></svg></span><span>Outside</span></dt><dd>8.4°</dd></div>
+            </dl>
+            <div class="thermo-ring" style="--v:60;--now:69" data-min="15" data-max="25">
+              <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="42" pathLength="100"/><circle class="arc" cx="50" cy="50" r="42" pathLength="100"/><line class="now" x1="84" y1="50" x2="99.4" y2="50"/><circle class="knob" cx="50" cy="50" r="42" pathLength="100"/></svg>
+              <div class="thermo-val">
+                <small>Target</small>
+                <label class="thermo-target"><input type="text" inputmode="decimal" id="house_target" name="house_target" value="21.0" data-min="5" data-max="30" data-step-size="0.5" autocomplete="off" aria-label="house target"><span class="unit" aria-hidden="true">°</span></label>
+              </div>
+              <div class="thermo-steps">
+                <button type="button" data-step="-1" aria-label="Decrease house target">−</button>
+                <button type="button" data-step="1" aria-label="Increase house target">+</button>
+              </div>
+            </div>
+            <p class="autosave" aria-live="polite"></p>
+          </form>
+
+          <dl class="kv"><div><dt>Rooms calling for heat</dt><dd>2 rooms</dd></div><div><dt>Rooms with a fresh reading</dt><dd>92 %</dd></div></dl>
+        </div></section><section class="tab-panel" data-tab="history">
+        <div class="sub trend-wrap"><h4>Last 24 hours <span class="legend"><i class="lt"></i>Weighted house temperature<i class="lg"></i>Comfort setpoint</span></h4>
+          <svg class="spark" style="height:120px" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="Weighted house temperature against the setpoint, last 24 hours"><polyline class="g" points="0,40.0 240,40.0"/><polyline class="t" points="0.0,37.9 5.1,34.9 10.2,34.2 15.3,33.7 20.4,33.6 25.5,29.7 30.6,28.1 35.7,27.7 40.9,26.0 46.0,25.4 51.1,24.7 56.2,21.4 61.3,18.8 66.4,19.4 71.5,14.9 76.6,15.9 81.7,14.7 86.8,14.6 91.9,9.7 97.0,10.2 102.1,9.2 107.2,10.2 112.3,12.7 117.4,11.8 122.6,11.6 127.7,13.9 132.8,11.3 137.9,14.9 143.0,17.1 148.1,15.7 153.2,20.2 158.3,18.4 163.4,22.2 168.5,23.5 173.6,26.1 178.7,27.2 183.8,30.2 188.9,32.4 194.0,30.3 199.1,34.4 204.3,33.2 209.4,36.6 214.5,34.2 219.6,35.1 224.7,36.1 229.8,36.2 234.9,36.9 240.0,36.0"/></svg>
+          <div class="axis" aria-hidden="true"><span>−24 h</span><span>−12 h</span><span>now</span></div></div></section></div>
+  </div>
   <div id="sheet-heat" popover class="sheet" role="dialog" aria-labelledby="sheet-heat-t" data-hash="heat">
     <input class="state tab" type="radio" name="tab-heat" id="t-heat-o" value="overview" data-hash="overview" aria-label="Overview" checked><input class="state tab" type="radio" name="tab-heat" id="t-heat-h" value="history" data-hash="history" aria-label="History"><input class="state tab" type="radio" name="tab-heat" id="t-heat-s" value="settings" data-hash="settings" aria-label="Settings">
     <header class="sheet-head">
