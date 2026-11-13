@@ -411,7 +411,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
           <button class="home-tile wide" type="button" popovertarget="sheet-plan">
             <span class="chip-icon" data-tone="violet" aria-hidden="true">{I["plan"]}</span><b>{T("tile.plan")}</b>
             <span class="ht-status">{T("tile.planStatus")}</span>
-            <span class="ht-val">{T("tile.planVal", a="15", b="18")} <small>≈ {T.num(8.1)} kWh</small></span>
+            <span class="ht-val"><small>{T("tile.planNext")}</small> {T("tile.planVal", a="15", b="18")} <small>≈ {T.num(8.1)} kWh</small></span>
             <span class="ht-price">{T("tile.price", p=T.num(1.62, 2), unit=T("price.unit"))} <span class="scale-chip" data-scale="2">{T("price.scale.2")}</span></span>
             {plan_timeline(mini=True)}
           </button>'''
@@ -471,7 +471,6 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             <p>{T("home.sentence", d=T.num(HOUSE_TEMP - HOUSE_TARGET), n=calling)}</p>
           </div>
         </section>
-        <header class="home-head"><small>{T("home.nowEyebrow")}</small><h3>{T("home.nowTitle")}</h3></header>
         <div class="home-tiles">{tile_heat}{tile_wx}{tile_pump}{tile_plan}</div>
         {heatmap}
       </section>'''
