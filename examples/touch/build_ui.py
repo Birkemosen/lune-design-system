@@ -725,6 +725,22 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
     p_out[22] = 3.2
     p_flow = [None if p_out[k] == 0 else round(27.6 + 0.65 * p_out[k] + (2.0 if p_mode[k] != "heat" else 0), 1) for k in range(PH)]
     FLOW_MAX = 35.0
+    # Odins bånd: mål − 0,5 … mål + 1,0, løftet 0,3 i nat før vinden (Touch' løft).
+    b_lo = [HOUSE_TARGET - 0.5 + (0.3 if 8 <= k < 14 else 0.0) for k in range(PH)]
+    # Husets forventede temperatur: Touch (lange kørsler ved lav effekt) og Odin (kort og hårdt, 24 t frem).
+    # Touch holder huset nær båndets bund med lange kørsler; Odin svinger mere (kort og hårdt).
+    diurnal = lambda k: 0.18 * math.sin((NOW_H + k - 9) / 24 * 2 * math.pi)
+    t_touch = [round(HOUSE_TARGET + 0.25 + (HOUSE_TEMP - HOUSE_TARGET - 0.25) * math.exp(-k / 6) + diurnal(k), 2) for k in range(PH)]
+    o_out = [0.0] * 24
+    for k, v in ((5, 5.8), (6, 5.8), (13, 5.6), (14, 5.8), (15, 5.8), (22, 5.4)):
+        o_out[k] = v
+    t_odin = [round(HOUSE_TARGET + 0.4 + (HOUSE_TEMP - HOUSE_TARGET - 0.4) * math.exp(-k / 6) + diurnal(k)
+                    + 0.35 * math.sin((k - 4) / 9 * 2 * math.pi), 2) for k in range(24)]
+    past_t = [round(HOUSE_TEMP + 0.25 * math.sin((k - 6) / 24 * 2 * math.pi) - 0.004 * (24 - k), 2) for k in range(24)]
+    past_q = [0, 0, 5.8, 5.8, 0, 0, 0, 0, 0, 5.6, 5.8, 5.8, 0, 0, 0, 0, 0, 0, 5.4, 5.8, 0, 0, 0, 0]
+    price_now = p_price[:24]
+    c_touch = sum(p_out[k] / 4.4 * price_now[k] for k in range(24))
+    c_odin = sum(o_out[k] / 3.4 * price_now[k] for k in range(24))
 
     def plan_x48():
         q = '"'
@@ -767,15 +783,23 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         fy = (fhi - FLOW_MAX) / (fhi - flo) * 100
         flow_svg = (f'<svg viewBox="0 0 {PH} 100" preserveAspectRatio="none" aria-hidden="true">'
                     f'<line class="max" x1="0" x2="{PH}" y1="{fy:.1f}" y2="{fy:.1f}"/><g class="fl">{stair(p_flow, flo, fhi)}</g></svg>')
+        # Hus: Odins bånd time for time (med Touch' løft) og husets forventede temperatur. Akse 3 °C.
+        hlo, hhi = HOUSE_TARGET - 1.5, HOUSE_TARGET + 1.5
+        hy = lambda t: (hhi - t) / (hhi - hlo) * 100
+        band_ = "".join(f'<rect class="rb" x="{k}" y="{hy(HOUSE_TARGET + 1.0):.1f}" width="1" height="{hy(b_lo[k]) - hy(HOUSE_TARGET + 1.0):.1f}"/>' for k in range(PH))
+        house_svg = (f'<svg viewBox="0 0 {PH} 100" preserveAspectRatio="none" aria-hidden="true">{band_}'
+                     f'<g class="exp">{stair(t_touch, hlo, hhi)}</g></svg>')
         rows = (f'<div class="plan-lab plan-lab--y plan-lab--sm"><b>{T("plan.lanePrice")}</b><span class="plan-y"><i>{T.num(ptop, 0)}</i><i>0</i></span></div>'
                 f'<div class="plan-lane plan-lane--price">{cells}</div>'
                 f'<div class="plan-lab plan-lab--y"><b>{T("planner.laneOut")}</b><span class="plan-y"><i>6 kW</i><i>3</i><i>0</i></span></div>'
                 f'<div class="plan-lane plan-lane--out">{bars_}</div>'
                 f'<div class="plan-lab plan-lab--y plan-lab--flow"><b>{T("planner.laneFlow")}</b><span class="plan-y"><i>{T.num(fhi, 0)}°</i><i>{T.num(flo, 0)}°</i></span></div>'
-                f'<div class="plan-lane plan-lane--flow">{flow_svg}</div>')
+                f'<div class="plan-lane plan-lane--flow">{flow_svg}</div>'
+                f'<div class="plan-lab plan-lab--y plan-lab--house"><b>{T("planner.laneHouse")}</b><span class="plan-y"><i>{T.num(hhi, 0)}°</i><i>{T.num(hlo, 0)}°</i></span></div>'
+                f'<div class="plan-lane plan-lane--house">{house_svg}</div>')
         legend = "".join(f'<span><i class="{c}"></i>{T(k)}</span>' for c, k in (
             ("lprice", "plan.lPrice"), ("lbar", "planner.lOut"), ("ldhw", "plan.lDhw"), ("lleg", "planner.lLeg"),
-            ("lflow", "planner.lFlow"), ("lmax", "planner.lMax")))
+            ("lflow", "planner.lFlow"), ("lmax", "planner.lMax"), ("lrb", "planner.lHouse")))
         return (f'<div class="plan plan--48" role="img" aria-label="{T("planner.planAria")}" style="--now:.4">{rows}<span></span>'
                 f'<div class="plan-x">{plan_x48()}</div></div>'
                 f'<div class="fc-legend" aria-hidden="true">{legend}</div>')
@@ -800,32 +824,133 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             out.append(round(v * 10) / 10)
         return out
 
-    def room_lanes():
-        rows = ""
+    # Fortid (24 t målt) + prognose (48 t) i én graf, som Odins rumgraf: båndet som flade, målt
+    # som fuld linje, forventninger stiplet, «nu» som lodret linje og fremtiden på en svag flade.
+    # x: 0–72 timer (24 bagud, 48 frem); Odin har kun 24 t frem.
+    VS_H, VS_PAST = 72, 24
+
+    def vs_axis():
+        xs = ""
+        for k in range(0, VS_H + 1, 6):
+            h = (NOW_H - VS_PAST + k) % 24
+            cls = ' class="s"' if k == 0 else (' class="e"' if k == VS_H else (' class="h6"' if k % 12 else ""))
+            text = T("trend.now") if k == VS_PAST else (f'<b>{T.meta("_days")[1 + (NOW_H - VS_PAST + k) // 24 - 1]}</b>' if h == 0 else f"{h:02d}")
+            xs += f'<span{cls} style="--x:{k / VS_H * 100:.2f}">{text}</span>'
+        return f'<div class="axis at" aria-hidden="true">{xs}</div>'
+
+    def vs_temp(past, band_lo, band_hi, ahead, odin, aria, segs=(), lo_=None, hi_=None, pair=True):
+        """Temperaturgraf: past (24 værdier), bånd pr. fremtidstime, Touch' og Odins forventning."""
+        vals = [v for v in past + ahead + odin + band_lo + band_hi if v is not None]
+        lo_ = lo_ if lo_ is not None else math.floor(min(vals) - 0.2)
+        hi_ = hi_ if hi_ is not None else math.ceil(max(vals) + 0.2)
+        if hi_ - lo_ < 3:
+            lo_ = math.floor((lo_ + hi_) / 2 - 1.5); hi_ = lo_ + 3
+        Y = lambda t: (hi_ - t) / (hi_ - lo_) * 100
+        band = "".join(f'<rect class="bd" x="{VS_PAST + k}" y="{Y(band_hi[k]):.1f}" width="1" height="{Y(band_lo[k]) - Y(band_hi[k]):.1f}"/>' for k in range(len(band_lo)))
+        seg = "".join(f'<rect class="heat" x="{VS_PAST + a}" y="0" width="{b - a}" height="100"/>' for a, b in segs)
+        line = lambda cls, x0, v: f'<polyline class="{cls}" points="' + " ".join(f"{x0 + k},{Y(t):.1f} {x0 + k + 1},{Y(t):.1f}" for k, t in enumerate(v) if t is not None) + '"/>'
+        grid = "".join(f'<line class="grid" x1="0" x2="{VS_H}" y1="{y}" y2="{y}"/>' for y in ("0.5", "50", "99.5"))
+        return (f'<div class="hchart-panel{" pair" if pair else ""}"><div class="hchart-y" aria-hidden="true"><span>{T.num(hi_)}°</span><span>{T.num((hi_ + lo_) / 2)}°</span><span>{T.num(lo_)}°</span></div>'
+                f'<svg class="trend" viewBox="0 0 {VS_H} 100" preserveAspectRatio="none" role="img" aria-label="{aria}">'
+                f'<rect class="future" x="{VS_PAST}" y="0" width="{VS_H - VS_PAST}" height="100"/>{grid}{seg}{band}'
+                f'{line("t", 0, past)}{line("tf", VS_PAST, ahead)}{line("od", VS_PAST, odin) if odin else ""}'
+                f'<line class="nowl" x1="{VS_PAST}" x2="{VS_PAST}" y1="0" y2="100"/></svg>{vs_axis()}</div>')
+
+    def vs_heat():
+        """Varme pr. time: leveret før nu, Touch' plan og Odins plan side om side efter nu."""
+        top = 6.0
+        bars = ""
+        for k in range(VS_PAST):
+            h = past_q[k] / top * 100
+            bars += f'<rect class="ac" x="{k + .12:.2f}" y="{100 - h:.1f}" width=".76" height="{h:.1f}"/>'
+        for k in range(PH):
+            h = p_out[k] / top * 100
+            bars += f'<rect class="ac" x="{VS_PAST + k + .1:.2f}" y="{100 - h:.1f}" width=".4" height="{h:.1f}"/>'
+            if k < 24:
+                ho = o_out[k] / top * 100
+                bars += f'<rect class="odb" x="{VS_PAST + k + .5:.2f}" y="{100 - ho:.1f}" width=".4" height="{ho:.1f}"/>'
+        return (f'<div class="hchart-panel"><div class="hchart-y" aria-hidden="true"><span>{T.num(top, 0)} kW</span><span>0</span></div>'
+                f'<svg class="trend" viewBox="0 0 {VS_H} 100" preserveAspectRatio="none" role="img" aria-label="{T("planner.vsHeatAria")}">'
+                f'<rect class="future" x="{VS_PAST}" y="0" width="{VS_H - VS_PAST}" height="100"/><line class="grid" x1="0" x2="{VS_H}" y1="99.5" y2="99.5"/>{bars}'
+                f'<line class="nowl" x1="{VS_PAST}" x2="{VS_PAST}" y1="0" y2="100"/></svg>{vs_axis()}</div>')
+
+    def vs_chart():
+        b_hi = [HOUSE_TARGET + 1.0] * PH
+        below = lambda v: sum(max(0.0, b_lo[k] - x) for k, x in enumerate(v[:24]))
+        return f'''
+          <div class="hchart hchart--ahead hchart--vs">
+            <div class="hchart-head">
+              <dl class="metrics">
+                {metric(T("planner.vsHeat"), f"{T.num(sum(p_out[:24]), 0)} / {T.num(sum(o_out), 0)}", "kWh")}
+                {metric(T("planner.vsCost"), f"{T.num(c_touch, 2)} / {T.num(c_odin, 2)}", "€")}
+                {metric(T("planner.vsBelow"), f"{T.num(below(t_touch))} / {T.num(below(t_odin))}", "K·t")}
+              </dl>
+            </div>
+            {vs_temp(past_t, b_lo, b_hi, t_touch, t_odin, T("planner.vsTempAria"))}
+            {vs_heat()}
+            <p class="chart-legend" aria-hidden="true"><span><i class="lbd"></i>{T("planner.lBand")}</span><span><i class="lt"></i>{T("planner.lMeasured")}</span><span><i class="ltf"></i>{T("planner.lTouch")}</span><span><i class="lod"></i>{T("planner.lOdin")}</span><span><i class="lac"></i>{T("planner.lHeatTouch")}</span><span><i class="lodb"></i>{T("planner.lHeatOdin")}</span></p>
+          </div>'''
+
+    # Rum: én række pr. rum (nu, laveste og højeste de næste 24 t, timer under båndet, Touch' opladning
+    # eller forvarmning), og rummets graf, når rækken åbnes. Kun ét rum ad gangen (details name=…);
+    # rummet, der kommer længst under båndet, står åbent.
+    ROOM_PLAN = {"r06": ("charge", 6, 11, -0.9), "r07": ("charge", 6, 11, -0.7), "r05": ("preload", 13, 17, -0.4), "r09": ("charge", 6, 12, -1.3)}
+
+    def room_curve(r):
+        rid, tgt = r[0], r[5]
+        base = r[4] if r[4] is not None else tgt
+        kind, a, b, dip = ROOM_PLAN.get(rid, (None, 0, 0, 0))
+        out = []
+        for k in range(PH):
+            v = tgt + (base - tgt) * max(0.0, 1 - k / 8) + 0.15 * math.sin((k + int(rid[1:])) / 5)
+            if kind:
+                if a <= k < b:
+                    v += 0.08 * (k - a)              # lades op før vinden
+                elif b <= k < b + 10:
+                    v += 0.08 * (b - a) + dip * (k - b) / 10 * 1.2   # vinden tager varmen
+                elif b + 10 <= k < b + 18:
+                    v += 0.08 * (b - a) + dip * 1.2 * (1 - (k - b - 10) / 8)
+            out.append(round(v * 10) / 10)
+        return out
+
+    def room_table():
+        rows, worst, worst_dev = [], None, 0.0
+        data = []
         for r in ROOMS:
-            rid, name, tgt = r[0], r[1], r[5]
-            lab_ = f'<div class="plan-lab plan-lab--room">{name}<small>{T("planner.roomTarget", t=T.num(tgt))}</small></div>'
             if r[4] is None:
-                rows += lab_ + f'<div class="plan-empty-lane">{T("planner.roomNoData")}</div>'
+                data.append((r, None))
                 continue
             vals = room_curve(r)
-            lo_, hi_ = tgt - 1.5, tgt + 1.5          # temperaturakse 3 °C
-            y = lambda t: (hi_ - t) / (hi_ - lo_) * 100
-            band = f'<rect class="rb" x="0" y="{y(tgt + 0.5):.1f}" width="{PH}" height="{y(tgt - 0.5) - y(tgt + 0.5):.1f}"/>'
-            low = "".join(f'<rect class="lo" x="{k + .06:.2f}" y="88" width=".88" height="12"/>' for k, v in enumerate(vals) if v < tgt - 0.5)
-            seg_ = ""
-            if rid in ROOM_PLAN:
-                kind, a, b, _ = ROOM_PLAN[rid]
-                title = T("plan.charge") if kind == "charge" else T("plan.preload")
-                ins = " data-insufficient" if rid == "r09" else ""
-                seg_ = f'<span class="plan-seg" data-kind="{kind}"{ins} style="--a:{a};--b:{b}" title="{T("plan.insufficient") if ins else title}"></span>'
-            rows += (lab_ + f'<div class="plan-lane plan-lane--room">{seg_}<svg viewBox="0 0 {PH} 100" preserveAspectRatio="none" aria-hidden="true">'
-                     f'{band}{low}<g class="exp">{stair(vals, lo_, hi_)}</g></svg></div>')
-        legend = "".join(f'<span><i class="{c}"></i>{T(k)}</span>' for c, k in (
-            ("lrb", "planner.lRoomBand"), ("llo", "planner.lBelow"), ("lch", "plan.charge"), ("lpre", "plan.preload"), ("lins", "plan.insufficient")))
-        return (f'<div class="plan plan--48" role="img" aria-label="{T("planner.roomsAria")}" style="--now:.4">{rows}<span></span>'
-                f'<div class="plan-x">{plan_x48()}</div></div>'
-                f'<div class="fc-legend" aria-hidden="true">{legend}</div>')
+            data.append((r, vals))
+            dev = min(vals[:24]) - (r[5] - 0.5)
+            if worst is None or dev < worst_dev:
+                worst, worst_dev = r[0], dev
+        head = (f'<div class="rfc-head" aria-hidden="true"><span>{T("planner.rRoom")}</span><span class="num">{T("planner.rNow")}</span>'
+                f'<span class="num">{T("planner.rLow")}</span><span class="num opt">{T("planner.rHigh")}</span><span class="num">{T("planner.rBelow")}</span><span></span></div>')
+        for r, vals in data:
+            rid, name, tgt = r[0], r[1], r[5]
+            if vals is None:
+                rows.append(f'<div class="rfc rfc--none"><span class="rfc-name">{name}<small>{T("planner.roomTarget", t=T.num(tgt))}</small></span>'
+                            f'<span class="rfc-empty">{T("planner.roomNoData")}</span></div>')
+                continue
+            lo24, hi24 = min(vals[:24]), max(vals[:24])
+            n_below = sum(1 for v in vals[:24] if v < tgt - 0.5)
+            kind = ROOM_PLAN.get(rid, (None,))[0]
+            badge = (f'<span class="badge warn">{T("plan.charge")}</span>' if kind == "charge" else
+                     f'<span class="badge info">{T("plan.preload")}</span>' if kind == "preload" else "")
+            below_txt = T("planner.rBelowVal", n=n_below) if n_below else "—"
+            past = [round(r[4] + 0.2 * math.sin((k + int(rid[1:])) / 4) - 0.01 * (24 - k), 2) for k in range(24)]
+            segs = [(ROOM_PLAN[rid][1], ROOM_PLAN[rid][2])] if kind else []
+            chart = vs_temp(past, [tgt - 0.5] * PH, [tgt + 0.5] * PH, vals, [], T("planner.roomChartAria", room=name), segs, tgt - 1.5, tgt + 1.5, pair=False)
+            rows.append(f'<details class="rfc" name="plroom"{" open" if rid == worst else ""}><summary>'
+                        f'<span class="rfc-name">{name}<small>{T("planner.roomTarget", t=T.num(tgt))}</small></span>'
+                        f'<span class="num">{T.num(r[4])}°</span><span class="num{" lo" if n_below else ""}">{T.num(lo24)}°</span>'
+                        f'<span class="num opt">{T.num(hi24)}°</span><span class="num">{below_txt}</span><span class="rfc-tag">{badge}</span></summary>'
+                        f'<div class="hchart hchart--ahead hchart--room">{chart}'
+                        f'<p class="chart-legend" aria-hidden="true"><span><i class="lbd"></i>{T("planner.lBand")}</span><span><i class="lt"></i>{T("planner.lMeasured")}</span>'
+                        f'<span><i class="ltf"></i>{T("planner.lTouch")}</span>' + (f'<span><i class="lheat"></i>{T("plan.charge") if kind == "charge" else T("plan.preload")}</span>' if kind else "") +
+                        '</p></div></details>')
+        return f'<div class="rfc-list">{head}{"".join(rows)}</div>'
 
     def help_(pid, title, body, anchor):
         return (f'<button class="help-btn" type="button" popovertarget="help-{pid}" aria-label="{T("help.aria", x=title)}">?</button>'
@@ -918,9 +1043,13 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
           <header class="panel-head"><h3 id="h-pl48">{T("planner.plan48")}</h3>{help_("pl48", T("planner.plan48"), T("planner.plan48Help"), "planner-plan")}<p>{T("planner.plan48Sub")}</p></header>
           {planner_timeline()}
         </section>
+        <section class="panel" aria-labelledby="h-plvs">
+          <header class="panel-head"><h3 id="h-plvs">{T("planner.vs")}</h3>{help_("plvs", T("planner.vs"), T("planner.vsHelp"), "planner-odin")}<p>{T("planner.vsSub")}</p></header>
+          {vs_chart()}
+        </section>
         <section class="panel" aria-labelledby="h-plrooms">
           <header class="panel-head"><h3 id="h-plrooms">{T("planner.rooms")}</h3>{help_("plrooms", T("planner.rooms"), T("planner.roomsHelp"), "planner-rooms")}<p>{T("planner.roomsSub", n=sum(1 for k in ROOM_PLAN))}</p></header>
-          {room_lanes()}
+          {room_table()}
         </section>
         <section class="panel c5" aria-labelledby="h-plmodel">
           <header class="panel-head"><h3 id="h-plmodel">{T("planner.model")}</h3>{help_("plmodel", T("planner.model"), T("planner.modelHelp"), "planner-model")}</header>
