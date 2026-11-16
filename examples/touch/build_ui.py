@@ -840,17 +840,23 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         return f'<div class="axis at" aria-hidden="true">{xs}</div>'
 
     def smooth(pts):
-        """Jævn kurve gennem punkterne (Catmull-Rom som kubiske Bézier-kurver), SVG-sti."""
+        """Jævn kurve gennem punkterne, monoton (Fritsch–Carlson): den skyder aldrig over et trin
+        i dataene, som et bånd, der løftes, gør. SVG-sti med kubiske Bézier-kurver."""
         if not pts:
             return ""
-        d = f"M{pts[0][0]:.2f},{pts[0][1]:.1f}"
-        for i in range(len(pts) - 1):
-            p0, p1, p2 = pts[max(0, i - 1)], pts[i], pts[i + 1]
-            p3 = pts[min(len(pts) - 1, i + 2)]
-            c1 = (p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6)
-            c2 = (p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6)
-            d += f" C{c1[0]:.2f},{c1[1]:.1f} {c2[0]:.2f},{c2[1]:.1f} {p2[0]:.2f},{p2[1]:.1f}"
-        return d
+        n = len(pts)
+        d = [(pts[i + 1][1] - pts[i][1]) / (pts[i + 1][0] - pts[i][0]) for i in range(n - 1)]
+        m = [0.0] * n
+        if n > 1:
+            m[0], m[-1] = d[0], d[-1]
+        for i in range(1, n - 1):
+            m[i] = 0.0 if d[i - 1] * d[i] <= 0 else 2.0 / (1.0 / d[i - 1] + 1.0 / d[i])
+        out = f"M{pts[0][0]:.2f},{pts[0][1]:.1f}"
+        for i in range(n - 1):
+            h = (pts[i + 1][0] - pts[i][0]) / 3
+            out += (f" C{pts[i][0] + h:.2f},{pts[i][1] + m[i] * h:.1f} {pts[i + 1][0] - h:.2f},{pts[i + 1][1] - m[i + 1] * h:.1f}"
+                    f" {pts[i + 1][0]:.2f},{pts[i + 1][1]:.1f}")
+        return out
 
     def vs_strips(rows):
         """Striber over grafen, én pr. række (navn, celler): pris efter rang og driften pr. time."""
