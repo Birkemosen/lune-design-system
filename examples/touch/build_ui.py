@@ -941,7 +941,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             below_txt = T("planner.rBelowVal", n=n_below) if n_below else "—"
             past = [round(r[4] + 0.2 * math.sin((k + int(rid[1:])) / 4) - 0.01 * (24 - k), 2) for k in range(24)]
             segs = [(ROOM_PLAN[rid][1], ROOM_PLAN[rid][2])] if kind else []
-            chart = vs_temp(past, [tgt - 0.5] * PH, [tgt + 0.5] * PH, vals, [], T("planner.roomChartAria", room=name), segs, tgt - 1.5, tgt + 1.5, pair=False)
+            chart = vs_temp(past, [tgt - 0.5] * PH, [tgt + 0.5] * PH, vals, [], T("planner.roomChartAria", room=name), segs, pair=False)
             rows.append(f'<details class="rfc" name="plroom"{" open" if rid == worst else ""}><summary>'
                         f'<span class="rfc-name">{name}<small>{T("planner.roomTarget", t=T.num(tgt))}</small></span>'
                         f'<span class="num">{T.num(r[4])}°</span><span class="num{" lo" if n_below else ""}">{T.num(lo24)}°</span>'
