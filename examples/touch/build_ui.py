@@ -824,10 +824,11 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             out.append(round(v * 10) / 10)
         return out
 
-    # Fortid (24 t målt) + prognose (48 t) i én graf, som Odins rumgraf: båndet som flade, målt
-    # som fuld linje, forventninger stiplet, «nu» som lodret linje og fremtiden på en svag flade.
-    # x: 0–72 timer (24 bagud, 48 frem); Odin har kun 24 t frem.
-    VS_H, VS_PAST = 72, 24
+    # Det seneste døgn og det næste i én graf, som Odins rumgraf (Odins plan rækker 24 t; de 48 t
+    # står i planen øverst). Båndet er én flade med komfortgrænsen som linje i bunden, målt og
+    # forventet er jævne linjer gennem timerne: målt fuld (fg), Touch fuld violet, Odin langstiplet
+    # dæmpet. Varme: søjler for leveret og Touch' plan, Odins plan som trappelinje over dem.
+    VS_H, VS_PAST = 48, 24
 
     def vs_axis():
         xs = ""
@@ -839,40 +840,44 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         return f'<div class="axis at" aria-hidden="true">{xs}</div>'
 
     def vs_temp(past, band_lo, band_hi, ahead, odin, aria, segs=(), lo_=None, hi_=None, pair=True):
-        """Temperaturgraf: past (24 værdier), bånd pr. fremtidstime, Touch' og Odins forventning."""
+        """Temperaturgraf: past (24 værdier), bånd pr. fremtidstime, Touch' og Odins forventning (24 t)."""
+        n = VS_H - VS_PAST
+        ahead, odin, band_lo, band_hi = ahead[:n], odin[:n], band_lo[:n], band_hi[:n]
         vals = [v for v in past + ahead + odin + band_lo + band_hi if v is not None]
         lo_ = lo_ if lo_ is not None else math.floor(min(vals) - 0.2)
         hi_ = hi_ if hi_ is not None else math.ceil(max(vals) + 0.2)
         if hi_ - lo_ < 3:
             lo_ = math.floor((lo_ + hi_) / 2 - 1.5); hi_ = lo_ + 3
         Y = lambda t: (hi_ - t) / (hi_ - lo_) * 100
-        band = "".join(f'<rect class="bd" x="{VS_PAST + k}" y="{Y(band_hi[k]):.1f}" width="1" height="{Y(band_lo[k]) - Y(band_hi[k]):.1f}"/>' for k in range(len(band_lo)))
-        seg = "".join(f'<rect class="heat" x="{VS_PAST + a}" y="0" width="{b - a}" height="100"/>' for a, b in segs)
-        line = lambda cls, x0, v: f'<polyline class="{cls}" points="' + " ".join(f"{x0 + k},{Y(t):.1f} {x0 + k + 1},{Y(t):.1f}" for k, t in enumerate(v) if t is not None) + '"/>'
+        # Båndet time for time som én flade (trappe), grænsen i bunden som linje.
+        top = " ".join(f"{VS_PAST + k},{Y(v):.1f} {VS_PAST + k + 1},{Y(v):.1f}" for k, v in enumerate(band_hi))
+        bot = " ".join(f"{VS_PAST + k + 1},{Y(v):.1f} {VS_PAST + k},{Y(v):.1f}" for k, v in reversed(list(enumerate(band_lo))))
+        floor_ = " ".join(f"{VS_PAST + k},{Y(v):.1f} {VS_PAST + k + 1},{Y(v):.1f}" for k, v in enumerate(band_lo))
+        band = f'<polygon class="bd" points="{top} {bot}"/><polyline class="bdl" points="{floor_}"/>'
+        seg = "".join(f'<rect class="heat" x="{VS_PAST + a}" y="0" width="{min(b, n) - a}" height="100"/>' for a, b in segs if a < n)
+        line = lambda cls, x0, v: f'<polyline class="{cls}" points="' + " ".join(f"{x0 + k + .5:.1f},{Y(t):.1f}" for k, t in enumerate(v) if t is not None) + '"/>'
         grid = "".join(f'<line class="grid" x1="0" x2="{VS_H}" y1="{y}" y2="{y}"/>' for y in ("0.5", "50", "99.5"))
         return (f'<div class="hchart-panel{" pair" if pair else ""}"><div class="hchart-y" aria-hidden="true"><span>{T.num(hi_)}°</span><span>{T.num((hi_ + lo_) / 2)}°</span><span>{T.num(lo_)}°</span></div>'
                 f'<svg class="trend" viewBox="0 0 {VS_H} 100" preserveAspectRatio="none" role="img" aria-label="{aria}">'
                 f'<rect class="future" x="{VS_PAST}" y="0" width="{VS_H - VS_PAST}" height="100"/>{grid}{seg}{band}'
-                f'{line("t", 0, past)}{line("tf", VS_PAST, ahead)}{line("od", VS_PAST, odin) if odin else ""}'
+                f'{line("t", 0, past)}{line("od", VS_PAST, odin) if odin else ""}{line("tf", VS_PAST, ahead)}'
                 f'<line class="nowl" x1="{VS_PAST}" x2="{VS_PAST}" y1="0" y2="100"/></svg>{vs_axis()}</div>')
 
     def vs_heat():
-        """Varme pr. time: leveret før nu, Touch' plan og Odins plan side om side efter nu."""
+        """Varme pr. time: søjler for leveret (før nu) og Touch' plan (efter), Odins plan som trappelinje."""
         top = 6.0
         bars = ""
         for k in range(VS_PAST):
             h = past_q[k] / top * 100
-            bars += f'<rect class="ac" x="{k + .12:.2f}" y="{100 - h:.1f}" width=".76" height="{h:.1f}"/>'
-        for k in range(PH):
+            bars += f'<rect class="ac" x="{k + .15:.2f}" y="{100 - h:.1f}" width=".7" height="{h:.1f}"/>'
+        for k in range(VS_H - VS_PAST):
             h = p_out[k] / top * 100
-            bars += f'<rect class="ac" x="{VS_PAST + k + .1:.2f}" y="{100 - h:.1f}" width=".4" height="{h:.1f}"/>'
-            if k < 24:
-                ho = o_out[k] / top * 100
-                bars += f'<rect class="odb" x="{VS_PAST + k + .5:.2f}" y="{100 - ho:.1f}" width=".4" height="{ho:.1f}"/>'
+            bars += f'<rect class="ac" x="{VS_PAST + k + .15:.2f}" y="{100 - h:.1f}" width=".7" height="{h:.1f}"/>'
+        odl = " ".join(f"{VS_PAST + k},{100 - v / top * 100:.1f} {VS_PAST + k + 1},{100 - v / top * 100:.1f}" for k, v in enumerate(o_out))
         return (f'<div class="hchart-panel"><div class="hchart-y" aria-hidden="true"><span>{T.num(top, 0)} kW</span><span>0</span></div>'
                 f'<svg class="trend" viewBox="0 0 {VS_H} 100" preserveAspectRatio="none" role="img" aria-label="{T("planner.vsHeatAria")}">'
                 f'<rect class="future" x="{VS_PAST}" y="0" width="{VS_H - VS_PAST}" height="100"/><line class="grid" x1="0" x2="{VS_H}" y1="99.5" y2="99.5"/>{bars}'
-                f'<line class="nowl" x1="{VS_PAST}" x2="{VS_PAST}" y1="0" y2="100"/></svg>{vs_axis()}</div>')
+                f'<polyline class="odl" points="{odl}"/><line class="nowl" x1="{VS_PAST}" x2="{VS_PAST}" y1="0" y2="100"/></svg>{vs_axis()}</div>')
 
     def vs_chart():
         b_hi = [HOUSE_TARGET + 1.0] * PH
@@ -888,7 +893,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             </div>
             {vs_temp(past_t, b_lo, b_hi, t_touch, t_odin, T("planner.vsTempAria"))}
             {vs_heat()}
-            <p class="chart-legend" aria-hidden="true"><span><i class="lbd"></i>{T("planner.lBand")}</span><span><i class="lt"></i>{T("planner.lMeasured")}</span><span><i class="ltf"></i>{T("planner.lTouch")}</span><span><i class="lod"></i>{T("planner.lOdin")}</span><span><i class="lac"></i>{T("planner.lHeatTouch")}</span><span><i class="lodb"></i>{T("planner.lHeatOdin")}</span></p>
+            <p class="chart-legend" aria-hidden="true"><span><i class="lbd"></i>{T("planner.lBand")}</span><span><i class="lt"></i>{T("planner.lMeasured")}</span><span><i class="ltf"></i>{T("planner.lTouch")}</span><span><i class="lod"></i>{T("planner.lOdin")}</span><span><i class="lac"></i>{T("planner.lHeatTouch")}</span><span><i class="lodl"></i>{T("planner.lHeatOdin")}</span></p>
           </div>'''
 
     # Rum: én række pr. rum (nu, laveste og højeste de næste 24 t, timer under båndet, Touch' opladning
