@@ -30,8 +30,9 @@ TOK = json.loads((ROOT/"tokens/tokens.json").read_text(encoding="utf-8"))
 # "http" is the UI/CSS id; firmware API stores it as generic_http.
 KNOWN_HEAT_SOURCE_TYPES = frozenset({"http", "generic_http", "asgard"})
 
-# Tilstande (DESIGN.md 15): home har en visning pr. omfang, sys én visning.
-MODES = frozenset({"home", "sys"})
+# Tilstande (DESIGN.md 15): home og plan har en visning pr. omfang, sys én visning.
+# plan (Touch' planlægger, 15.11) er valgfri og står mellem home og sys.
+MODES = frozenset({"home", "plan", "sys"})
 LEGACY_MODES = frozenset({"dash", "conf"})
 # Valgfrie CSS-dele (@only-blokke) ud over projektets id.
 # legacy = Dashboard/Konfiguration-modellen (sektioner, Konfigurationens spalter).
@@ -106,6 +107,8 @@ def validate_cfg(cfg, path=""):
               file=sys.stderr)
     elif not set(modes) <= MODES:
         errs.append(f"modes must be {sorted(MODES)} (or legacy {sorted(LEGACY_MODES)}), got {modes}")
+    elif "plan" in modes and "home" not in modes:
+        errs.append("mode 'plan' requires 'home'")
 
     feats = cfg.get("features")
     if feats is not None and not (isinstance(feats, list) and all(f in KNOWN_FEATURES for f in feats)):

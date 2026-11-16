@@ -206,10 +206,12 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         return '<dl class="kv">' + "".join(f"<div><dt>{a}</dt><dd{f' class={chr(34)}{c}{chr(34)}' if c else ''}>{b}</dd></div>" for a, b, *cc in rows for c in [cc[0] if cc else ""]) + "</dl>"
 
     def sheet(sid, hashv, icon, tone, head, status, overview, history, settings=None):
-        tabs = [("o", "overview"), ("h", "history")] + ([("s", "settings")] if settings is not None else [])
+        # Kun faner med indhold (15.3): history=None udelader Historik.
+        tabs = [("o", "overview")] + ([("h", "history")] if history is not None else []) + ([("s", "settings")] if settings is not None else [])
         radios = "".join(f'<input class="state tab" type="radio" name="tab-{sid}" id="t-{sid}-{k}" value="{v}" data-hash="{T("hash." + v)}" aria-label="{T("tab." + v)}"{" checked" if k == "o" else ""}>' for k, v in tabs)
         labels = "".join(f'<label for="t-{sid}-{k}" data-tab="{v}">{T("tab." + v)}</label>' for k, v in tabs)
-        panels = (f'<section class="tab-panel" data-tab="overview">{overview}</section><section class="tab-panel" data-tab="history">{history}</section>'
+        panels = (f'<section class="tab-panel" data-tab="overview">{overview}</section>'
+                  + (f'<section class="tab-panel" data-tab="history">{history}</section>' if history is not None else "")
                   + (f'<section class="tab-panel" data-tab="settings">{settings}</section>' if settings is not None else ""))
         return f'''
   <div id="sheet-{sid}" popover class="sheet" role="dialog" aria-labelledby="sheet-{sid}-t" data-hash="{hashv}">
@@ -707,6 +709,254 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
 
     sheets = sheet_house + sheet_heat + sheet_plan + sheet_wx + sheet_pump + "".join(manifold_sheet(m) for m in MANIFOLDS) + "".join(room_sheet(r) for r in ROOMS)
 
+    # ================================================================ PLAN
+    # Touch' planlægger (DESIGN.md 15.11): 48 t frem fra kl. 14 i skyggedrift. Lange kørsler ved
+    # lav effekt i de billige timer; varmt vand kl. 02, legionella i morgen kl. 12. Laura og
+    # Josephine lades op før nordvestenvinden i nat; Stue forvarmes for kulden i morgen tidlig.
+    PH = 48
+    p_price = price + [round(v * f, 2) for v, f in zip(price, (1.04, 1.02, 0.98, 1.0, 1.06, 1.1, 1.08, 1.0, 0.96, 0.94, 0.9, 0.88, 0.9, 0.92, 0.94, 0.96, 1.0, 1.02, 1.04, 1.06, 1.04, 1.0, 1.0, 1.0))]
+    p_out = [0.0] * PH
+    for k, v in ((1, 3.4), (2, 3.6), (3, 3.6), (10, 3.4), (11, 3.6), (12, 4.0), (13, 4.2), (14, 4.2), (15, 4.0), (16, 3.6),
+                 (25, 3.4), (26, 3.6), (27, 3.6), (34, 3.6), (35, 3.8), (36, 4.2), (37, 4.4), (38, 4.4), (39, 4.0), (46, 3.4), (47, 3.4)):
+        p_out[k] = v
+    p_mode = ["heat"] * PH
+    p_mode[12] = "dhw"
+    p_mode[22] = "legionella"
+    p_out[22] = 3.2
+    p_flow = [None if p_out[k] == 0 else round(27.6 + 0.65 * p_out[k] + (2.0 if p_mode[k] != "heat" else 0), 1) for k in range(PH)]
+    FLOW_MAX = 35.0
+
+    def plan_x48():
+        q = '"'
+        xs = ""
+        for k in range(PH):
+            h = (NOW_H + k) % 24
+            if k and (h % 3 or k < 2):
+                continue
+            # 48 t: hver 12. time altid, hver 6. fra 300 px, hver 3. fra 520 px; ingen timemærker.
+            cls = "" if k == 0 else "" if h % 12 == 0 else "h3" if h % 6 == 0 else "h2"
+            # Midnat: ugedagen der begynder (_days[1] = i morgen, _days[2] = dagen efter).
+            text = T("plan.now") if k == 0 else (f'{h:02d}' if h else f'<b class="d">{T.meta("_days")[1 + (NOW_H + k) // 24 - 1]}</b>')
+            xs += f'<span' + (f' class={q}{cls}{q}' if cls else "") + f' style="left:{k / PH * 100:.2f}%">{text}</span>'
+        return xs
+
+    def stair(vals, lo_, hi_):
+        """Trappekurve i viewBox 0 0 PH 100; None bryder kurven (ingen værdi)."""
+        segs, cur = [], []
+        for k, v in enumerate(vals):
+            if v is None:
+                if cur:
+                    segs.append(cur)
+                cur = []
+                continue
+            y = (hi_ - v) / (hi_ - lo_) * 100
+            cur += [f"{k},{y:.1f}", f"{k + 1},{y:.1f}"]
+        if cur:
+            segs.append(cur)
+        return "".join(f'<polyline points="{" ".join(s)}"/>' for s in segs)
+
+    def planner_timeline():
+        q = '"'
+        ptop = 3.0
+        cells = "".join(f'<i class="plan-cell" data-scale="{price_scale(v)}" style="--v:{round(min(v, ptop) / ptop * 100)}"></i>' for v in p_price)
+        bars_ = "".join(f'<i class="plan-bar"' + (f' data-mode={q}{p_mode[k]}{q}' if p_mode[k] != "heat" else "") + f' style="--v:{round(v / 6 * 100)}"></i>' for k, v in enumerate(p_out))
+        flo, fhi = 25.0, 37.0
+        fy = (fhi - FLOW_MAX) / (fhi - flo) * 100
+        flow_svg = (f'<svg viewBox="0 0 {PH} 100" preserveAspectRatio="none" aria-hidden="true">'
+                    f'<line class="max" x1="0" x2="{PH}" y1="{fy:.1f}" y2="{fy:.1f}"/><g class="fl">{stair(p_flow, flo, fhi)}</g></svg>')
+        rows = (f'<div class="plan-lab plan-lab--y plan-lab--sm"><b>{T("plan.lanePrice")}</b><span class="plan-y"><i>{T.num(ptop, 0)}</i><i>0</i></span></div>'
+                f'<div class="plan-lane plan-lane--price">{cells}</div>'
+                f'<div class="plan-lab plan-lab--y"><b>{T("planner.laneOut")}</b><span class="plan-y"><i>6 kW</i><i>3</i><i>0</i></span></div>'
+                f'<div class="plan-lane plan-lane--out">{bars_}</div>'
+                f'<div class="plan-lab plan-lab--y plan-lab--flow"><b>{T("planner.laneFlow")}</b><span class="plan-y"><i>{T.num(fhi, 0)}°</i><i>{T.num(flo, 0)}°</i></span></div>'
+                f'<div class="plan-lane plan-lane--flow">{flow_svg}</div>')
+        legend = "".join(f'<span><i class="{c}"></i>{T(k)}</span>' for c, k in (
+            ("lprice", "plan.lPrice"), ("lbar", "planner.lOut"), ("ldhw", "plan.lDhw"), ("lleg", "planner.lLeg"),
+            ("lflow", "planner.lFlow"), ("lmax", "planner.lMax")))
+        return (f'<div class="plan plan--48" role="img" aria-label="{T("planner.planAria")}" style="--now:.4">{rows}<span></span>'
+                f'<div class="plan-x">{plan_x48()}</div></div>'
+                f'<div class="fc-legend" aria-hidden="true">{legend}</div>')
+
+    # Rum: forventet temperatur de næste 48 t. Opladning (charge) før vind/kulde, forvarmning (preload).
+    ROOM_PLAN = {"r06": ("charge", 6, 11, -0.9), "r07": ("charge", 6, 11, -0.7), "r05": ("preload", 13, 17, -0.4), "r09": ("charge", 6, 12, -1.3)}
+
+    def room_curve(r):
+        rid, tgt = r[0], r[5]
+        base = r[4] if r[4] is not None else tgt
+        kind, a, b, dip = ROOM_PLAN.get(rid, (None, 0, 0, 0))
+        out = []
+        for k in range(PH):
+            v = tgt + (base - tgt) * max(0.0, 1 - k / 8) + 0.15 * math.sin((k + int(rid[1:])) / 5)
+            if kind:
+                if a <= k < b:
+                    v += 0.08 * (k - a)              # lades op før vinden
+                elif b <= k < b + 10:
+                    v += 0.08 * (b - a) + dip * (k - b) / 10 * 1.2   # vinden tager varmen
+                elif b + 10 <= k < b + 18:
+                    v += 0.08 * (b - a) + dip * 1.2 * (1 - (k - b - 10) / 8)
+            out.append(round(v * 10) / 10)
+        return out
+
+    def room_lanes():
+        rows = ""
+        for r in ROOMS:
+            rid, name, tgt = r[0], r[1], r[5]
+            lab_ = f'<div class="plan-lab plan-lab--room">{name}<small>{T("planner.roomTarget", t=T.num(tgt))}</small></div>'
+            if r[4] is None:
+                rows += lab_ + f'<div class="plan-empty-lane">{T("planner.roomNoData")}</div>'
+                continue
+            vals = room_curve(r)
+            lo_, hi_ = tgt - 1.5, tgt + 1.5          # temperaturakse 3 °C
+            y = lambda t: (hi_ - t) / (hi_ - lo_) * 100
+            band = f'<rect class="rb" x="0" y="{y(tgt + 0.5):.1f}" width="{PH}" height="{y(tgt - 0.5) - y(tgt + 0.5):.1f}"/>'
+            low = "".join(f'<rect class="lo" x="{k + .06:.2f}" y="88" width=".88" height="12"/>' for k, v in enumerate(vals) if v < tgt - 0.5)
+            seg_ = ""
+            if rid in ROOM_PLAN:
+                kind, a, b, _ = ROOM_PLAN[rid]
+                title = T("plan.charge") if kind == "charge" else T("plan.preload")
+                ins = " data-insufficient" if rid == "r09" else ""
+                seg_ = f'<span class="plan-seg" data-kind="{kind}"{ins} style="--a:{a};--b:{b}" title="{T("plan.insufficient") if ins else title}"></span>'
+            rows += (lab_ + f'<div class="plan-lane plan-lane--room">{seg_}<svg viewBox="0 0 {PH} 100" preserveAspectRatio="none" aria-hidden="true">'
+                     f'{band}{low}<g class="exp">{stair(vals, lo_, hi_)}</g></svg></div>')
+        legend = "".join(f'<span><i class="{c}"></i>{T(k)}</span>' for c, k in (
+            ("lrb", "planner.lRoomBand"), ("llo", "planner.lBelow"), ("lch", "plan.charge"), ("lpre", "plan.preload"), ("lins", "plan.insufficient")))
+        return (f'<div class="plan plan--48" role="img" aria-label="{T("planner.roomsAria")}" style="--now:.4">{rows}<span></span>'
+                f'<div class="plan-x">{plan_x48()}</div></div>'
+                f'<div class="fc-legend" aria-hidden="true">{legend}</div>')
+
+    def help_(pid, title, body, anchor):
+        return (f'<button class="help-btn" type="button" popovertarget="help-{pid}" aria-label="{T("help.aria", x=title)}">?</button>'
+                f'<div id="help-{pid}" popover class="help-pop"><p>{body}</p>'
+                f'<a href="https://github.com/Birkemosen/lune-coordinator/blob/main/docs/Manual.md#{anchor}">{T("help.more")}</a></div>')
+
+    def conf(level_):
+        tone, key = {"ok": ("ok", "planner.confOk"), "learning": ("violet", "planner.confLearning"), "low": ("", "planner.confLow")}[level_]
+        return f'<span class="badge{" " + tone if tone else ""}">{T(key)}</span>'
+
+    model_rows = [
+        (T("planner.mLoss"), f'{T.num(0.145, 3)} <small>kW/K</small>', T("planner.mDays", n=37), conf("ok")),
+        (T("planner.mMass"), f'{T.num(23.4)} <small>kWh/K</small>', T("planner.mDays", n=37), conf("ok")),
+        (T("planner.mFloor"), f'{T.num(0.87, 2)} <small>kW/K</small>', T("planner.mDays", n=21), conf("ok")),
+        (T("planner.mSolar"), f'{T.num(0.019, 3)}', T("planner.mDays", n=12), conf("learning")),
+        (T("planner.mWind"), f'{T.num(0.021, 3)} <small>{T("planner.perMs")}</small>', T("planner.mDays", n=9), conf("learning")),
+        (T("planner.mDhw"), dash, T("planner.mDays", n=0), conf("low")),
+    ]
+    model_tbl = ('<div class="table-wrap"><table class="table"><thead><tr>'
+                 f'<th>{T("planner.mWhat")}</th><th class="num">{T("planner.mValue")}</th><th>{T("planner.mConf")}</th></tr></thead><tbody>'
+                 + "".join(f'<tr><td>{a}</td><td class="num">{b}</td><td>{d} <small class="muted">{c}</small></td></tr>' for a, b, c, d in model_rows) + '</tbody></table></div>')
+    cops = ((3.2, (3.9, 4.6, 5.2)), (4.5, (3.7, 4.4, 5.0)), (6.0, (3.5, 4.2, 4.7)), (8.0, (3.2, 3.9, 4.4)))
+    cop_tbl = ('<div class="table-wrap"><table class="table"><thead><tr>'
+               f'<th>{T("planner.copOut")}</th>' + "".join(f'<th class="num">{T("planner.copAt", t=t)}</th>' for t in ("0", "7", "12")) + '</tr></thead><tbody>'
+               + "".join(f'<tr><td>{T.num(p)} kW</td>' + "".join(f'<td class="num">{T.num(c)}</td>' for c in cs) + '</tr>' for p, cs in cops) + '</tbody></table></div>')
+
+    # Plan mod faktisk: planlæggerens egen forudsigelse (stiplet) mod målt husets temperatur, og
+    # planlagt mod leveret varme pr. time. Kun planlæggerens tal — sammenligning med Odin hører til Home Assistant.
+    def pa_panel(rng, n):
+        W = 240
+        lo_, hi_ = 20.5, 23.5
+        meas = series(31 if rng == "24h" else 33, n, 21.9, .35, .06)
+        fc = [round(v + .12 * math.sin(k / 3.1), 2) for k, v in enumerate(meas)]
+        X = lambda k: round(k * W / (n - 1), 1)
+        Y = lambda t: round((hi_ - t) / (hi_ - lo_) * 100, 1)
+        sp = f'<path class="sp" d="M0,{Y(21.0)} H{W}"/>'
+        t_ = f'<path class="t" d="M' + " L".join(f"{X(k)},{Y(v)}" for k, v in enumerate(meas)) + '"/>'
+        tf = f'<path class="tf" d="M' + " L".join(f"{X(k)},{Y(v)}" for k, v in enumerate(fc)) + '"/>'
+        temp = (f'<div class="hchart-panel pair" data-range="{rng}"><div class="hchart-y" aria-hidden="true"><span>{T.num(hi_)}°</span><span>{T.num(lo_)}°</span></div>'
+                f'<svg class="trend" viewBox="0 0 {W} 100" preserveAspectRatio="none" role="img" aria-label="{T("planner.paTempAria")}">'
+                f'<line class="grid" x1="0" x2="{W}" y1="0.5" y2="0.5"/><line class="grid" x1="0" x2="{W}" y1="50" y2="50"/><line class="grid" x1="0" x2="{W}" y1="99.5" y2="99.5"/>'
+                f'{sp}{t_}{tf}</svg><div class="axis" aria-hidden="true"></div></div>')
+        hours = 24 if rng == "24h" else 7
+        bw = W / hours
+        plan_v = [0, 0, 3.4, 3.6, 3.6, 0, 0, 0, 0, 0, 3.4, 3.6, 4.0, 4.2, 4.2, 4.0, 3.6, 0, 0, 0, 0, 0, 0, 0] if rng == "24h" else [52, 61, 58, 66, 49, 55, 63]
+        act_v = [0, 0, 3.6, 3.9, 3.5, 0.2, 0, 0, 0, 0, 3.3, 3.8, 4.3, 4.1, 4.4, 3.8, 3.4, 0, 0, 0, 0, 0, 0, 0] if rng == "24h" else [55, 59, 60, 64, 52, 54, 65]
+        top = 6.0 if rng == "24h" else 80
+        bars = ""
+        for k in range(hours):
+            x = k * bw
+            hp = plan_v[k] / top * 100
+            ha = act_v[k] / top * 100
+            bars += (f'<rect class="pl" x="{x + bw * .12:.1f}" y="{100 - hp:.1f}" width="{bw * .36:.1f}" height="{hp:.1f}"/>'
+                     f'<rect class="ac" x="{x + bw * .52:.1f}" y="{100 - ha:.1f}" width="{bw * .36:.1f}" height="{ha:.1f}"/>')
+        if rng == "24h":
+            ax = (f'<span>−24 {H}</span><span>−18 {H}</span><span>−12 {H}</span><span>−6 {H}</span><span>{T("trend.now")}</span>')
+        else:
+            ax = "".join(f'<span>−{d} {T("planner.dayShort")}</span>' for d in (7, 5, 3, 1)) + f'<span>{T("trend.now")}</span>'
+        unit = "kWh"
+        energy = (f'<div class="hchart-panel" data-range="{rng}"><div class="hchart-y" aria-hidden="true"><span>{T.num(top, 0)} {unit}</span><span>0</span></div>'
+                  f'<svg class="trend" viewBox="0 0 {W} 100" preserveAspectRatio="none" role="img" aria-label="{T("planner.paEnergyAria")}">'
+                  f'<line class="grid" x1="0" x2="{W}" y1="99.5" y2="99.5"/>{bars}</svg><div class="axis" aria-hidden="true">{ax}</div></div>')
+        return temp + energy
+
+    pa_chart = f'''
+          <div class="hchart">
+            <input class="state" type="radio" name="pa-range" id="pa-24h" value="24h" checked aria-label="{T("planner.r24")}">
+            <input class="state" type="radio" name="pa-range" id="pa-7d" value="7d" aria-label="{T("planner.r7")}">
+            <div class="hchart-head">
+              <dl class="metrics">
+                {metric(T("planner.paTempErr"), "±" + T.num(0.2), "K")}
+                {metric(T("planner.paEnergy"), f"{T.num(61, 0)} / {T.num(64, 0)}", "kWh")}
+                {metric(T("planner.paCost"), f"{T.num(5.1, 2)} / {T.num(5.32, 2)}", "€")}
+              </dl>
+            </div>
+            <div class="hchart-range" aria-hidden="true"><label for="pa-24h" data-range="24h">{T("planner.r24")}</label><label for="pa-7d" data-range="7d">{T("planner.r7")}</label></div>
+            {pa_panel("24h", 24)}{pa_panel("7d", 42)}
+            <p class="chart-legend" aria-hidden="true"><span><i class="lt"></i>{T("planner.lMeasured")}</span><span><i class="ltf"></i>{T("planner.lForecast")}</span><span><i class="lsp"></i>{T("legend.target")}</span><span><i class="lpl"></i>{T("planner.lPlanned")}</span><span><i class="lac"></i>{T("planner.lDelivered")}</span></p>
+          </div>'''
+
+    planner_view = f'''
+      <section class="view" id="v-plan-house" aria-labelledby="h-plan">
+        <header class="view-head">
+          <h2 id="h-plan">{T("planner.title")}</h2>
+          <span class="badge violet">{T("planner.shadow")}</span>
+          <p>{T("planner.sub", e=T.num(sum(p_out), 0), c=T.num(9.4, 2))}</p>
+          <button class="btn vh-end" type="button" popovertarget="sheet-planner" data-tab="settings">{T("planner.openSettings")}</button>
+        </header>
+        <section class="panel" aria-labelledby="h-pl48">
+          <header class="panel-head"><h3 id="h-pl48">{T("planner.plan48")}</h3>{help_("pl48", T("planner.plan48"), T("planner.plan48Help"), "planner-plan")}<p>{T("planner.plan48Sub")}</p></header>
+          {planner_timeline()}
+        </section>
+        <section class="panel" aria-labelledby="h-plrooms">
+          <header class="panel-head"><h3 id="h-plrooms">{T("planner.rooms")}</h3>{help_("plrooms", T("planner.rooms"), T("planner.roomsHelp"), "planner-rooms")}<p>{T("planner.roomsSub", n=sum(1 for k in ROOM_PLAN))}</p></header>
+          {room_lanes()}
+        </section>
+        <section class="panel c5" aria-labelledby="h-plmodel">
+          <header class="panel-head"><h3 id="h-plmodel">{T("planner.model")}</h3>{help_("plmodel", T("planner.model"), T("planner.modelHelp"), "planner-model")}</header>
+          {model_tbl}
+          <div class="sub"><h4>{T("planner.cop")}</h4>{cop_tbl}<p class="note">{T("planner.copNote")}</p></div>
+        </section>
+        <section class="panel c7" aria-labelledby="h-plpa">
+          <header class="panel-head"><h3 id="h-plpa">{T("planner.pa")}</h3>{help_("plpa", T("planner.pa"), T("planner.paHelp"), "planner-accuracy")}<p>{T("planner.paSub")}</p></header>
+          {pa_chart}
+        </section>
+      </section>'''
+
+    # Planlæggerens ark: Overblik (hvad den gør, kilder) og Indstillinger (strategi, effekt).
+    r_st, seg_st = seg("strategy", "st", [("comfort", T("planner.stComfort")), ("weighted", T("planner.stWeighted")), ("price", T("planner.stPrice"))], "comfort", T("planner.strategy"))
+    planner_set = f'''
+        <form data-save="planner">
+          {r_st}
+          {group(T("planner.strategy"), srow(f'<span>{T("planner.priority")}</span>', seg_st, T("planner.strategyHint")))}
+          {typed("comfort", f'<p class="note">{T("planner.stComfortNote")}</p>')}
+          {typed("weighted", group(T("planner.stWeighted"), sstep("comfort_weight", T("planner.weight"), 0.5, 0, 5, 0.05, T("planner.weightUnit"), dec=2, hint=T("planner.weightHint"))))}
+          {typed("price", f'<p class="note">{T("planner.stPriceNote")}</p>')}
+          {group(T("planner.output"), sstep("min_output_kw", T("planner.minOut"), 3.2, 0, 10, 0.1, "kW", hint=T("planner.minOutHint")) +
+                 sstep("max_output_kw", T("planner.maxOut"), 8.0, 1, 16, 0.1, "kW", hint=T("planner.maxOutHint")) +
+                 sstep("max_flow_c", T("planner.maxFlow"), FLOW_MAX, 25, 55, 0.5, "°C"))}
+          {group(T("planner.mode"), rrow(T("planner.modeNow"), f'<b>{T("planner.shadow")}</b>', T("planner.modeNowHint")))}
+          {savebar("planner")}
+        </form>'''
+    planner_over = f'''
+        <dl class="metrics">
+          {metric(T("planner.oNext"), T("tile.planVal", a="15", b="18"), "")}
+          {metric(T("planner.oEnergy"), T.num(sum(p_out[:24]), 0), "kWh")}
+          {metric(T("planner.oCost"), T.num(4.62, 2), "€")}
+        </dl>
+        {kv([(T("planner.modeNow"), T("planner.shadow"), "c-violet"), (T("planner.oSolved"), T("rt.minutesAgo", v=6)), (T("planner.oNextSolve"), "15:00"),
+             (T("planner.oTelemetry"), T("planner.oTelemetryVal")), (T("planner.oPrices"), T("planner.oPricesVal")), (T("planner.oWeather"), "Open-Meteo · " + T("rt.minutesAgo", v=11))])}
+        <p class="note">{T("planner.shadowNote")}</p>'''
+    sheet_planner = sheet("planner", T("hash.planner"), I["plan"], "violet", T("planner.sheet"), T("planner.sheetStatus"), planner_over, None, planner_set)
+    sheets += sheet_planner
+
     # ================================================================ SYSTEM
     def syscat(cat, title, body, badge=""):
         return (f'<section class="sys-cat" data-cat="{cat}" aria-labelledby="h-c-{cat}"><label class="sys-back" for="c-none">{T("sys.title")}</label>'
@@ -902,6 +1152,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
     LOGO = ('<svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="var(--fg)"/>'
             '<path d="M10 22V12M14 22V10M18 22V13M22 22V11" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/></svg>')
     I_HOME = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>'
+    I_PLAN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16"/><path d="M7 15l4-5 3 3 5-6"/></svg>'
     I_SYS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>'
     css_tag = f"<style>\n{inline_css}\n</style>" if inline_css else f'<link rel="stylesheet" href="{css_href}">'
     js_tag = (f"<script>\n{FORMS_JS}</script>\n<script>\n{(ROOT / 'binder.js').read_text(encoding='utf-8')}</script>" if inline_css
@@ -920,8 +1171,9 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
 </head>
 <body>
 
-<!-- TILSTAND — før .app: Hjem/System, omfang (kun huset), tema -->
+<!-- TILSTAND — før .app: Hjem/Plan/System, omfang (kun huset), tema -->
 <input class="state" type="radio" name="mode" id="m-home" checked aria-label="{T("nav.home")}">
+<input class="state" type="radio" name="mode" id="m-plan" data-hash="{T("hash.planPage")}" aria-label="{T("nav.plan")}">
 <input class="state" type="radio" name="mode" id="m-sys" data-hash="{T("hash.system")}" aria-label="{T("nav.system")}">
 <input class="state" type="radio" name="scope" id="s-house" checked aria-label="{T("scope.house")}">
 <input class="state" type="checkbox" id="theme" aria-label="{T("theme.toggle")}">
@@ -946,6 +1198,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
       </details>
       <nav class="mode" aria-label="{T("nav.label")}">
         <label for="m-home">{I_HOME}{T("nav.home")}</label>
+        <label for="m-plan">{I_PLAN}{T("nav.plan")}</label>
         <label for="m-sys">{I_SYS}{T("nav.system")}</label>
       </nav>
       <div class="tools">
@@ -959,7 +1212,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
       </div>
     </header>
   </div>
-  <main class="content wrap">{home}{sys_view}
+  <main class="content wrap">{home}{planner_view}{sys_view}
   </main>
 {sheets}
 </div>
