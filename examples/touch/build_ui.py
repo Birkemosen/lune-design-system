@@ -758,7 +758,10 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
     def planner_timeline():
         q = '"'
         ptop = 3.0
-        cells = "".join(f'<i class="plan-cell" data-scale="{price_scale(v)}" style="--v:{round(min(v, ptop) / ptop * 100)}"></i>' for v in p_price)
+        # De sidste 11 timer er ikke offentliggjort endnu: samme time i det seneste kendte døgn, uden farve.
+        est_from = len(p_price) - 11
+        cells = "".join(f'<i class="plan-cell"{"" if k >= est_from else f" data-scale=\"{price_scale(v)}\""} style="--v:{round(min(v, ptop) / ptop * 100)}"></i>'
+                        for k, v in enumerate(p_price))
         bars_ = "".join(f'<i class="plan-bar"' + (f' data-mode={q}{p_mode[k]}{q}' if p_mode[k] != "heat" else "") + f' style="--v:{round(v / 6 * 100)}"></i>' for k, v in enumerate(p_out))
         flo, fhi = 25.0, 37.0
         fy = (fhi - FLOW_MAX) / (fhi - flo) * 100
