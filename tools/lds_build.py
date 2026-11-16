@@ -344,6 +344,15 @@ def state_css(cfg):
              " { background: var(--inv-bg); color: var(--inv-fg); }")
     L.append(",\n".join(f'  #m-{m}:focus-visible ~ .app .mode label[for="m-{m}"]' for m in all_modes) +
              " { outline: 2px solid var(--focus); outline-offset: 2px; }")
+    if len(all_modes) >= 3:
+        # Tablet: tre tilstande + brand + værktøjer er bredere end headeren. De inaktive viser
+        # kun ikonet; teksten står stadig i labelen (skærmlæsere), den aktive viser den.
+        L.append("  /* Tablet med 3+ tilstande: inaktive tilstande som ikon */")
+        L.append("  @media (min-width: 768px) and (max-width: 1023.98px) {")
+        L.append("    .mode label { font-size: 0; gap: 0; padding-inline: var(--space-3); }")
+        L.append(",\n".join(f'    #m-{m}:checked ~ .app .mode label[for="m-{m}"]' for m in all_modes) +
+                 " { font-size: var(--fs-sm); gap: var(--space-2); padding-inline: var(--space-5); }")
+        L.append("  }")
     L.append("")
     if "sys" in all_modes:
         L.append("  /* System: én visning; strimlen hører til Hjem */")

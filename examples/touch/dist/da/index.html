@@ -12,7 +12,7 @@
 
 <!-- TILSTAND — før .app: Hjem/Plan/System, omfang (kun huset), tema -->
 <input class="state" type="radio" name="mode" id="m-home" checked aria-label="Hjem">
-<input class="state" type="radio" name="mode" id="m-plan" data-hash="planlaegger" aria-label="Plan">
+<input class="state" type="radio" name="mode" id="m-plan" data-hash="opvarmningsplan" aria-label="Opvarmningsplan">
 <input class="state" type="radio" name="mode" id="m-sys" data-hash="system" aria-label="System">
 <input class="state" type="radio" name="scope" id="s-house" checked aria-label="Huset">
 <input class="state" type="checkbox" id="theme" aria-label="Skift lyst/mørkt tema">
@@ -49,7 +49,7 @@
       </details>
       <nav class="mode" aria-label="Hovedmenu">
         <label for="m-home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>Hjem</label>
-        <label for="m-plan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16"/><path d="M7 15l4-5 3 3 5-6"/></svg>Plan</label>
+        <label for="m-plan"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h16"/><path d="M7 15l4-5 3 3 5-6"/></svg>Opvarmningsplan</label>
         <label for="m-sys"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>System</label>
       </nav>
       <div class="tools">
@@ -234,7 +234,7 @@
       </section>
       <section class="view" id="v-plan-house" aria-labelledby="h-plan">
         <header class="view-head">
-          <h2 id="h-plan">Planlægger</h2>
+          <h2 id="h-plan">Opvarmningsplan</h2>
           <span class="badge violet">Skyggedrift</span>
           <p>De næste 48 timer: ca. 83 kWh varme for ca. 9,40 €. Planen vises kun; den styrer ikke varmekilden.</p>
           <button class="btn vh-end" type="button" popovertarget="sheet-planner" data-tab="settings">Åbn indstillinger</button>
@@ -892,7 +892,7 @@
     <input class="state tab" type="radio" name="tab-planner" id="t-planner-o" value="overview" data-hash="overblik" aria-label="Overblik" checked><input class="state tab" type="radio" name="tab-planner" id="t-planner-s" value="settings" data-hash="indstillinger" aria-label="Indstillinger">
     <header class="sheet-head">
       <span class="chip-icon" data-tone="violet" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span>
-      <div><h2 id="sheet-planner-t">Planlægger</h2><p>Skyggedrift · skriver intet til varmekilden</p></div>
+      <div><h2 id="sheet-planner-t">Opvarmningsplan</h2><p>Skyggedrift · skriver intet til varmekilden</p></div>
       <button class="sheet-close" type="button" popovertarget="sheet-planner" popovertargetaction="hide" aria-label="Luk">×</button>
       <nav class="tabs" aria-label="Faner"><label for="t-planner-o" data-tab="overview">Overblik</label><label for="t-planner-s" data-tab="settings">Indstillinger</label></nav>
     </header>
