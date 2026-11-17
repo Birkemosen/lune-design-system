@@ -1055,7 +1055,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             hp = plan_v[k] / top * 100
             ha = act_v[k] / top * 100
             bars += (f'<rect class="pl" x="{x + bw * .12:.1f}" y="{100 - hp:.1f}" width="{bw * .36:.1f}" height="{hp:.1f}"/>'
-                     f'<rect class="ac" x="{x + bw * .52:.1f}" y="{100 - ha:.1f}" width="{bw * .36:.1f}" height="{ha:.1f}"/>')
+                     f'<rect class="dl" x="{x + bw * .52:.1f}" y="{100 - ha:.1f}" width="{bw * .36:.1f}" height="{ha:.1f}"/>')
         if rng == "24h":
             ax = (f'<span>−24 {H}</span><span>−18 {H}</span><span>−12 {H}</span><span>−6 {H}</span><span>{T("trend.now")}</span>')
         else:
@@ -1079,7 +1079,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             </div>
             <div class="hchart-range" aria-hidden="true"><label for="pa-24h" data-range="24h">{T("planner.r24")}</label><label for="pa-7d" data-range="7d">{T("planner.r7")}</label></div>
             {pa_panel("24h", 24)}{pa_panel("7d", 42)}
-            <p class="chart-legend" aria-hidden="true"><span><i class="lt"></i>{T("planner.lMeasured")}</span><span><i class="ltf"></i>{T("planner.lForecast")}</span><span><i class="lsp"></i>{T("legend.target")}</span><span><i class="lpl"></i>{T("planner.lPlanned")}</span><span><i class="lac"></i>{T("planner.lDelivered")}</span></p>
+            <p class="chart-legend" aria-hidden="true"><span><i class="lt"></i>{T("planner.lMeasured")}</span><span><i class="ltf"></i>{T("planner.lForecast")}</span><span><i class="lsp"></i>{T("legend.target")}</span><span><i class="lpl"></i>{T("planner.lPlanned")}</span><span><i class="ldl"></i>{T("planner.lDelivered")}</span></p>
           </div>'''
 
     planner_view = f'''
