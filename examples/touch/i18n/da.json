@@ -122,7 +122,7 @@
   "alert.roomFaultBody": "Ventilen holdes lukket, indtil fejlen er nulstillet på V6. Tjek aktuatoren først.",
   "alert.motorFault": "Motorfejl: {reason}",
   "fault.endstop": "endestop timeout",
-  "tile.heat": "Opvarmning",
+  "tile.heat": "Varmekilde",
   "tile.heatStatus": "Hviler · Odin styrer",
   "tile.heatSub": "fremløb → retur",
   "tile.flow": "Frem",

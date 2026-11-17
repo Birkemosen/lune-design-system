@@ -122,7 +122,7 @@
   "alert.roomFaultBody": "The valve stays closed until the fault is reset on the V6. Check the actuator first.",
   "alert.motorFault": "Motor fault: {reason}",
   "fault.endstop": "end-stop timeout",
-  "tile.heat": "Heating",
+  "tile.heat": "Heat source",
   "tile.heatStatus": "Idle · Odin in control",
   "tile.heatSub": "flow → return",
   "tile.flow": "Flow",
