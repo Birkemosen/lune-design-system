@@ -899,7 +899,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         bars = ""
         for k in range(VS_PAST):
             h = past_q[k] / top * 100
-            bars += f'<rect class="ac" x="{k + .15:.2f}" y="{100 - h:.1f}" width=".7" height="{h:.1f}"/>'
+            bars += f'<rect class="dl" x="{k + .15:.2f}" y="{100 - h:.1f}" width=".7" height="{h:.1f}"/>'
         for k in range(VS_H - VS_PAST):
             h = p_out[k] / top * 100
             bars += f'<rect class="ac" x="{VS_PAST + k + .12:.2f}" y="{100 - h:.1f}" width=".36" height="{h:.1f}"/>'
@@ -939,7 +939,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             </div>
             {vs_temp(past_t, t_touch, t_odin, vs_lo, vs_hi, vs_sp, T("planner.vsTempAria"), strips=vs_rows)}
             {vs_heat()}
-            <p class="chart-legend" aria-hidden="true"><span><i class="lbd"></i>{T("planner.lBand")}</span><span><i class="lsp"></i>{T("planner.lScheduled")}</span><span><i class="lt"></i>{T("planner.lMeasured")}</span><span><i class="ltf"></i>{T("planner.lTouch")}</span><span><i class="lod"></i>{T("planner.lOdin")}</span><span><i class="lstrip"></i>{T("planner.lStrip")}</span><span><i class="lac"></i>{T("planner.lHeatTouch")}</span><span><i class="lodb"></i>{T("planner.lHeatOdin")}</span></p>
+            <p class="chart-legend" aria-hidden="true"><span><i class="lbd"></i>{T("planner.lBand")}</span><span><i class="lsp"></i>{T("planner.lScheduled")}</span><span><i class="lt"></i>{T("planner.lMeasured")}</span><span><i class="ltf"></i>{T("planner.lTouch")}</span><span><i class="lod"></i>{T("planner.lOdin")}</span><span><i class="lstrip"></i>{T("planner.lStrip")}</span><span><i class="ldl"></i>{T("planner.lDelivered")}</span><span><i class="lac"></i>{T("planner.lHeatTouch")}</span><span><i class="lodb"></i>{T("planner.lHeatOdin")}</span></p>
           </div>'''
 
     # Rum: én række pr. rum (nu, laveste og højeste de næste 24 t, timer under båndet, Touch' opladning
