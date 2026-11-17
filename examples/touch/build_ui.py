@@ -894,7 +894,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
                 f'<line class="nowl" x1="{VS_PAST}" x2="{VS_PAST}" y1="0" y2="100"/></svg>{vs_axis()}</div>')
 
     def vs_heat():
-        """Varme pr. time: søjler for leveret (før nu) og Touch' plan (efter), Odins plan som trappelinje."""
+        """Varme pr. time: søjler for leveret (før nu); efter nu Touch' og Odins plan side om side."""
         top = 6.0
         bars = ""
         for k in range(VS_PAST):
@@ -902,12 +902,14 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             bars += f'<rect class="ac" x="{k + .15:.2f}" y="{100 - h:.1f}" width=".7" height="{h:.1f}"/>'
         for k in range(VS_H - VS_PAST):
             h = p_out[k] / top * 100
-            bars += f'<rect class="ac" x="{VS_PAST + k + .15:.2f}" y="{100 - h:.1f}" width=".7" height="{h:.1f}"/>'
-        odl = " ".join(f"{VS_PAST + k},{100 - v / top * 100:.1f} {VS_PAST + k + 1},{100 - v / top * 100:.1f}" for k, v in enumerate(o_out))
+            bars += f'<rect class="ac" x="{VS_PAST + k + .12:.2f}" y="{100 - h:.1f}" width=".36" height="{h:.1f}"/>'
+            if k < len(o_out):
+                h = o_out[k] / top * 100
+                bars += f'<rect class="odb" x="{VS_PAST + k + .52:.2f}" y="{100 - h:.1f}" width=".36" height="{h:.1f}"/>'
         return (f'<div class="hchart-panel"><div class="hchart-y" aria-hidden="true"><span>{T.num(top, 0)} kW</span><span>0</span></div>'
                 f'<svg class="trend" viewBox="0 0 {VS_H} 100" preserveAspectRatio="none" role="img" aria-label="{T("planner.vsHeatAria")}">'
                 f'<rect class="future" x="{VS_PAST}" y="0" width="{VS_H - VS_PAST}" height="100"/><line class="grid" x1="0" x2="{VS_H}" y1="99.5" y2="99.5"/>{bars}'
-                f'<polyline class="odl" points="{odl}"/><line class="nowl" x1="{VS_PAST}" x2="{VS_PAST}" y1="0" y2="100"/></svg>{vs_axis()}</div>')
+                f'<line class="nowl" x1="{VS_PAST}" x2="{VS_PAST}" y1="0" y2="100"/></svg>{vs_axis()}</div>')
 
     def vs_chart():
         b_hi = [HOUSE_TARGET + 1.0] * PH
@@ -937,7 +939,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
             </div>
             {vs_temp(past_t, t_touch, t_odin, vs_lo, vs_hi, vs_sp, T("planner.vsTempAria"), strips=vs_rows)}
             {vs_heat()}
-            <p class="chart-legend" aria-hidden="true"><span><i class="lbd"></i>{T("planner.lBand")}</span><span><i class="lsp"></i>{T("planner.lScheduled")}</span><span><i class="lt"></i>{T("planner.lMeasured")}</span><span><i class="ltf"></i>{T("planner.lTouch")}</span><span><i class="lod"></i>{T("planner.lOdin")}</span><span><i class="lstrip"></i>{T("planner.lStrip")}</span><span><i class="lac"></i>{T("planner.lHeatTouch")}</span><span><i class="lodl"></i>{T("planner.lHeatOdin")}</span></p>
+            <p class="chart-legend" aria-hidden="true"><span><i class="lbd"></i>{T("planner.lBand")}</span><span><i class="lsp"></i>{T("planner.lScheduled")}</span><span><i class="lt"></i>{T("planner.lMeasured")}</span><span><i class="ltf"></i>{T("planner.lTouch")}</span><span><i class="lod"></i>{T("planner.lOdin")}</span><span><i class="lstrip"></i>{T("planner.lStrip")}</span><span><i class="lac"></i>{T("planner.lHeatTouch")}</span><span><i class="lodb"></i>{T("planner.lHeatOdin")}</span></p>
           </div>'''
 
     # Rum: én række pr. rum (nu, laveste og højeste de næste 24 t, timer under båndet, Touch' opladning
