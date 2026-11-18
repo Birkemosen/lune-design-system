@@ -360,9 +360,10 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
     wind = [6, 7, 9, 11, 12, 12, 11, 10, 9, 8, 7, 6, 6, 5, 5, 5, 4, 4, 5, 6, 6, 7, 7, 6]
 
     # Elprisens 5 trin (DESIGN.md 3.2.3): gennemsnittet af timens rang i døgnet og dens niveau
-    # mod de sidste 30 dage og mod årsgennemsnittet (her 2,43 og 1,52), så en billig dag ikke får
-    # røde timer, og en dyr måned stadig ses.
-    MONTH_PRICE, YEAR_PRICE = 2.43, 1.52
+    # mod de sidste 30 dage og mod årsgennemsnittet med alt (her 2,43 og 1,73: spot 1,01 med
+    # dagens nettarif, afgifter og moms), så en billig dag ikke får røde timer, og en dyr måned
+    # stadig ses.
+    MONTH_PRICE, YEAR_PRICE = 2.43, 1.73
 
     def price_level(v, ref):
         r = v / ref
@@ -1314,7 +1315,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
                srow(lab("price_zone", T("price.zone")), '<select class="select" id="price_zone" name="zone"><option selected>DK1</option><option>DK2</option></select>') +
                sinput("entsoe_token", T("price.token"), "", "w-md", id_="price_token", hint=T("price.tokenHint"), extra=' autocomplete="off"'))}
         {odin_f}{touch_f}
-        {group(T("price.normal"), sstep("reference_price", T("price.reference"), 1.52, 0, 10, 0.01, T("price.unit"), dec=2, hint=T("price.referenceHint")) +
+        {group(T("price.normal"), sstep("reference_price", T("price.reference"), 1.01, 0, 10, 0.01, T("price.unit"), dec=2, hint=T("price.referenceHint")) +
                rrow(T("price.month"), f'{T.num(2.43, 2)} {T("price.unit")}'))}
         {group(T("price.status"), rrow(T("price.now"), f'<b>{T.num(1.82, 2)} {T("price.unit")}</b> <span class="scale-chip" data-scale="2">{T("price.scale.2")}</span>') +
                srow(f'<span>{T("price.lastPush")}</span>', f'<button class="btn" type="button" data-action="price-push">{T("price.pushNow")}</button>', T("rt.minutesAgo", v=4)))}
