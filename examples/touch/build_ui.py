@@ -359,11 +359,10 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
     expected = [22.0, 22.1, 22.3, 22.4, 22.3, 22.2, 22.1, 22.0, 21.9, 21.9, 21.8, 21.8, 22.0, 22.2, 22.3, 22.2, 22.1, 22.0, 21.9, 21.9, 21.8, 21.8, 21.7, 21.7]
     wind = [6, 7, 9, 11, 12, 12, 11, 10, 9, 8, 7, 6, 6, 5, 5, 5, 4, 4, 5, 6, 6, 7, 7, 6]
 
-    # Elprisens 5 trin (DESIGN.md 3.2.3): gennemsnittet af timens rang i døgnet og dens niveau
-    # mod de sidste 30 dage og mod årsgennemsnittet med alt (her 2,43 og 1,48: spot 1,01 med moms
-    # og dagens nettarif og afgifter), så en billig dag ikke får røde timer, og en dyr måned
-    # stadig ses.
-    MONTH_PRICE, YEAR_PRICE = 2.43, 1.48
+    # Elprisens 5 trin (DESIGN.md 3.2.3): gennemsnittet af timens rang i døgnet, prisen med alt
+    # mod de sidste 30 dage (her 2,43) og spotprisen med moms mod årsgennemsnittet (1,01; demo:
+    # spot = 55 % af prisen med alt), så en billig dag ikke får røde timer, og en dyr måned ses.
+    MONTH_PRICE, YEAR_SPOT = 2.43, 1.01
 
     def price_level(v, ref):
         r = v / ref
@@ -372,7 +371,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
     def price_scale(v, day=None):
         day = day or price
         rank = 1 + min(4, int(sum(1 for x in day if x < v) / len(day) * 5))
-        return max(1, min(5, math.floor((rank + price_level(v, MONTH_PRICE) + price_level(v, YEAR_PRICE)) / 3 + 0.5)))
+        return max(1, min(5, math.floor((rank + price_level(v, MONTH_PRICE) + price_level(0.55 * v, YEAR_SPOT)) / 3 + 0.5)))
 
     def plan_timeline(mini=False):
         """Odins plan time for time (DESIGN.md 8, .plan). mini = Hjem-feltets kompakte udgave:
