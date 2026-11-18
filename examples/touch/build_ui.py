@@ -789,18 +789,64 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         band_ = "".join(f'<rect class="rb" x="{k}" y="{hy(HOUSE_TARGET + 1.0):.1f}" width="1" height="{hy(b_lo[k]) - hy(HOUSE_TARGET + 1.0):.1f}"/>' for k in range(PH))
         house_svg = (f'<svg viewBox="0 0 {PH} 100" preserveAspectRatio="none" aria-hidden="true">{band_}'
                      f'<g class="exp">{stair(t_touch, hlo, hhi)}</g></svg>')
+        # Forvarmning: husets vinduer (rummenes forvarmning og opladning lagt sammen pr. slags).
+        pre_segs = ""
+        for kind, tip in (("preload", "planner.tipPre"), ("charge", "planner.tipCharge")):
+            hours = sorted({k for v in ROOM_PLAN.values() if v[0] == kind for k in range(v[1], v[2])})
+            names = ", ".join(r[1] for r in ROOMS if ROOM_PLAN.get(r[0], ("",))[0] == kind)
+            k = 0
+            while k < len(hours):
+                a = b = hours[k]
+                while k + 1 < len(hours) and hours[k + 1] == b + 1:
+                    k += 1
+                    b = hours[k]
+                pre_segs += f'<span class="plan-seg" data-kind="{kind}" style="--a:{a};--b:{b + 1}" title="{T(tip, rooms=names)}"></span>'
+                k += 1
         rows = (f'<div class="plan-lab plan-lab--y plan-lab--sm"><b>{T("plan.lanePrice")}</b><span class="plan-y"><i>{T.num(ptop, 0)}</i><i>0</i></span></div>'
                 f'<div class="plan-lane plan-lane--price">{cells}</div>'
                 f'<div class="plan-lab plan-lab--y"><b>{T("planner.laneOut")}</b><span class="plan-y"><i>6 kW</i><i>3</i><i>0</i></span></div>'
                 f'<div class="plan-lane plan-lane--out">{bars_}</div>'
+                f'<span class="plan-lab">{T("planner.lanePre")}</span><div class="plan-lane">{pre_segs}</div>'
                 f'<div class="plan-lab plan-lab--y plan-lab--flow"><b>{T("planner.laneFlow")}</b><span class="plan-y"><i>{T.num(fhi, 0)}°</i><i>{T.num(flo, 0)}°</i></span></div>'
                 f'<div class="plan-lane plan-lane--flow">{flow_svg}</div>'
                 f'<div class="plan-lab plan-lab--y plan-lab--house"><b>{T("planner.laneHouse")}</b><span class="plan-y"><i>{T.num(hhi, 0)}°</i><i>{T.num(hlo, 0)}°</i></span></div>'
                 f'<div class="plan-lane plan-lane--house">{house_svg}</div>')
         legend = "".join(f'<span><i class="{c}"></i>{T(k)}</span>' for c, k in (
             ("lprice", "plan.lPrice"), ("lbar", "planner.lOut"), ("ldhw", "plan.lDhw"), ("lleg", "planner.lLeg"),
+            ("lpre", "planner.lPre"), ("lch", "planner.lCharge"),
             ("lflow", "planner.lFlow"), ("lmax", "planner.lMax"), ("lrb", "planner.lHouse")))
         return (f'<div class="plan plan--48" role="img" aria-label="{T("planner.planAria")}" style="--now:.4">{rows}<span></span>'
+                f'<div class="plan-x">{plan_x48()}</div></div>'
+                f'<div class="fc-legend" aria-hidden="true">{legend}</div>')
+
+    # Vejret de samme 48 timer (Open-Meteo i Touch): nordvestenvind i nat, kulde i morgen tidlig.
+    w_temp = [round(7.5 + 2.5 * math.sin((NOW_H + k - 9) / 24 * 2 * math.pi) - (2.5 if 14 <= k < 26 else 0) * math.sin(min(1.0, (k - 13) / 4) * math.pi / 2), 1) for k in range(PH)]
+    w_wind = [round(3.5 + (7.5 * math.sin((k - 9) / 15 * math.pi) if 9 <= k <= 24 else 0) + 0.8 * math.sin(k / 3), 1) for k in range(PH)]
+    w_dir = [300 + (15 * (k - 9) / 15 if 9 <= k <= 24 else 0) for k in range(PH)]
+    w_sun = [round(max(0.0, 420 * math.sin((((NOW_H + k) % 24) - 8) / 8.5 * math.pi)) * (0.4 if k > 24 else 1.0)) if 8 <= (NOW_H + k) % 24 <= 16 else 0 for k in range(PH)]
+
+    def weather_timeline():
+        lo = math.floor(min(w_temp) - 0.5)
+        hi = max(math.ceil(max(w_temp) + 0.5), lo + 3)   # temperaturakse mindst 3 °C
+        zero = (f'<line class="zero" x1="0" x2="{PH}" y1="{(hi - 0) / (hi - lo) * 100:.1f}" y2="{(hi - 0) / (hi - lo) * 100:.1f}"/>' if lo < 0 < hi else "")
+        temp_svg = f'<svg viewBox="0 0 {PH} 100" preserveAspectRatio="none" aria-hidden="true">{zero}<g class="tl">{stair(w_temp, lo, hi)}</g></svg>'
+        wtop = 15
+        wcells = "".join(f'<i class="plan-cell" style="--v:{round(min(w, wtop) / wtop * 100)}"></i>' for w in w_wind)
+        # Retningen vinden blæser hen (fra + 180°), hver 3. time, som vejrarkets pile.
+        dirs = "".join(f'<svg class="dir" viewBox="0 0 24 24" style="--deg:{round(w_dir[k] + 180) % 360}deg" aria-hidden="true"><path d="M12 20V4M6 10l6-6 6 6"/></svg>'
+                       if k % 3 == 1 else "<i></i>" for k in range(PH))
+        stop = 500
+        scells = "".join(f'<i class="plan-cell" style="--v:{round(min(v, stop) / stop * 100)}"></i>' for v in w_sun)
+        rows = (f'<div class="plan-lab plan-lab--y plan-lab--temp"><b>{T("planner.laneTemp")}</b><span class="plan-y"><i>{hi}°</i><i>{lo}°</i></span></div>'
+                f'<div class="plan-lane plan-lane--temp">{temp_svg}</div>'
+                f'<div class="plan-lab plan-lab--y plan-lab--sm"><b>{T("planner.laneWind")}</b><span class="plan-y"><i>{wtop}</i><i>0</i></span></div>'
+                f'<div class="plan-lane plan-lane--wind">{wcells}</div>'
+                f'<span class="plan-lab">{T("planner.laneDir")}</span><div class="plan-lane plan-dir">{dirs}</div>'
+                f'<div class="plan-lab plan-lab--y plan-lab--sm"><b>{T("planner.laneSun")}</b><span class="plan-y"><i>{stop}</i><i>0</i></span></div>'
+                f'<div class="plan-lane plan-lane--sun">{scells}</div>')
+        legend = "".join(f'<span><i class="{c}"></i>{T(k)}</span>' for c, k in (
+            ("lt", "planner.lTemp"), ("lwind", "planner.lWind"), ("lsunb", "planner.lSun")))
+        return (f'<div class="plan plan--48" role="img" aria-label="{T("planner.wxAria")}" style="--now:.4">{rows}<span></span>'
                 f'<div class="plan-x">{plan_x48()}</div></div>'
                 f'<div class="fc-legend" aria-hidden="true">{legend}</div>')
 
@@ -1093,6 +1139,10 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         <section class="panel" aria-labelledby="h-pl48">
           <header class="panel-head"><h3 id="h-pl48">{T("planner.plan48")}</h3>{help_("pl48", T("planner.plan48"), T("planner.plan48Help"), "planner-plan")}<p>{T("planner.plan48Sub")}</p></header>
           {planner_timeline()}
+        </section>
+        <section class="panel" aria-labelledby="h-plwx">
+          <header class="panel-head"><h3 id="h-plwx">{T("planner.wx")}</h3>{help_("plwx", T("planner.wx"), T("planner.wxHelp"), "planner-weather")}<p>{T("planner.wxSub")}</p></header>
+          {weather_timeline()}
         </section>
         <section class="panel" aria-labelledby="h-plvs">
           <header class="panel-head"><h3 id="h-plvs">{T("planner.vs")}</h3>{help_("plvs", T("planner.vs"), T("planner.vsHelp"), "planner-odin")}<p>{T("planner.vsSub")}</p></header>
