@@ -959,8 +959,10 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
 
     def vs_sum(rows):
         """De næste 24 t: Touch og Odin side om side i en lille tabel (varme, el, pris, under båndet)."""
-        body = "".join(f'<tr><td>{T(k)} <small>{u}</small></td><td>{T.num(a, d)}</td><td>{T.num(b, d)}</td></tr>' for k, u, a, b, d in rows)
-        return (f'<table class="table vs-sum"><thead><tr><th>{T("planner.sNext")}</th><th>Touch</th><th>Odin</th></tr></thead>'
+        head = "".join(f'<th>{T(k)} <small>{u}</small></th>' for k, u, a, b, d in rows)
+        body = "".join(f'<tr><td>{who}</td>' + "".join(f'<td>{T.num(r[2 + i], r[4])}</td>' for r in rows) + '</tr>'
+                       for i, who in enumerate(("Touch", "Odin")))
+        return (f'<table class="table vs-sum"><thead><tr><th>{T("planner.sNext")}</th>{head}</tr></thead>'
                 f'<tbody>{body}</tbody></table>')
 
     def vs_chart():
