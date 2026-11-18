@@ -359,9 +359,18 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
     expected = [22.0, 22.1, 22.3, 22.4, 22.3, 22.2, 22.1, 22.0, 21.9, 21.9, 21.8, 21.8, 22.0, 22.2, 22.3, 22.2, 22.1, 22.0, 21.9, 21.9, 21.8, 21.8, 21.7, 21.7]
     wind = [6, 7, 9, 11, 12, 12, 11, 10, 9, 8, 7, 6, 6, 5, 5, 5, 4, 4, 5, 6, 6, 7, 7, 6]
 
-    def price_scale(v):
-        lo_, hi_ = min(price), max(price)
-        return 1 + min(4, int((v - lo_) / (hi_ - lo_ + 1e-9) * 5))
+    # Elprisens 5 trin (DESIGN.md 3.2.4): gennemsnittet af timens rang i døgnet og dens niveau
+    # mod husets normalpris (her sidste års 1,85), så en billig dag ikke får røde timer.
+    NORMAL_PRICE = 1.85
+
+    def price_level(v, ref=NORMAL_PRICE):
+        r = v / ref
+        return 1 if r < 0.6 else 2 if r < 0.85 else 3 if r <= 1.15 else 4 if r <= 1.5 else 5
+
+    def price_scale(v, day=None):
+        day = day or price
+        rank = 1 + min(4, int(sum(1 for x in day if x < v) / len(day) * 5))
+        return max(1, min(5, math.floor((rank + price_level(v)) / 2 + 0.5)))
 
     def plan_timeline(mini=False):
         """Odins plan time for time (DESIGN.md 8, .plan). mini = Hjem-feltets kompakte udgave:
@@ -975,7 +984,7 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         # (Odin styrer), sin plan efter.
         prices = price[:VS_PAST] if len(price) >= VS_PAST else [0.3] * VS_PAST
         prices = prices + p_price[:VS_H - VS_PAST]
-        rank = lambda v: max(1, min(5, 1 + int(sum(1 for x in prices if x < v) / len(prices) * 5)))
+        rank = lambda v: price_scale(v, prices)
         price_cells = "".join(f'<i data-scale="{rank(v)}"></i>' for v in prices)
         mode = lambda kwh, m="heat": f'<i data-mode="{m}"></i>' if kwh > 0.05 else "<i></i>"
         touch_cells = "<i></i>" * VS_PAST + "".join(mode(p_out[k], p_mode[k]) for k in range(VS_H - VS_PAST))
@@ -1304,6 +1313,8 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
                srow(lab("price_zone", T("price.zone")), '<select class="select" id="price_zone" name="zone"><option selected>DK1</option><option>DK2</option></select>') +
                sinput("entsoe_token", T("price.token"), "", "w-md", id_="price_token", hint=T("price.tokenHint"), extra=' autocomplete="off"'))}
         {odin_f}{touch_f}
+        {group(T("price.normal"), sstep("reference_price", T("price.reference"), 1.85, 0, 10, 0.01, T("price.unit"), dec=2, hint=T("price.referenceHint")) +
+               rrow(T("price.month"), f'{T.num(1.71, 2)} {T("price.unit")}'))}
         {group(T("price.status"), rrow(T("price.now"), f'<b>{T.num(1.82, 2)} {T("price.unit")}</b> <span class="scale-chip" data-scale="2">{T("price.scale.2")}</span>') +
                srow(f'<span>{T("price.lastPush")}</span>', f'<button class="btn" type="button" data-action="price-push">{T("price.pushNow")}</button>', T("rt.minutesAgo", v=4)))}
         {savebar("prices")}
