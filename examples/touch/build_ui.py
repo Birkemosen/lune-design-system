@@ -359,18 +359,19 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
     expected = [22.0, 22.1, 22.3, 22.4, 22.3, 22.2, 22.1, 22.0, 21.9, 21.9, 21.8, 21.8, 22.0, 22.2, 22.3, 22.2, 22.1, 22.0, 21.9, 21.9, 21.8, 21.8, 21.7, 21.7]
     wind = [6, 7, 9, 11, 12, 12, 11, 10, 9, 8, 7, 6, 6, 5, 5, 5, 4, 4, 5, 6, 6, 7, 7, 6]
 
-    # Elprisens 5 trin (DESIGN.md 3.2.4): gennemsnittet af timens rang i døgnet og dens niveau
-    # mod husets normalpris (her sidste års 1,85), så en billig dag ikke får røde timer.
-    NORMAL_PRICE = 1.85
+    # Elprisens 5 trin (DESIGN.md 3.2.3): gennemsnittet af timens rang i døgnet og dens niveau
+    # mod de sidste 30 dage og mod årsgennemsnittet (her 2,43 og 1,52), så en billig dag ikke får
+    # røde timer, og en dyr måned stadig ses.
+    MONTH_PRICE, YEAR_PRICE = 2.43, 1.52
 
-    def price_level(v, ref=NORMAL_PRICE):
+    def price_level(v, ref):
         r = v / ref
         return 1 if r < 0.6 else 2 if r < 0.85 else 3 if r <= 1.15 else 4 if r <= 1.5 else 5
 
     def price_scale(v, day=None):
         day = day or price
         rank = 1 + min(4, int(sum(1 for x in day if x < v) / len(day) * 5))
-        return max(1, min(5, math.floor((rank + price_level(v)) / 2 + 0.5)))
+        return max(1, min(5, math.floor((rank + price_level(v, MONTH_PRICE) + price_level(v, YEAR_PRICE)) / 3 + 0.5)))
 
     def plan_timeline(mini=False):
         """Odins plan time for time (DESIGN.md 8, .plan). mini = Hjem-feltets kompakte udgave:
@@ -1313,8 +1314,8 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
                srow(lab("price_zone", T("price.zone")), '<select class="select" id="price_zone" name="zone"><option selected>DK1</option><option>DK2</option></select>') +
                sinput("entsoe_token", T("price.token"), "", "w-md", id_="price_token", hint=T("price.tokenHint"), extra=' autocomplete="off"'))}
         {odin_f}{touch_f}
-        {group(T("price.normal"), sstep("reference_price", T("price.reference"), 1.85, 0, 10, 0.01, T("price.unit"), dec=2, hint=T("price.referenceHint")) +
-               rrow(T("price.month"), f'{T.num(1.71, 2)} {T("price.unit")}'))}
+        {group(T("price.normal"), sstep("reference_price", T("price.reference"), 1.52, 0, 10, 0.01, T("price.unit"), dec=2, hint=T("price.referenceHint")) +
+               rrow(T("price.month"), f'{T.num(2.43, 2)} {T("price.unit")}'))}
         {group(T("price.status"), rrow(T("price.now"), f'<b>{T.num(1.82, 2)} {T("price.unit")}</b> <span class="scale-chip" data-scale="2">{T("price.scale.2")}</span>') +
                srow(f'<span>{T("price.lastPush")}</span>', f'<button class="btn" type="button" data-action="price-push">{T("price.pushNow")}</button>', T("rt.minutesAgo", v=4)))}
         {savebar("prices")}
