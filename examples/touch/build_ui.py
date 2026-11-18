@@ -360,10 +360,10 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
     wind = [6, 7, 9, 11, 12, 12, 11, 10, 9, 8, 7, 6, 6, 5, 5, 5, 4, 4, 5, 6, 6, 7, 7, 6]
 
     # Elprisens 5 trin (DESIGN.md 3.2.3): gennemsnittet af timens rang i døgnet og dens niveau
-    # mod de sidste 30 dage og mod årsgennemsnittet med alt (her 2,43 og 1,73: spot 1,01 med
-    # dagens nettarif, afgifter og moms), så en billig dag ikke får røde timer, og en dyr måned
+    # mod de sidste 30 dage og mod årsgennemsnittet med alt (her 2,43 og 1,48: spot 1,01 med moms
+    # og dagens nettarif og afgifter), så en billig dag ikke får røde timer, og en dyr måned
     # stadig ses.
-    MONTH_PRICE, YEAR_PRICE = 2.43, 1.73
+    MONTH_PRICE, YEAR_PRICE = 2.43, 1.48
 
     def price_level(v, ref):
         r = v / ref
