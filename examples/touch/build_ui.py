@@ -957,6 +957,12 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
                 f'<rect class="future" x="{VS_PAST}" y="0" width="{VS_H - VS_PAST}" height="100"/><line class="grid" x1="0" x2="{VS_H}" y1="99.5" y2="99.5"/>{bars}'
                 f'<line class="nowl" x1="{VS_PAST}" x2="{VS_PAST}" y1="0" y2="100"/></svg>{vs_axis()}</div>')
 
+    def vs_sum(rows):
+        """De næste 24 t: Touch og Odin side om side i en lille tabel (varme, el, pris, under båndet)."""
+        body = "".join(f'<tr><td>{T(k)} <small>{u}</small></td><td>{T.num(a, d)}</td><td>{T.num(b, d)}</td></tr>' for k, u, a, b, d in rows)
+        return (f'<table class="table vs-sum"><thead><tr><th>{T("planner.sNext")}</th><th>Touch</th><th>Odin</th></tr></thead>'
+                f'<tbody>{body}</tbody></table>')
+
     def vs_chart():
         b_hi = [HOUSE_TARGET + 1.0] * PH
         # Hele vinduet: båndet og sætpunktet det seneste døgn (skemaet) og det næste (med løftet).
@@ -977,11 +983,10 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         return f'''
           <div class="hchart hchart--ahead hchart--vs">
             <div class="hchart-head">
-              <dl class="metrics">
-                {metric(T("planner.vsHeat"), f"{T.num(sum(p_out[:24]), 0)} / {T.num(sum(o_out), 0)}", "kWh")}
-                {metric(T("planner.vsCost"), f"{T.num(c_touch, 2)} / {T.num(c_odin, 2)}", "€")}
-                {metric(T("planner.vsBelow"), f"{T.num(below(t_touch))} / {T.num(below(t_odin))}", "K·t")}
-              </dl>
+              {vs_sum([("planner.sHeat", "kWh", sum(p_out[:24]), sum(o_out), 0),
+                       ("planner.sElec", "kWh", sum(p_out[:24]) / 4.4, sum(o_out) / 3.4, 1),
+                       ("planner.sCost", "€", c_touch, c_odin, 2),
+                       ("planner.sBelow", "K·t", below(t_touch), below(t_odin), 1)])}
             </div>
             {vs_temp(past_t, t_touch, t_odin, vs_lo, vs_hi, vs_sp, T("planner.vsTempAria"), strips=vs_rows)}
             {vs_heat()}
