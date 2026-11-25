@@ -675,6 +675,18 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
     # ---- Rum
     WL, WF = T.meta("_walls"), T.meta("_walls_full")
 
+    def warm_sub(r):
+        """Varm op (DESIGN.md 15.10): en hverdagshandling i rummets overblik, ikke en indstilling.
+        Tilstand warm-idle | warming (6.1b); eksemplet viser Josephine mens hun varmes op."""
+        rid, tgt = r[0], r[5]
+        state = "warming" if rid == "r06" else "warm-idle"
+        running = T("room.warmRunNow", t=T.num(tgt - 0.5), at="14:40")
+        return f'''<div class="sub" data-state="{state}"><h4>{T("room.warmTitle")}</h4>
+          <p class="note" data-show-when="warm-idle">{T("room.warmIdle")}</p>
+          <p class="note" data-show-when="warming" aria-live="polite">{running}</p>
+          <div class="actions" data-show-when="warm-idle"><button class="btn" type="button">{T("room.warmNow")}</button><button class="btn" type="button">{T("room.warmCheap")}</button></div>
+          <div class="actions" data-show-when="warming"><button class="btn" type="button">{T("room.warmStop")}</button></div></div>'''
+
     def room_sheet(r):
         rid, name, mn, zn, temp, tgt, valve, st, area, cc, pipe, walls, inc, wt, wind, solar = r
         m = man(mn)
@@ -694,7 +706,8 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
         <div class="bar" style="--v:{0 if level(r) == 0 else valve}%" aria-hidden="true"><i></i></div>
         <div class="sub"><h4>{T("room.loops", m=m["name"])}</h4>
           {kv([(f"Z{zn}", f'{"—" if nodata else T.num(temp) + " °C"} · {T("room.valveShort", v=0 if level(r) == 0 else valve, mm=T.num(0 if level(r) == 0 else valve / 100 * PIN_MM))}'),
-               (T("m.return"), "—" if nodata else f"{T.num(m['ret'] - 1.2)} °C", "c-info"), (T("room.state"), ST[st], "c-bad" if fault else "")])}</div>'''
+               (T("m.return"), "—" if nodata else f"{T.num(m['ret'] - 1.2)} °C", "c-info"), (T("room.state"), ST[st], "c-bad" if fault else "")])}</div>
+        {warm_sub(r)}'''
         hist = (f'<div class="sub" data-empty><h4>{T("trend.title")}</h4><p class="empty">{T("room.noHistory")}</p></div>' if nodata else
                 f'''<div class="sub trend-wrap"><h4>{T("trend.title")} <span class="legend"><i class="lt"></i>{T("legend.temp")}<i class="lg"></i>{T("legend.target")}</span></h4>
           <svg class="spark" style="height:100px" viewBox="0 0 240 80" preserveAspectRatio="none" role="img" aria-label="{T("room.histAria", name=name)}"><polyline class="g" points="0,{round(80 - (tgt - (tgt - 1.5)) / 3 * 80, 1)} 240,{round(80 - 1.5 / 3 * 80, 1)}"/><polyline class="t" points="{pts(series(int(rid[1:]) * 3, 48, temp, .4, .08), 240, 80, tgt - 1.5, tgt + 1.5)}"/></svg>
