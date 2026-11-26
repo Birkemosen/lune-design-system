@@ -225,7 +225,10 @@
   }
   .header {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    /* Sidekolonnerne må krympe under deres indhold (2.5.0): ellers skubber en lang
+       tilstandspille (Touch: Opvarmningsplan) værktøjerne ind over sig, i stedet for at
+       aktiviteten afkortes. */
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
     gap: var(--space-3);
     min-height: 56px;
@@ -245,7 +248,7 @@
   /* Mobil: ingen backdrop-filter på navbaren — et filter på en forfader
      ville gøre den svævende tilstands-pille relativ til navbaren i stedet for skærmen */
   @media (max-width: 767.98px) {
-    .header { grid-template-columns: 1fr auto; min-height: 52px; background: var(--card); backdrop-filter: none; -webkit-backdrop-filter: none; }
+    .header { grid-template-columns: minmax(0, 1fr) auto; min-height: 52px; background: var(--card); backdrop-filter: none; -webkit-backdrop-filter: none; }
   }
 
   /* ---- 3.2 Zonestrimmel ----------------------------------------------- */
@@ -783,6 +786,9 @@
   [data-state="approved"] [data-show-when~="approved"],
   [data-state="pending"]  [data-show-when~="pending"],
   [data-state="error"]    [data-show-when~="error"] { display: var(--show-display, block); }
+  /* Rummets «Varm op» (DESIGN.md 15.10): handlinger efter tilstand. */
+  [data-state="warm-idle"] [data-show-when~="warm-idle"],
+  [data-state="warming"]   [data-show-when~="warming"] { display: var(--show-display, block); }
 
   /* Ekspert-tuning bag et link */
   .more > summary {
@@ -1274,6 +1280,34 @@
   .chip-icon[data-tone="danger"] { background: var(--danger-fill); }
   .chip-icon[data-tone="neutral"]{ background: var(--raised); color: var(--fg); }
   .chip-icon[data-tone="water"]  { background: var(--water-fill); }
+
+  /* Graf med akser i HTML (.hchart-panel), fælles for V6 og Touch: y-akse (.hchart-y, tal øverst og
+     nederst, evt. midt) til venstre, x-akse under. x-aksen placerer mærkerne efter tid (.axis.at,
+     style="--x:…" i procent): klokkeslæt hver 6. time, ugedag (fed) ved midnat, «nu» som sidste mærke. */
+  .hchart-panel { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "y plot" ". x"; gap: var(--space-2) var(--space-3); }
+  .hchart-panel .trend { grid-area: plot; height: 200px; }
+  .hchart-panel .axis { grid-area: x; }
+  .hchart-panel .axis b { color: var(--fg); }
+  .hchart-y { grid-area: y; display: flex; flex-direction: column; justify-content: space-between; font-size: var(--fs-xs); color: var(--faint); text-align: right; font-variant-numeric: tabular-nums; }
+  .hchart-panel[data-empty] { display: flex; }
+  .hchart-panel[data-empty] .hchart-y { display: none; }
+  .axis.at { position: relative; display: block; height: 1.5em; }
+  .axis.at span { position: absolute; left: calc(var(--x, 0) * 1%); transform: translateX(-50%); white-space: nowrap; }
+  .axis.at span.s { transform: none; }                 /* mærke ved venstre kant */
+  .axis.at span.e { transform: translateX(-100%); }    /* mærke ved højre kant */
+  .axis.at b { color: var(--fg); }
+  @media (max-width: 599px) {
+    .axis.at span.h6 { display: none; }   /* på en telefon: mærker hver 12. time */
+  }
+  /* V6 Hjem (Varme nu): grafen i .trend-wrap fylder panelets højde, y-aksen følger med. */
+  .panel > .trend-wrap:not([data-empty]) > .hchart-panel { flex: 1 1 auto; grid-template-rows: minmax(120px, 1fr) auto; }
+  .trend-wrap > .hchart-panel .trend { height: 100%; min-height: 120px; }
+  .trend-wrap[data-empty] > .hchart-panel { display: none; }
+  .trend .gl { stroke: var(--border); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  /* Zonekortets x-akse efter tid (.zc-x.at): klokkeslæt centreret på deres tid, «nu» (.n) ved højre kant. */
+  .zc-x.at span { transform: translateX(-50%); }
+  .zc-x.at span.n { transform: translateX(-100%); }
+  .zc-x.at b { color: var(--fg); font-weight: 600; }
 
 
   /* ---- Faner (.tabs) ----------------------------------------------------
