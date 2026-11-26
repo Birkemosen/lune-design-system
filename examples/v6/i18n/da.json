@@ -222,6 +222,8 @@
   "cz.spacing": "Rørafstand C-C",
   "cz.pipeType": "Rørtype",
   "cz.lead": "Termisk lead",
+  "cz.maxFlow": "Anbefalet maks. flow",
+  "cz.maxFlowHint": "Kredsen er ca. {len} lang (areal ÷ rørafstand plus tilledninger). Sæt fordelerens forindstilling hertil. Ud fra rummets varmetab og vindeksponering ved {dut} °C ude, {dt} K afkøling og {res} % reserve.",
   "cz.weather": "Vejr-preload",
   "cz.walls": "Ydervægge",
   "cz.wind": "Vindeksponering",

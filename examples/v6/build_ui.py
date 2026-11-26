@@ -151,6 +151,16 @@ def phys_sub(T, i, area):
           <p class="note">{note}</p>
         </div>'''
 
+def loop_m(area, spacing_mm):
+    """Zone sheet: estimated loop length — area ÷ pipe spacing plus 2 m leads each way."""
+    return round(area*1000/spacing_mm+4)
+
+def max_flow(area, target, wind):
+    """Zone sheet: recommended max loop flow (l/min) — the example's UA (0.71 W/K·m²) plus
+    wind (×(1 + 0.6·exposure)) at −12 °C outdoors, 5 K cooling and a 30 % reserve, as V6
+    computes it."""
+    return area*0.71*(1+0.6*wind)*(target+12)*1.3/(5*69.7)
+
 # ---------------------------------------------------------------- render ---
 def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
     ST={k:T(f"state.{k}") for k in ("calling","idle","fault","off")}
@@ -543,6 +553,8 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
           {group(T("zs.floor"),
                  sstep(f"z{i}_spacing",T("cz.spacing"),sp,50,300,25,"mm",dec=0)+
                  srow(lab(f"z{i}_pipe",T("cz.pipeType")),f'<select class="select" id="z{i}_pipe" name="z{i}_pipe">{pipes}</select>')+
+                 srow(f'<span>{T("cz.maxFlow")}</span>',f'<span data-bind="z{i}.maxFlow">{T.num(max_flow(area,tg,1.0 if walls else 0.0),1)} l/min</span>',
+                      T("cz.maxFlowHint",len=f'<span data-bind="z{i}.loopLength">{loop_m(area,sp)} m</span>',dut="−12",dt=5,res=30))+
                  sstep(f"z{i}_lead",T("cz.lead"),3.0,0,12,0.5,H))}
           {group(T("zs.advanced"),
                  subpage(T("zs.motorCal"),L[0],motor_body)+subpage(T("zs.grouping"),"Z4" if i==5 else T("common.none"),group_body),

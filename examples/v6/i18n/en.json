@@ -222,6 +222,8 @@
   "cz.spacing": "Pipe spacing C-C",
   "cz.pipeType": "Pipe type",
   "cz.lead": "Thermal lead",
+  "cz.maxFlow": "Recommended max flow",
+  "cz.maxFlowHint": "The loop is about {len} long (area ÷ pipe spacing plus leads). Set the manifold's flow preset to this. From the room's heat loss and wind exposure at {dut} °C outdoors, {dt} K cooling and a {res} % reserve.",
   "cz.weather": "Weather preload",
   "cz.walls": "Exterior walls",
   "cz.wind": "Wind exposure",
