@@ -155,6 +155,19 @@ def phys_sub(T, i, area):
 def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
     ST={k:T(f"state.{k}") for k in ("calling","idle","fault","off")}
     H=T.meta("_h")
+    NOW_H=14.5  # eksemplets «nu» (14:30); grafernes x-akse viser klokkeslæt som på Touch
+    def clock_marks(style):
+        """De sidste 24 t efter tid: hver 6. time på uret, ugedag (fed) ved midnat, «nu» til højre.
+        style='at' giver .axis.at-mærker (--x), 'left' giver .zc-x-mærker (left:)."""
+        out=""
+        for h in range(0,24,6):
+            x=(1-((NOW_H-h)%24)/24)*100
+            if x<6 or x>88: continue  # ikke oven i kanten eller «nu»
+            text=f'<b>{T.meta("_days")[0]}</b>' if h==0 else f"{h:02d}"
+            pos=f'style="--x:{x:.2f}"' if style=="at" else f'style="left:{x:.2f}%"'
+            out+=f'<span {pos}>{text}</span>'
+        now=T("trend.now")
+        return out+(f'<span class="e" style="--x:100"><b>{now}</b></span>' if style=="at" else f'<span class="n" style="left:100%">{now}</span>')
 
     def stepper(name,val,mn,mx,step,unit,label,dec=1,disabled=False):
         d=" disabled" if disabled else ""
@@ -279,7 +292,7 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
               <span class="zc mini" aria-hidden="true">
                 <span class="zc-y"><span>{lab(hi)}°</span><span>{lab((hi+lo)/2)}°</span><span>{lab(lo)}°</span></span>
                 <span class="zc-plot"><svg viewBox="0 0 {W} {Hh}" preserveAspectRatio="none" data-bind-zcard="z{z[0]}">{grid}{heat}<path class="sp" d="{sp}"/><path class="t" d="{t}"/></svg></span>
-                <span class="zc-x"><span style="left:0">−24 {H}</span><span style="left:50%">−12 {H}</span><span class="n" style="left:100%">{T("trend.now")}</span></span>
+                <span class="zc-x at">{clock_marks("left")}</span>
               </span>
               <span class="empty">{T("zcard.empty")}</span>
             </button>'''
@@ -291,7 +304,7 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
             f.append(cf); r.append(cr)
         X=lambda k: round(k*W/47,1); Y=lambda v: round(Hh-(v-26)/13*Hh,1)
         pf=" ".join(f"{X(k)},{Y(v)}" for k,v in enumerate(f)); pr=" ".join(f"{X(k)},{Y(v)}" for k,v in enumerate(r))
-        return f'<svg class="trend" viewBox="0 0 {W} {Hh}" preserveAspectRatio="none" role="img" aria-label="{T("trend.aria")}" data-bind-trend="manifold"><polygon class="dt" points="{pf} {" ".join(reversed(pr.split()))}"/><polyline class="f" points="{pf}"/><polyline class="r" points="{pr}"/></svg>'
+        return f'<svg class="trend" viewBox="0 0 {W} {Hh}" preserveAspectRatio="none" role="img" aria-label="{T("trend.aria")}" data-bind-trend="manifold"><line class="gl" x1="0" x2="{W}" y1="0" y2="0"/><line class="gl" x1="0" x2="{W}" y1="{Hh/2}" y2="{Hh/2}"/><line class="gl" x1="0" x2="{W}" y1="{Hh}" y2="{Hh}"/><polygon class="dt" points="{pf} {" ".join(reversed(pr.split()))}"/><polyline class="f" points="{pf}"/><polyline class="r" points="{pr}"/></svg>'
 
     def forecast_panel():
         temp,wind=forecast_data(); W=720; X=lambda h: round(h*W/72,1)
@@ -355,8 +368,11 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
           <div class="bar" style="--v:32%" role="meter" aria-valuenow="32" aria-valuemin="0" aria-valuemax="100" aria-label="{T("m.openingAria")}"><i></i></div>
           <div class="sub trend-wrap">
             <h4>{T("trend.title")} <span class="legend"><i class="lf"></i>{T("m.supply")}<i class="lr"></i>{T("m.return")}</span></h4>
-            {trend()}
-            <div class="axis" aria-hidden="true"><span>−24 {H}</span><span>−12 {H}</span><span>{T("trend.now")}</span></div>
+            <div class="hchart-panel">
+              <div class="hchart-y" aria-hidden="true"><span>39°</span><span>{T.num(32.5)}°</span><span>26°</span></div>
+              {trend()}
+              <div class="axis at" aria-hidden="true">{clock_marks("at")}</div>
+            </div>
           </div>
           <footer class="panel-foot"><button class="btn" type="button" popovertarget="sheet-manifold">{T("home.openManifold")}</button></footer>
         </section>
