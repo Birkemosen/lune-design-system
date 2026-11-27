@@ -553,25 +553,22 @@ def render(T, langs, lang_urls, css_href, hs_type, inline_css=None):
           <p class="note">{T("heat.connOnSystem")}</p>
           {savebar("heat-behavior")}
         </form>'''
-    # ---- Huset: målet indstilles her (ringen, autogem); Hjem viser det kun i Hus-kortet.
-    house_thermo_html = f'''          <form class="thermo" data-save="house-target">
+    # ---- Huset: målet er rummenes mål vægtet efter varmetab (det, Odin får) og kan ikke
+    # indstilles her; ringen viser det, og mærket viser huset nu. Rummenes mål rettes i rummet.
+    house_thermo_html = f'''          <div class="thermo thermo--readonly">
             <dl class="thermo-facts">
               <div><dt><span class="chip-icon" aria-hidden="true">{I["house"]}</span><span>{T("thermo.house")}</span></dt><dd>{T.num(HOUSE_TEMP)}°</dd></div>
               <div><dt><span class="chip-icon" data-tone="info" aria-hidden="true">{I["outside"]}</span><span>{T("thermo.outsideLabel")}</span></dt><dd>{T.num(8.4)}°</dd></div>
             </dl>
             <div class="thermo-ring" style="--v:{v};--now:{now}" data-min="15" data-max="25">
-              <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="42" pathLength="100"/><circle class="arc" cx="50" cy="50" r="42" pathLength="100"/><line class="now" x1="84" y1="50" x2="99.4" y2="50"/><circle class="knob" cx="50" cy="50" r="42" pathLength="100"/></svg>
+              <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="42" pathLength="100"/><circle class="arc" cx="50" cy="50" r="42" pathLength="100"/><line class="now" x1="84" y1="50" x2="99.4" y2="50"/></svg>
               <div class="thermo-val">
                 <small>{T("climate.target")}</small>
-                <label class="thermo-target"><input type="text" inputmode="decimal" id="house_target" name="house_target" value="{T.num(HOUSE_TARGET)}" data-min="5" data-max="30" data-step-size="0.5" autocomplete="off" aria-label="{ta}"><span class="unit" aria-hidden="true">°</span></label>
-              </div>
-              <div class="thermo-steps">
-                <button type="button" data-step="-1" aria-label="{T("common.decrease", x=ta)}">−</button>
-                <button type="button" data-step="1" aria-label="{T("common.increase", x=ta)}">+</button>
+                <output class="thermo-target" id="house_target" aria-label="{ta}">{T.num(HOUSE_TARGET)}<span class="unit" aria-hidden="true">°</span></output>
               </div>
             </div>
-            <p class="autosave" aria-live="polite"></p>
-          </form>
+            <p class="note">{T("thermo.derived")}</p>
+          </div>
 '''
     house_over = f'''
         <div style="display:grid;gap:var(--space-5);justify-items:start">
