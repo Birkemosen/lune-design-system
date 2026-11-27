@@ -380,24 +380,20 @@
     </header>
     <div class="sheet-body"><section class="tab-panel" data-tab="overview">
         <div style="display:grid;gap:var(--space-5);justify-items:start">
-                    <form class="thermo" data-save="house-target">
+                    <div class="thermo thermo--readonly">
             <dl class="thermo-facts">
               <div><dt><span class="chip-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/></svg></span><span>Huset nu</span></dt><dd>21,9°</dd></div>
               <div><dt><span class="chip-icon" data-tone="info" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8.5 3.5v1.5M3.6 5.6l1.1 1.1M2 10.5h1.5M13.4 5.6l-1.1 1.1"/><path d="M5.4 12.6A3.5 3.5 0 1 1 11.8 9"/><path d="M9 20h8.5a3.5 3.5 0 0 0 .4-7 5 5 0 0 0-9.4 1.3A2.9 2.9 0 0 0 9 20z"/></svg></span><span>Ude</span></dt><dd>8,4°</dd></div>
             </dl>
             <div class="thermo-ring" style="--v:60;--now:69" data-min="15" data-max="25">
-              <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="42" pathLength="100"/><circle class="arc" cx="50" cy="50" r="42" pathLength="100"/><line class="now" x1="84" y1="50" x2="99.4" y2="50"/><circle class="knob" cx="50" cy="50" r="42" pathLength="100"/></svg>
+              <svg viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="42" pathLength="100"/><circle class="arc" cx="50" cy="50" r="42" pathLength="100"/><line class="now" x1="84" y1="50" x2="99.4" y2="50"/></svg>
               <div class="thermo-val">
                 <small>Mål</small>
-                <label class="thermo-target"><input type="text" inputmode="decimal" id="house_target" name="house_target" value="21,0" data-min="5" data-max="30" data-step-size="0.5" autocomplete="off" aria-label="husets mål"><span class="unit" aria-hidden="true">°</span></label>
-              </div>
-              <div class="thermo-steps">
-                <button type="button" data-step="-1" aria-label="Sænk husets mål">−</button>
-                <button type="button" data-step="1" aria-label="Hæv husets mål">+</button>
+                <output class="thermo-target" id="house_target" aria-label="husets mål">21,0<span class="unit" aria-hidden="true">°</span></output>
               </div>
             </div>
-            <p class="autosave" aria-live="polite"></p>
-          </form>
+            <p class="note">Husets mål er rummenes mål, vægtet efter varmetab, og det er dette mål, Odin får. Det kan ikke indstilles her: ret målet i det enkelte rum (eller på V6).</p>
+          </div>
 
           <dl class="kv"><div><dt>Rum, der kalder på varme</dt><dd>2 rum</dd></div><div><dt>Rum med frisk måling</dt><dd>92 %</dd></div></dl>
         </div></section><section class="tab-panel" data-tab="history">

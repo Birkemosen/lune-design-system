@@ -1773,6 +1773,12 @@
   }
   .thermo-steps button:hover { background: var(--seg-off); }
   .thermo .autosave { min-height: 1.2em; font-size: var(--fs-xs); color: var(--muted); }
+  /* Read-only: the target is derived (Touch: the rooms' weighted targets, what Odin gets).
+     The arc still shows it and the mark the house now; no knob, no steps, no dragging. */
+  .thermo--readonly .thermo-ring { cursor: default; touch-action: auto; }
+  .thermo--readonly .thermo-target { font-size: var(--fs-display); font-weight: 600; letter-spacing: -.05em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .thermo--readonly .thermo-target .unit { letter-spacing: 0; }
+  .thermo--readonly > .note { grid-column: 1 / -1; max-width: 46ch; margin: 0; }
   /* Målet vises med enhed og sprogets decimaltegn (tekstfelt, ikke type=number). */
   .climate .target .value:has(> .unit) { grid-template-columns: auto auto; justify-content: center; align-items: start; }
   .climate .target .value:has(> .unit) > small { grid-column: 1 / -1; justify-self: center; }
@@ -2180,6 +2186,9 @@
     font-size: 16px; font-weight: 600; -moz-appearance: textfield;
   }
   .stepper input:focus { outline: 0; }
+  /* Read-only (owned elsewhere, e.g. by Touch): the value stays readable, the buttons fade. */
+  .stepper button:disabled { opacity: .35; cursor: not-allowed; background: transparent; color: inherit; }
+  .stepper input:disabled { color: var(--muted); -webkit-text-fill-color: var(--muted); opacity: 1; }
   .stepper input::-webkit-inner-spin-button, .stepper input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   .stepper .unit { font-size: var(--fs-sm); color: var(--muted); }
   .stepper .unit:empty { display: none; }
