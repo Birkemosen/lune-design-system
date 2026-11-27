@@ -548,8 +548,9 @@ def render(T, langs, lang_urls, css_href, inline_css=None, dev=False):
                  srow(lab(f"z{i}_ret",T("cz.returnSensor")),probes(i,f"z{i}_ret")))}
           {group(T("zs.weather"),
                  srow(f'<span>{T("cz.walls")}</span>',compass(i,walls),T("zs.wallsHint"))+
-                 sstep(f"z{i}_wind",T("cz.wind"),1.0 if walls else 0.0,0,2,0.1,"×")+
-                 sstep(f"z{i}_solar",T("cz.solar"),0.6 if "s" in walls else 0.2,0,2,0.1,"×"))}
+                 sstep(f"z{i}_wind",T("cz.wind"),1.0 if walls else 0.0,0,3.4,0.1,"×",disabled=True)+
+                 sstep(f"z{i}_solar",T("cz.solar"),0.6 if "s" in walls else 0.2,0,2,0.1,"×",disabled=True),
+                 f'<p class="note">{T("zs.weatherTouch")}</p>')}
           {group(T("zs.floor"),
                  sstep(f"z{i}_spacing",T("cz.spacing"),sp,50,300,25,"mm",dec=0)+
                  srow(lab(f"z{i}_pipe",T("cz.pipeType")),f'<select class="select" id="z{i}_pipe" name="z{i}_pipe">{pipes}</select>')+

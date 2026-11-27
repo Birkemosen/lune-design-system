@@ -423,6 +423,7 @@
   "zs.targetHint": "Also saved from the overview",
   "zs.memberTarget": "Set by {p}",
   "zs.wallsHint": "Used for weather preload",
+  "zs.weatherTouch": "Lune Touch holds the lease and owns wind and sun: it sends each room's value (learned or set in Touch) here. Change them in Touch.",
   "zs.advancedNote": "Rare settings open in the same sheet.",
   "ms.forecast": "Forecast",
   "csys.heating": "Heating mode",

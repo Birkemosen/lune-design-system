@@ -2296,6 +2296,9 @@
     font-size: 16px; font-weight: 600; -moz-appearance: textfield;
   }
   .stepper input:focus { outline: 0; }
+  /* Read-only (owned elsewhere, e.g. by Touch): the value stays readable, the buttons fade. */
+  .stepper button:disabled { opacity: .35; cursor: not-allowed; background: transparent; color: inherit; }
+  .stepper input:disabled { color: var(--muted); -webkit-text-fill-color: var(--muted); opacity: 1; }
   .stepper input::-webkit-inner-spin-button, .stepper input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   .stepper .unit { font-size: var(--fs-sm); color: var(--muted); }
   .stepper .unit:empty { display: none; }

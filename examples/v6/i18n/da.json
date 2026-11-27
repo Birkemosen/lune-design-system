@@ -423,6 +423,7 @@
   "zs.targetHint": "Gemmes også fra overblikket",
   "zs.memberTarget": "Styres af {p}",
   "zs.wallsHint": "Bruges til vejr-preload",
+  "zs.weatherTouch": "Lune Touch har lease og ejer vind og sol: den sender hvert rums værdi (lært eller sat i Touch) hertil. Ret dem i Touch.",
   "zs.advancedNote": "Sjældne indstillinger åbner i samme ark.",
   "ms.forecast": "Prognose",
   "csys.heating": "Varmetilstand",
